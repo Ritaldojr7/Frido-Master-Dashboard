@@ -1,0 +1,119 @@
+/* =============================================
+   SectionGroup — Category Container
+   ============================================= */
+
+.section-group {
+    position: relative;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    margin-bottom: var(--space-xl);
+}
+
+.section-group--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.section-group__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.section-group__icon-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.section-group__icon-badge svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Badge Colors */
+.section-group__icon-badge--emerald {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+    color: var(--accent-emerald-light);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.section-group__icon-badge--amber {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.08));
+    color: var(--accent-amber-light);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.section-group__icon-badge--blue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.08));
+    color: var(--accent-blue-light);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.section-group__icon-badge--purple {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.08));
+    color: var(--accent-purple-light);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.section-group__icon-badge--rose {
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.08));
+    color: var(--accent-rose-light);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.section-group__info {
+    flex: 1;
+}
+
+.section-group__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+}
+
+.section-group__desc {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.section-group__count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: var(--bg-tertiary);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+}
+
+/* ── Card Grid ── */
+.section-group__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
+}
+
+@media (max-width: 600px) {
+    .section-group__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-group__header {
+        flex-wrap: wrap;
+    }
+
+    .section-group__count {
+        margin-left: auto;
+    }
+}

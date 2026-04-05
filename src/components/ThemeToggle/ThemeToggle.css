@@ -1,0 +1,46 @@
+/* =============================================
+   ThemeToggle — Sun/Moon Switch
+   ============================================= */
+
+.theme-toggle {
+    padding: 2px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+}
+
+.theme-toggle__track {
+    width: 48px;
+    height: 26px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.theme-toggle__track--light {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.theme-toggle__thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-amber);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+    transition: transform var(--transition-spring);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle__track--light .theme-toggle__thumb {
+    transform: translateX(22px);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
