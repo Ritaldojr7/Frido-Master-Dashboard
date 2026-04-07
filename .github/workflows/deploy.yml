@@ -32,12 +32,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build for GitHub Pages
+      - name: Build Main App
         env:
           VITE_DEMO_MODE: 'true'
           GITHUB_PAGES: 'true'
           REPO_NAME: ${{ github.event.repository.name }}
         run: npm run build
+
+      - name: Create build structure
+        run: |
+          mkdir -p final-dist
+          mv dist/* final-dist/
+
+      - name: Build Staff App 
+        env:
+          VITE_DEMO_MODE: 'true'
+          GITHUB_PAGES: 'true'
+          VITE_APP_TYPE: 'STAFF'
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: npm run build
+
+      - name: Merge builds
+        run: |
+          mkdir -p final-dist/staff
+          mv dist/* final-dist/staff/
+          rm -rf dist
+          mv final-dist dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -356,3 +356,99 @@ export const feedbackCustomerExperienceData = {
         },
     ],
 };
+// ─── Staff Experience Store Sections ───
+export const staffExperienceStoreData = {
+    title: 'Retail Sales and Operation',
+    backRoute: '', // No back route for staff since this is their homepage
+    sections: [
+        {
+            id: 'after-sales-support',
+            title: 'After Sales Support',
+            icon: 'ticket',
+            accentColor: 'amber',
+            links: [
+                { title: 'Raise a Customer Success Ticket', url: 'https://form.asana.com/?k=64rN-eNOBO07gv2i9WO_7A&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' },
+                { title: 'Raise a GST Bill', url: 'https://form.asana.com/?k=SrZC3vuVjp_Au2NvDfNftA&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' }
+            ],
+        },
+        {
+            id: 'day-to-day-operations',
+            title: 'Day to Day Operations',
+            icon: 'document',
+            accentColor: 'blue',
+            links: [
+                { title: 'Raise Maintainence Ticket', url: 'https://form.asana.com/?k=T88A9GJZzo-RaSyJDacLYw&d=1207389811595677', variant: 'dark' },
+                { title: 'Raise a Inventory Request', url: 'https://form.asana.com/?k=2mNtWIMKNygDDxCSPiYbNQ&d=1207389811595677', variant: 'dark' },
+                { title: 'Raise a Reimbursement Request (New Joinees)', url: 'https://form.asana.com/?k=i-p9CI7ecwOX5u_8Hdz3tA&d=1207389811595677', variant: 'dark' },
+                { title: 'Raise a Prebooking Request', url: '#', variant: 'dark', isComingSoon: true },
+            ],
+        },
+        {
+            id: 'request-custom-product',
+            title: 'Request Custom Product',
+            icon: 'shopping-cart',
+            accentColor: 'purple',
+            links: [
+                { title: 'Request a Custom Insole', url: '#', variant: 'dark', isComingSoon: true },
+                { title: 'Request a Custom MT', url: '#', variant: 'dark', isComingSoon: true },
+            ],
+        },
+        {
+            id: 'crm-logins',
+            title: 'CRM & Logins',
+            icon: 'login',
+            accentColor: 'emerald',
+            links: [
+                { 
+                    title: 'POS Login', 
+                    variant: 'dark', 
+                    tooltip: 'For credentials contact Arsh',
+                    subOptions: [
+                        { title: 'Mobility', url: 'https://posx-frido-mobility.devxcommerce.com/orders' },
+                        { title: 'Non-Mobility', url: 'https://frido.devxcommerce.com/' }
+                    ]
+                },
+                { 
+                    title: 'Amply SOP Login', 
+                    variant: 'dark', 
+                    tooltip: 'For credentials contact Arsh',
+                    subOptions: [
+                        { title: 'Login Dashboard', url: 'https://dashboard.getamply.co/login/?next=/amply/' },
+                        { title: 'Install Android', url: 'https://play.google.com/store/apps/details?id=com.aiborne.amplyv1' },
+                        { title: 'Install iOS', url: 'https://apps.apple.com/in/app/amply-aiborne/id6447426082' }
+                    ]
+                },
+                { title: 'LMS Login', url: '#', variant: 'dark' },
+                { 
+                    title: 'GreyT HR Login', 
+                    variant: 'dark', 
+                    tooltip: 'For credentials contact Tanmay',
+                    subOptions: [
+                        { title: 'Login', url: 'https://arcatron-hrms.greythr.com/uas/portal/auth/login?login_challenge=hR8XiyqiYBxENSQJYJzk1NNXROKeCb_W1CB3fgz4luTNhF_fMbJBKTW9MrZYaYwtNLITIDLfbq_3IH-LNvvOy0skdNw-IkYYthE7RwB-MwyZHLG1dbA58GOdITScNn0cetk0pncqNovCLrg6G5_bXd3onboYpFt5giqaKY75_oCKxNj_c5zyU80Df1Tnllo-7HEv7j0OjIPAZtTM9iLI68ddJ_gEgQA9IEID1eC7Vb6y0dKiN5czu_-jnkozGVafSyX0gMuIK-SSLsm4r8hRKrlGiw_C2uK4rTH39v1cVGyVqGb02XuBMjgMYttRzrgtSAX4jKNE4dJwGzyTEZtkB9bxmf6GDWPXfu9kYYZJnwjXubiVI0j7YfEyYebsLef0QxnmT7HXGfEXsGbNErhxp2jp7w6EeryFgFqVC6IjpkfBhyg_yZh1pB3Nr5uqfXd02RmOSdXqobXvJ7t8ZJXdG3rcL_IIU9kHwXjshL2olyaMAyFQWLhLuBSNkI4oSNgVaydkI8eF1CnIlBGPgSvPtD7rATCA9bReNNf8Fe9s25QjCAFtD2chxjNPrHek4KH4vY1-DCcw_mTGeGX-p6L43shKmq3o_zsGgwAYJ7QzFpT4WC34s_dEyjx_40gIGsNMzo7xL8isNpOYFXTd2NRQamoxkn-Z7A5qoPpQMGY_stLx3nMFW8J7TQexIv_GYfE7fDGBta4vjQ7ZGhuH4_THJeA1MX-yFRwQJUUcGGm0nPb7_LrATZPfnY7NTPB77sD0rDVAaWlrvgUXk5kXaxrsi8pbUsisca1yl0SR7I3JZ2hKQrQnyrPvLFhEeC_jiMKFtmVAUVtYJujs-QmjVg9x7G3vru5iSYsmarM5UQnyxodf0LoRaUUDxhxEEOzjBRPgb0cEJnNamtCk96xDZTRvk_XHCI2mmMYcsUx_irBd3BrznylFQj_1WD46wM_q0JAloZElkpgg-PV69eYuTSA5Sr-33gS8FHuudyf5ponnLP4HG2lCXZaUdA52JOUukUAFGx5BJ0o4lo2u11lu6rdUNWwIQNA-lEiZIH0LNYYS_DIusY3ui5YNU0oFvbGuyAaa9OCtYtOli2NKKGC33rxLKcfpCv_dM23rlNx9Xs0dM3runRj9FpZ3Tb7On4TzLUMPLYFT7qDl6pOG628WXG21DiIXQo53u8ZSEk5NwlVVwndT_r-34FYsUU8miRZYLS1DtDHVdgmAAlmk17S6EO2tx7_DXMtdRK-5_3cPVWIn_sQxLoFU58Njo_aUTCASu1rTvGdsD7cMBQ6jgaPbLCPv7pvMDZqwA0z6EgBg-2-fSp6BnSBPxWQKTEGRlQkoAMktjK3TcNJfCGTxQB45p0AWFwo_Kc98uOcGVinj2X_XUVH1HbrQmcC8Blv0nlI%3D' }
+                    ]
+                },
+                { title: 'Zoho CRM', url: 'https://crm.zoho.in/crm/org60041934242/tab/Potentials/custom-view/950096000002215201/list?filter_id=950096000003222760&page=1', variant: 'dark', tooltip: 'For credentials contact Rishab' },
+            ],
+        },
+        {
+            id: 'walk-in-lead-management',
+            title: 'Walk In Lead Management',
+            icon: 'users',
+            accentColor: 'rose',
+            links: [
+                { title: 'Knowlarity IVR Login', url: '#', variant: 'dark', tooltip: 'For credentials contact Asma', isComingSoon: true },
+                { title: 'Limechat CRM Login', url: '#', variant: 'dark', isComingSoon: true },
+            ],
+        },
+
+        {
+            id: 'analytics',
+            title: 'Analytics',
+            icon: 'chart',
+            accentColor: 'dark',
+            links: [
+                { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark', isComingSoon: true },
+            ],
+        },
+    ],
+};

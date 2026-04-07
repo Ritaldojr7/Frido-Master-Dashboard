@@ -52,15 +52,16 @@
     pointer-events: none;
 }
 
-.sidebar__collapsed-logo {
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #f59e0b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    writing-mode: horizontal-tb;
+.sidebar__collapsed-logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 6px;
+    transition: transform var(--transition-fast);
+}
+
+.sidebar__collapsed-logo-img:active {
+    transform: scale(0.95);
 }
 
 /* ── Accent Line ── */
@@ -71,9 +72,9 @@
     width: 3px;
     height: calc(100% - 60px);
     background: linear-gradient(180deg, 
-        var(--accent-amber) 0%, 
-        rgba(245, 158, 11, 0.6) 50%,
-        rgba(245, 158, 11, 0.2) 100%
+        #FFD200 0%, 
+        rgba(255, 210, 0, 0.6) 50%,
+        rgba(255, 210, 0, 0.2) 100%
     );
     border-radius: 3px 0 0 3px;
     opacity: 1;
@@ -115,14 +116,11 @@
     padding: 24px 20px 20px;
 }
 
-.sidebar__brand {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 50%, #f59e0b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.sidebar__expanded-logo-img {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px;
 }
 
 /* ── Sidebar Nav ── */
@@ -240,6 +238,8 @@
     max-width: 1400px;
     margin: 0 auto;
 }
+
+
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {

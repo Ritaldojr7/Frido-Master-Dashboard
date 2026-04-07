@@ -22,7 +22,7 @@ const db = new Database(path.join(DATA_DIR, 'frido.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
-// ── Schema ──────────────────────────────────────────────
+// Schema
 db.exec(`
     CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -49,7 +49,7 @@ db.exec(`
     );
 `);
 
-// ── Seed default admin ──────────────────────────────────
+// Admin
 const adminExists = db.prepare('SELECT id FROM users WHERE role = ?').get('admin');
 if (!adminExists) {
     const { v4: uuid } = await import('uuid');

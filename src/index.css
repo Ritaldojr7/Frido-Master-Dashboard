@@ -86,6 +86,13 @@
   --scrollbar-track: #1e293b;
   --scrollbar-thumb: #334155;
   --scrollbar-thumb-hover: #475569;
+
+  --bg-page-gradient: none;
+  --card-dark-bg: rgba(0, 0, 0, 0.6);
+  --card-dark-border: rgba(255, 210, 0, 0.3);
+  --card-dark-text: #FFD200;
+  --card-dark-hover-bg: rgba(0, 0, 0, 0.85);
+  --card-dark-hover-border: #FFD200;
 }
 
 /* ── Light Theme ── */
@@ -128,6 +135,14 @@
   --scrollbar-track: #f1f5f9;
   --scrollbar-thumb: #cbd5e1;
   --scrollbar-thumb-hover: #94a3b8;
+
+  --bg-page-gradient: linear-gradient(to top, rgba(255, 210, 0, 0.7) 0%, rgba(255, 210, 0, 0) 100%);
+  --bg-gradient-height: 100px;
+  --card-dark-bg: rgba(255, 255, 255, 0.65);
+  --card-dark-border: rgba(255, 255, 255, 0.9);
+  --card-dark-text: #0f172a;
+  --card-dark-hover-bg: rgba(255, 255, 255, 0.95);
+  --card-dark-hover-border: #ffffff;
 }
 
 /* ── Global Reset ── */
@@ -148,6 +163,10 @@ html {
 body {
   font-family: var(--font-primary);
   background-color: var(--bg-primary);
+  background-image: var(--bg-page-gradient, none);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% var(--bg-gradient-height, 100%);
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;

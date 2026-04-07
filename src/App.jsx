@@ -13,10 +13,12 @@ import OnlineReputationManagement from './pages/OnlineReputationManagement';
 import FeedbackCustomerExperience from './pages/FeedbackCustomerExperience';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
+import StaffDashboard from './pages/StaffDashboard';
 import { ALL_ROLES, MANAGER_AND_ABOVE, ADMIN_ONLY } from './config/permissions';
 
 // Use HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
 const Router = DEMO_MODE ? HashRouter : BrowserRouter;
 
 function App() {
@@ -28,31 +30,37 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={
-                  <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
+                  isStaffApp 
+                    ? <RoleGuard roles={ALL_ROLES}><StaffDashboard /></RoleGuard>
+                    : <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
                 } />
-                <Route path="/inside-sales-india" element={
-                  <RoleGuard roles={MANAGER_AND_ABOVE}><InsideSalesIndia /></RoleGuard>
-                } />
-                <Route path="/inside-sales-middle-east" element={
-                  <RoleGuard roles={MANAGER_AND_ABOVE}><InsideSalesMiddleEast /></RoleGuard>
-                } />
-                <Route path="/experience-store" element={
-                  <RoleGuard roles={MANAGER_AND_ABOVE}><ExperienceStore /></RoleGuard>
-                } />
-                <Route path="/retention-calling" element={
-                  <RoleGuard roles={MANAGER_AND_ABOVE}><RetentionCalling /></RoleGuard>
-                } />
-                <Route path="/online-reputation-management" element={
-                  <RoleGuard roles={MANAGER_AND_ABOVE}><OnlineReputationManagement /></RoleGuard>
-                } />
-                <Route path="/feedback-customer-experience" element={
-                  <RoleGuard roles={MANAGER_AND_ABOVE}><FeedbackCustomerExperience /></RoleGuard>
-                } />
+                {!isStaffApp && (
+                  <>
+                    <Route path="/inside-sales-india" element={
+                      <RoleGuard roles={MANAGER_AND_ABOVE}><InsideSalesIndia /></RoleGuard>
+                    } />
+                    <Route path="/inside-sales-middle-east" element={
+                      <RoleGuard roles={MANAGER_AND_ABOVE}><InsideSalesMiddleEast /></RoleGuard>
+                    } />
+                    <Route path="/experience-store" element={
+                      <RoleGuard roles={MANAGER_AND_ABOVE}><ExperienceStore /></RoleGuard>
+                    } />
+                    <Route path="/retention-calling" element={
+                      <RoleGuard roles={MANAGER_AND_ABOVE}><RetentionCalling /></RoleGuard>
+                    } />
+                    <Route path="/online-reputation-management" element={
+                      <RoleGuard roles={MANAGER_AND_ABOVE}><OnlineReputationManagement /></RoleGuard>
+                    } />
+                    <Route path="/feedback-customer-experience" element={
+                      <RoleGuard roles={MANAGER_AND_ABOVE}><FeedbackCustomerExperience /></RoleGuard>
+                    } />
+                    <Route path="/admin" element={
+                      <RoleGuard roles={ADMIN_ONLY}><Admin /></RoleGuard>
+                    } />
+                  </>
+                )}
                 <Route path="/profile" element={
                   <RoleGuard roles={ALL_ROLES}><Profile /></RoleGuard>
-                } />
-                <Route path="/admin" element={
-                  <RoleGuard roles={ADMIN_ONLY}><Admin /></RoleGuard>
                 } />
                 <Route path="*" element={
                   <div style={{ textAlign: 'center', padding: '80px 20px' }}>

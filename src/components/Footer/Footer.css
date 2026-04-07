@@ -1,0 +1,131 @@
+/* =============================================
+   Footer — Global Footer
+   ============================================= */
+
+.footer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: auto;
+    font-family: var(--font-primary, sans-serif);
+    z-index: 10;
+    background: var(--bg-page-gradient);
+    background-size: 100% 70px;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    min-height: 60px;
+}
+
+.footer-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color, rgba(0, 0, 0, 0.1)), transparent);
+    opacity: 0.6;
+}
+
+/* ── Top Section ── */
+.footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-xl) var(--space-3xl);
+    background: transparent;
+}
+
+.footer-top-left,
+.footer-top-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.footer-top-right {
+    justify-content: flex-end;
+}
+
+.footer-top-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+}
+
+.footer-logo {
+    height: 180px;
+    /* Reduced from 400px to better fit the layout */
+    width: auto;
+    object-fit: contain;
+    margin-left: -15px;
+    /* Slight offset to align the actual 'f' in frido with the text below */
+}
+
+.footer-slogan {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.footer-socials {
+    display: flex;
+    gap: var(--space-lg);
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.social-link svg {
+    width: 20px;
+    height: 20px;
+}
+
+.social-link:hover {
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.footer-bottom {
+    display: flex;
+    padding: 0 var(--space-3xl) var(--space-xl);
+    justify-content: flex-start;
+}
+
+.footer-copyright {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    margin-top: -10px;
+    padding-left: 5px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .footer-top {
+        flex-direction: column;
+        gap: var(--space-xl);
+        text-align: center;
+        padding: var(--space-xl);
+    }
+
+    .footer-top-left,
+    .footer-top-right,
+    .footer-top-center {
+        justify-content: center;
+    }
+}

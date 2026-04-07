@@ -6,6 +6,8 @@ import SearchBar from '../SearchBar/SearchBar';
 import UserMenu from '../UserMenu/UserMenu';
 import { sidebarPermissions, ADMIN_ONLY } from '../../config/permissions';
 import './Layout.css';
+import fridoLogo from '../../assets/logo.png';
+import Footer from '../Footer/Footer';
 
 const navItems = [
     { path: '/', label: 'Dashboard', icon: 'M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z' },
@@ -22,6 +24,8 @@ const adminNavItem = {
     path: '/admin', label: 'User Management', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
 };
 
+const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
+
 export default function Layout({ children }) {
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -34,13 +38,15 @@ export default function Layout({ children }) {
     }, []);
 
     // Filter nav items by user role
-    const visibleNavItems = navItems.filter(item => {
+    const visibleNavItems = isStaffApp ? [
+        { path: '/', label: 'Staff Dashboard', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' }
+    ] : navItems.filter(item => {
         const allowed = sidebarPermissions[item.path];
         if (!allowed) return true;
         return user && allowed.includes(user.role);
     });
 
-    const showAdminNav = hasRole('admin');
+    const showAdminNav = !isStaffApp && hasRole('admin');
 
     return (
         <div className="layout">
@@ -52,13 +58,13 @@ export default function Layout({ children }) {
             >
                 {/* Collapsed state - just logo text */}
                 <div className="sidebar__collapsed">
-                    <span className="sidebar__collapsed-logo">frido</span>
+                    <img src={fridoLogo} alt="frido" className="sidebar__collapsed-logo-img" />
                 </div>
 
                 {/* Expanded state */}
                 <div className="sidebar__expanded">
                     <div className="sidebar__header">
-                        <span className="sidebar__brand">frido</span>
+                        <img src={fridoLogo} alt="frido" className="sidebar__expanded-logo-img" />
                     </div>
 
                     <nav className="sidebar__nav">
@@ -114,7 +120,7 @@ export default function Layout({ children }) {
                         <div className="header__search">
                             <SearchBar />
                         </div>
-                        <UserMenu />
+                        {!isStaffApp && <UserMenu />}
                     </div>
                 </header>
 
@@ -122,6 +128,7 @@ export default function Layout({ children }) {
                 <main className="main-content">
                     {children}
                 </main>
+                <Footer />
             </div>
         </div>
     );

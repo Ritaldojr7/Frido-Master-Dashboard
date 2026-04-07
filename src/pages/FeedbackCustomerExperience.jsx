@@ -35,11 +35,6 @@ export default function FeedbackCustomerExperience() {
                 ))}
             </div>
 
-            <footer className="subpage__footer">
-                <a href="https://www.myfrido.com" target="_blank" rel="noopener noreferrer">
-                    myfrido.com
-                </a>
-            </footer>
         </div>
     );
 }
