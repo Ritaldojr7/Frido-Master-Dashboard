@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
 import { ALL_ROLES, MANAGER_AND_ABOVE, ADMIN_ONLY } from './config/permissions';
+import { businessAnalyticsCategories } from './config/dashboardData';
 
 // Use HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -40,7 +41,13 @@ function App() {
                       <RoleGuard roles={ALL_ROLES}><Admin /></RoleGuard>
                     } />
                     <Route path="/business-analytics" element={
-                      <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
+                      <RoleGuard roles={ALL_ROLES}>
+                        <Dashboard 
+                          categories={businessAnalyticsCategories} 
+                          title="Business Analytics Dashboard"
+                          subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
+                        />
+                      </RoleGuard>
                     } />
                   </>
                 )}

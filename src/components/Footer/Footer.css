@@ -58,11 +58,11 @@
 
 .footer-logo {
     height: 180px;
-    /* Reduced from 400px to better fit the layout */
+
     width: auto;
     object-fit: contain;
     margin-left: -15px;
-    /* Slight offset to align the actual 'f' in frido with the text below */
+
 }
 
 .footer-slogan {

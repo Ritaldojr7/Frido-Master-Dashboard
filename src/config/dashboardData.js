@@ -452,3 +452,75 @@ export const staffExperienceStoreData = {
         },
     ],
 };
+
+// ─── Business Analytics Categories ───
+export const businessAnalyticsCategories = [
+    {
+        id: 'shopify-analytics',
+        title: 'Shopify Dashboard',
+        icon: 'store',
+        accentColor: 'emerald',
+        description: 'E-commerce performance and store analytics',
+        links: [
+            { 
+                title: 'Shopify Dashboard', 
+                variant: 'dark',
+                subOptions: [
+                    { title: 'Shopify Dashboard', url: 'https://analytics-dashboard-frontend-x2da.onrender.com/' }
+                ]
+            }
+        ],
+    },
+    {
+        id: 'fes-analytics',
+        title: 'Frido Experience Store',
+        icon: 'store',
+        accentColor: 'blue',
+        description: 'Retail stores and physical experience center metrics',
+        links: [
+            { 
+                title: 'Dashboard PB', 
+                variant: 'dark',
+                subOptions: [
+                    { title: 'FES - Retail Central', url: 'https://app.powerbi.com/groups/me/reports/c78d231e-d1f7-4929-ad97-94b18268bbfa/a2f9454d3ce364e35311?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&experience=power-bi' },
+                    { title: 'FES - DWM', url: 'https://app.powerbi.com/groups/db29aca0-aaea-4625-ade1-430eecbe06ae/reports/e2c0af62-bb6c-4484-946f-8dfa2d152ba9/2e745da33ddec0054198?experience=power-bi' }
+                ]
+            },
+            { 
+                title: 'Manual Slack', 
+                variant: 'dark',
+                subOptions: [
+                    { title: 'FES - DSR', url: 'https://myfrido.slack.com/archives/C0A6P3Z23TP' }
+                ]
+            }
+        ],
+    },
+    {
+        id: 'isd-analytics',
+        title: 'Inside Sales Department (NM)',
+        icon: 'sales',
+        accentColor: 'indigo',
+        description: 'Non-Mobility Inside Sales performance tracking',
+        links: [
+            { 
+                title: 'Dashboard PB', 
+                variant: 'dark',
+                subOptions: [
+                    { title: 'ISD NM India', url: 'https://app.powerbi.com/groups/me/reports/0984ce65-de9b-45f7-be27-63725fe3dbd4/a8003931256920724ade?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&experience=power-bi&bookmarkGuid=0e840b8d-047f-4e31-806d-8c6a7149a0d1' },
+                    { title: 'ISD NM Middle East', url: 'https://app.powerbi.com/groups/me/reports/d8a7c2e4-b55b-40f5-9c90-164afe97b427/a0885f75825d8cc3c3da?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&experience=power-bi&bookmarkGuid=8bb4cc56-8205-4451-9a9d-3425531d1cbf' }
+                ]
+            },
+            { 
+                title: 'Manual Slack', 
+                variant: 'dark',
+                subOptions: [
+                    { title: 'ISD NM India', url: 'https://myfrido.slack.com/archives/C086WCMMY7M' },
+                    { title: 'ISD NM Dubai', url: 'https://myfrido.slack.com/archives/C088SNW3UP6' }
+                ]
+            }
+        ],
+    },
+];
+
+
+

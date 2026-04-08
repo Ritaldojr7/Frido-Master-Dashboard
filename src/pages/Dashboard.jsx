@@ -2,7 +2,11 @@ import { dashboardCategories } from '../config/dashboardData';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
 import './Dashboard.css';
 
-export default function Dashboard() {
+export default function Dashboard({ 
+    categories = dashboardCategories, 
+    title = "Frido Master Dashboard",
+    subtitle = "Your central hub for all operational tools, dashboards, and resources"
+}) {
     return (
         <div className="dashboard">
             {/* Hero */}
@@ -10,22 +14,23 @@ export default function Dashboard() {
                 <div className="dashboard__hero-content">
                     <p className="dashboard__greeting">SAIYED ABDAL</p>
                     <h1 className="dashboard__title">
-                        Frido Master <span className="dashboard__title-accent">Dashboard</span>
+                        {title.split('Dashboard')[0]} <span className="dashboard__title-accent">Dashboard</span>
                     </h1>
                     <p className="dashboard__subtitle">
-                        Your central hub for all operational tools, dashboards, and resources
+                        {subtitle}
                     </p>
                 </div>
+
 
                 {/* Quick Stats */}
                 <div className="dashboard__stats">
                     <div className="dashboard__stat">
-                        <span className="dashboard__stat-number">{dashboardCategories.length}</span>
+                        <span className="dashboard__stat-number">{categories.length}</span>
                         <span className="dashboard__stat-label">CATEGORIES</span>
                     </div>
                     <div className="dashboard__stat">
                         <span className="dashboard__stat-number">
-                            {dashboardCategories.reduce((acc, cat) => acc + cat.links.length, 0)}
+                            {categories.reduce((acc, cat) => acc + cat.links.length, 0)}
                         </span>
                         <span className="dashboard__stat-label">TOOLS & LINKS</span>
                     </div>
@@ -38,7 +43,7 @@ export default function Dashboard() {
 
             {/* Sections */}
             <div className="dashboard__sections">
-                {dashboardCategories.map((category, idx) => (
+                {categories.map((category, idx) => (
                     <SectionGroup
                         key={category.id}
                         title={category.title}
