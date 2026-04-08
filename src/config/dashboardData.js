@@ -106,9 +106,9 @@ export const insideSalesIndiaData = {
             icon: 'ticket',
             accentColor: 'amber',
             links: [
-                { title: 'CS Ticket', url: '#', variant: 'dark' },
+                { title: 'CS Ticket', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark' },
                 { title: 'Bulk Order', url: '#', variant: 'amber' },
-                { title: 'GST Form', url: '#', variant: 'dark' },
+                { title: 'GST Form', url: 'https://form.asana.com/?k=aRlrsFCkrJRDTUdLHizQ1g&d=1207389811595677', variant: 'dark' },
             ],
         },
         {
@@ -189,7 +189,7 @@ export const insideSalesMiddleEastData = {
             icon: 'ticket',
             accentColor: 'amber',
             links: [
-                { title: 'CS Form', url: '#', variant: 'dark' },
+                { title: 'CS Form', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark' },
             ],
         },
         {
@@ -215,8 +215,8 @@ export const experienceStoreData = {
             icon: 'ticket',
             accentColor: 'amber',
             links: [
-                { title: 'Raise a CS Ticket', url: '#', variant: 'dark' },
-                { title: 'Request a GST Bill', url: '#', variant: 'dark' },
+                { title: 'Raise a CS Ticket', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark' },
+                { title: 'Request a GST Bill', url: 'https://form.asana.com/?k=aRlrsFCkrJRDTUdLHizQ1g&d=1207389811595677', variant: 'dark' },
                 { title: 'Raise a Custom Insole Ticket', url: '#', variant: 'dark' },
                 { title: 'Raise a Custom MT Ticket', url: '#', variant: 'dark' },
             ],
@@ -367,8 +367,8 @@ export const staffExperienceStoreData = {
             icon: 'ticket',
             accentColor: 'amber',
             links: [
-                { title: 'Raise a Customer Success Ticket', url: 'https://form.asana.com/?k=64rN-eNOBO07gv2i9WO_7A&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' },
-                { title: 'Raise a GST Bill', url: 'https://form.asana.com/?k=SrZC3vuVjp_Au2NvDfNftA&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' }
+                { title: 'Raise a Customer Success Ticket', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark', tooltip: 'POC : Shernyl' },
+                { title: 'Raise a GST Bill', url: 'https://form.asana.com/?k=aRlrsFCkrJRDTUdLHizQ1g&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' }
             ],
         },
         {
