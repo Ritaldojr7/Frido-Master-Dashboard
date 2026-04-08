@@ -15,7 +15,7 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
 import { ALL_ROLES, MANAGER_AND_ABOVE, ADMIN_ONLY } from './config/permissions';
-import { businessAnalyticsCategories } from './config/dashboardData';
+import { businessAnalyticsCategories, feedbackCustomerExperienceData } from './config/dashboardData';
 
 // Use HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -46,6 +46,15 @@ function App() {
                           categories={businessAnalyticsCategories} 
                           title="Business Analytics Dashboard"
                           subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
+                        />
+                      </RoleGuard>
+                    } />
+                    <Route path="/feedback-department" element={
+                      <RoleGuard roles={ALL_ROLES}>
+                        <Dashboard 
+                          categories={feedbackCustomerExperienceData.sections} 
+                          title="Feedback Department Dashboard"
+                          subtitle="Monitor customer feedback and experience metrics"
                         />
                       </RoleGuard>
                     } />

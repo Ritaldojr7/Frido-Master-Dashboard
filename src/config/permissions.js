@@ -34,6 +34,7 @@ export const routePermissions = {
     '/admin': ADMIN_ONLY,
     '/retail-admin': ALL_ROLES,
     '/business-analytics': ALL_ROLES,
+    '/feedback-department': ALL_ROLES,
 };
 
 /**
@@ -50,6 +51,7 @@ export const sidebarPermissions = {
     '/admin': ADMIN_ONLY,
     '/retail-admin': ALL_ROLES,
     '/business-analytics': ALL_ROLES,
+    '/feedback-department': ALL_ROLES,
 };
 
 /**
