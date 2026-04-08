@@ -34,6 +34,16 @@ function App() {
                     ? <RoleGuard roles={ALL_ROLES}><StaffDashboard /></RoleGuard>
                     : <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
                 } />
+                {isStaffApp && (
+                  <>
+                    <Route path="/retail-admin" element={
+                      <RoleGuard roles={ALL_ROLES}><Admin /></RoleGuard>
+                    } />
+                    <Route path="/business-analytics" element={
+                      <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
+                    } />
+                  </>
+                )}
                 {!isStaffApp && (
                   <>
                     <Route path="/inside-sales-india" element={
