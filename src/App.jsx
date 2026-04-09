@@ -14,6 +14,7 @@ import FeedbackCustomerExperience from './pages/FeedbackCustomerExperience';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
+import FeedbackDepartment from './pages/FeedbackDepartment';
 import { ALL_ROLES, MANAGER_AND_ABOVE, ADMIN_ONLY } from './config/permissions';
 import { businessAnalyticsCategories, feedbackCustomerExperienceData } from './config/dashboardData';
 
@@ -51,11 +52,7 @@ function App() {
                     } />
                     <Route path="/feedback-department" element={
                       <RoleGuard roles={ALL_ROLES}>
-                        <Dashboard 
-                          categories={feedbackCustomerExperienceData.sections} 
-                          title="Feedback Department Dashboard"
-                          subtitle="Monitor customer feedback and experience metrics"
-                        />
+                        <FeedbackDepartment />
                       </RoleGuard>
                     } />
                   </>

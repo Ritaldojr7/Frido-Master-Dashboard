@@ -380,6 +380,7 @@ export const staffExperienceStoreData = {
                 { title: 'Raise Maintainence Ticket', url: 'https://form.asana.com/?k=T88A9GJZzo-RaSyJDacLYw&d=1207389811595677', variant: 'dark' },
                 { title: 'Raise a Inventory Request', url: 'https://form.asana.com/?k=2mNtWIMKNygDDxCSPiYbNQ&d=1207389811595677', variant: 'dark' },
                 { title: 'Raise a Reimbursement Request (New Joinees)', url: 'https://form.asana.com/?k=i-p9CI7ecwOX5u_8Hdz3tA&d=1207389811595677', variant: 'dark' },
+                { title: 'QC Issues : Reverse Pickup', url: 'https://form.asana.com/?k=2mNtWIMKNygDDxCSPiYbNQ&d=1207389811595677', variant: 'dark' },
                 { title: 'Raise a Prebooking Request', url: '#', variant: 'dark', isComingSoon: true },
             ],
         },
@@ -467,6 +468,22 @@ export const businessAnalyticsCategories = [
                 variant: 'dark',
                 subOptions: [
                     { title: 'Shopify Dashboard', url: 'https://analytics-dashboard-frontend-x2da.onrender.com/' }
+                ]
+            }
+        ],
+    },
+    {
+        id: 'lost-revenue-dashboard',
+        title: 'Lost Revenue Dashboard',
+        icon: 'chart',
+        accentColor: 'amber',
+        description: 'Revenue leakage insights and missed opportunity tracking',
+        links: [
+            {
+                title: 'Lost Revenue Dashboard',
+                variant: 'dark',
+                subOptions: [
+                    { title: 'Lost Revenue Dashboard', url: 'https://mridulsharma27.github.io/lost-revenue-dashboard/' }
                 ]
             }
         ],
