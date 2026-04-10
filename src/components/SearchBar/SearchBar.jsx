@@ -7,60 +7,99 @@ import {
     experienceStoreData,
     retentionCallingData,
     onlineReputationManagementData,
-    feedbackCustomerExperienceData,
+    businessAnalyticsCategories,
+    staffExperienceStoreData,
 } from '../../config/dashboardData';
 import './SearchBar.css';
 
-// Flatten all links for search
-function getAllLinks() {
+const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
+
+function addLinkWithVariants(links, link, category) {
+    if (link.subOptions?.length) {
+        link.subOptions.forEach((subOption) => {
+            links.push({
+                title: subOption.title,
+                url: subOption.url,
+                category
+            });
+        });
+        return;
+    }
+
+    links.push({ ...link, category });
+}
+
+// Flatten all links for search in non-staff app
+function getDefaultAppLinks() {
     const links = [];
 
     // Dashboard categories
-    dashboardCategories.forEach(cat => {
-        cat.links.forEach(link => {
-            links.push({ ...link, category: cat.title });
+    dashboardCategories.forEach((cat) => {
+        cat.links.forEach((link) => {
+            addLinkWithVariants(links, link, cat.title);
         });
     });
 
     // Inside Sales India
-    insideSalesIndiaData.sections.forEach(sec => {
-        sec.links.forEach(link => {
-            links.push({ ...link, category: `India → ${sec.title}` });
+    insideSalesIndiaData.sections.forEach((sec) => {
+        sec.links.forEach((link) => {
+            addLinkWithVariants(links, link, `India → ${sec.title}`);
         });
     });
 
     // Inside Sales Middle East
-    insideSalesMiddleEastData.sections.forEach(sec => {
-        sec.links.forEach(link => {
-            links.push({ ...link, category: `Middle East → ${sec.title}` });
+    insideSalesMiddleEastData.sections.forEach((sec) => {
+        sec.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Middle East → ${sec.title}`);
         });
     });
 
     // Experience Store
-    experienceStoreData.sections.forEach(sec => {
-        sec.links.forEach(link => {
-            links.push({ ...link, category: `Exp Store → ${sec.title}` });
+    experienceStoreData.sections.forEach((sec) => {
+        sec.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Exp Store → ${sec.title}`);
         });
     });
 
     // Retention Calling
-    retentionCallingData.sections.forEach(sec => {
-        sec.links.forEach(link => {
-            links.push({ ...link, category: `Retention → ${sec.title}` });
+    retentionCallingData.sections.forEach((sec) => {
+        sec.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Retention → ${sec.title}`);
         });
     });
 
     // Online Reputation Management
-    onlineReputationManagementData.sections.forEach(sec => {
-        sec.links.forEach(link => {
-            links.push({ ...link, category: `ORM → ${sec.title}` });
+    onlineReputationManagementData.sections.forEach((sec) => {
+        sec.links.forEach((link) => {
+            addLinkWithVariants(links, link, `ORM → ${sec.title}`);
         });
     });
 
     // Feedback & Customer Experience
-    feedbackCustomerExperienceData.sections.forEach(sec => {
-        sec.links.forEach(link => {
-            links.push({ ...link, category: `Feedback → ${sec.title}` });
+    feedbackCustomerExperienceData.sections.forEach((sec) => {
+        sec.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Feedback → ${sec.title}`);
+        });
+    });
+
+    return links;
+}
+
+// Flatten links for staff app tabs (button content only)
+function getStaffAppLinks() {
+    const links = [];
+
+    // Retail - Staff: include section button contents only
+    staffExperienceStoreData.sections.forEach((section) => {
+        section.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
+        });
+    });
+
+    // Business Analytics: include category button contents only
+    businessAnalyticsCategories.forEach((categoryGroup) => {
+        categoryGroup.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Business Analytics → ${categoryGroup.title}`);
         });
     });
 
@@ -74,7 +113,7 @@ export default function SearchBar() {
     const inputRef = useRef(null);
     const wrapperRef = useRef(null);
     const navigate = useNavigate();
-    const allLinks = useRef(getAllLinks());
+    const allLinks = useRef(isStaffApp ? getStaffAppLinks() : getDefaultAppLinks());
 
     // Keyboard shortcut Ctrl+K
     useEffect(() => {
