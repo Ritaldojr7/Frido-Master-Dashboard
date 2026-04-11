@@ -7,6 +7,7 @@ import {
     experienceStoreData,
     retentionCallingData,
     onlineReputationManagementData,
+    feedbackCustomerExperienceData,
     businessAnalyticsCategories,
     staffExperienceStoreData,
     retailAdminData,
