@@ -9,6 +9,7 @@ import {
     onlineReputationManagementData,
     businessAnalyticsCategories,
     staffExperienceStoreData,
+    retailAdminData,
 } from '../../config/dashboardData';
 import './SearchBar.css';
 
@@ -93,6 +94,13 @@ function getStaffAppLinks() {
     staffExperienceStoreData.sections.forEach((section) => {
         section.links.forEach((link) => {
             addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
+        });
+    });
+
+    // Retail - Admin: include section button contents only
+    retailAdminData.sections.forEach((section) => {
+        section.links.forEach((link) => {
+            addLinkWithVariants(links, link, `Retail - Admin → ${section.title}`);
         });
     });
 

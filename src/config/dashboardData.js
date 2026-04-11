@@ -358,7 +358,7 @@ export const feedbackCustomerExperienceData = {
 };
 // ─── Staff Experience Store Sections ───
 export const staffExperienceStoreData = {
-    title: 'Retail Sales and Operation',
+    title: 'Retail Sales and Operations',
     backRoute: '', // No back route for staff since this is their homepage
     sections: [
         {
@@ -400,18 +400,18 @@ export const staffExperienceStoreData = {
             icon: 'login',
             accentColor: 'emerald',
             links: [
-                { 
-                    title: 'POS Login', 
-                    variant: 'dark', 
+                {
+                    title: 'POS Login',
+                    variant: 'dark',
                     tooltip: 'For credentials contact Arsh',
                     subOptions: [
                         { title: 'Mobility', url: 'https://posx-frido-mobility.devxcommerce.com/orders' },
                         { title: 'Non-Mobility', url: 'https://frido.devxcommerce.com/' }
                     ]
                 },
-                { 
-                    title: 'Amply SOP Login', 
-                    variant: 'dark', 
+                {
+                    title: 'Amply SOP Login',
+                    variant: 'dark',
                     tooltip: 'For credentials contact Arsh',
                     subOptions: [
                         { title: 'Login Dashboard', url: 'https://dashboard.getamply.co/login/?next=/amply/' },
@@ -420,9 +420,9 @@ export const staffExperienceStoreData = {
                     ]
                 },
                 { title: 'LMS Login', url: '#', variant: 'dark' },
-                { 
-                    title: 'GreyT HR Login', 
-                    variant: 'dark', 
+                {
+                    title: 'GreyT HR Login',
+                    variant: 'dark',
                     tooltip: 'For credentials contact Tanmay',
                     subOptions: [
                         { title: 'Login', url: 'https://arcatron-hrms.greythr.com/uas/portal/auth/login?login_challenge=hR8XiyqiYBxENSQJYJzk1NNXROKeCb_W1CB3fgz4luTNhF_fMbJBKTW9MrZYaYwtNLITIDLfbq_3IH-LNvvOy0skdNw-IkYYthE7RwB-MwyZHLG1dbA58GOdITScNn0cetk0pncqNovCLrg6G5_bXd3onboYpFt5giqaKY75_oCKxNj_c5zyU80Df1Tnllo-7HEv7j0OjIPAZtTM9iLI68ddJ_gEgQA9IEID1eC7Vb6y0dKiN5czu_-jnkozGVafSyX0gMuIK-SSLsm4r8hRKrlGiw_C2uK4rTH39v1cVGyVqGb02XuBMjgMYttRzrgtSAX4jKNE4dJwGzyTEZtkB9bxmf6GDWPXfu9kYYZJnwjXubiVI0j7YfEyYebsLef0QxnmT7HXGfEXsGbNErhxp2jp7w6EeryFgFqVC6IjpkfBhyg_yZh1pB3Nr5uqfXd02RmOSdXqobXvJ7t8ZJXdG3rcL_IIU9kHwXjshL2olyaMAyFQWLhLuBSNkI4oSNgVaydkI8eF1CnIlBGPgSvPtD7rATCA9bReNNf8Fe9s25QjCAFtD2chxjNPrHek4KH4vY1-DCcw_mTGeGX-p6L43shKmq3o_zsGgwAYJ7QzFpT4WC34s_dEyjx_40gIGsNMzo7xL8isNpOYFXTd2NRQamoxkn-Z7A5qoPpQMGY_stLx3nMFW8J7TQexIv_GYfE7fDGBta4vjQ7ZGhuH4_THJeA1MX-yFRwQJUUcGGm0nPb7_LrATZPfnY7NTPB77sD0rDVAaWlrvgUXk5kXaxrsi8pbUsisca1yl0SR7I3JZ2hKQrQnyrPvLFhEeC_jiMKFtmVAUVtYJujs-QmjVg9x7G3vru5iSYsmarM5UQnyxodf0LoRaUUDxhxEEOzjBRPgb0cEJnNamtCk96xDZTRvk_XHCI2mmMYcsUx_irBd3BrznylFQj_1WD46wM_q0JAloZElkpgg-PV69eYuTSA5Sr-33gS8FHuudyf5ponnLP4HG2lCXZaUdA52JOUukUAFGx5BJ0o4lo2u11lu6rdUNWwIQNA-lEiZIH0LNYYS_DIusY3ui5YNU0oFvbGuyAaa9OCtYtOli2NKKGC33rxLKcfpCv_dM23rlNx9Xs0dM3runRj9FpZ3Tb7On4TzLUMPLYFT7qDl6pOG628WXG21DiIXQo53u8ZSEk5NwlVVwndT_r-34FYsUU8miRZYLS1DtDHVdgmAAlmk17S6EO2tx7_DXMtdRK-5_3cPVWIn_sQxLoFU58Njo_aUTCASu1rTvGdsD7cMBQ6jgaPbLCPv7pvMDZqwA0z6EgBg-2-fSp6BnSBPxWQKTEGRlQkoAMktjK3TcNJfCGTxQB45p0AWFwo_Kc98uOcGVinj2X_XUVH1HbrQmcC8Blv0nlI%3D' }
@@ -454,6 +454,85 @@ export const staffExperienceStoreData = {
     ],
 };
 
+// ─── Retail Admin Sections ───
+export const retailAdminData = {
+    title: 'Retail Admin Operations',
+    backRoute: '',
+    sections: [
+        {
+            id: 'after-sales-support',
+            title: 'After Sales Support',
+            icon: 'ticket',
+            accentColor: 'amber',
+            links: [
+                { title: 'Raise a Customer Success Ticket', url: '#', variant: 'dark', tooltip: 'POC : Shernyl | Redirects to Slack workflow' },
+                { title: 'Request a GST Bill', url: '#', variant: 'dark', tooltip: 'POC : Shernyl' },
+            ],
+        },
+        {
+            id: 'crm-logins',
+            title: 'CRM & Logins',
+            icon: 'login',
+            accentColor: 'emerald',
+            links: [
+                {
+                    title: 'POS Login',
+                    variant: 'dark',
+                    tooltip: 'For credentials contact Arsh',
+                    subOptions: [
+                        { title: 'Mobility', url: '#' },
+                        { title: 'Non-Mobility', url: '#' }
+                    ]
+                },
+                {
+                    title: 'Amply SOP Login',
+                    variant: 'dark',
+                    tooltip: 'For credentials contact Arsh',
+                    subOptions: [
+                        { title: 'Login Dashboard', url: '#' },
+                        { title: 'Install Android', url: '#' },
+                        { title: 'Install iOS', url: '#' }
+                    ]
+                },
+                { title: 'LMS Login', url: '#', variant: 'dark' },
+                {
+                    title: 'GreyT HR Login',
+                    variant: 'dark',
+                    tooltip: 'For credentials contact Tanmay',
+                    subOptions: [
+                        { title: 'Login', url: '#' }
+                    ]
+                },
+                { title: 'Zoho CRM', url: '#', variant: 'dark', tooltip: 'For credentials contact Rishab' },
+                { title: 'Frido Internal Tech', url: '#', variant: 'dark' },
+                { title: 'Wilyer CMS', url: '#', variant: 'dark' },
+                { title: 'Razorpay Bill Me', url: '#', variant: 'dark' },
+                { title: 'ES – Customer Facing', url: '#', variant: 'dark' },
+            ],
+        },
+        {
+            id: 'data-analytics',
+            title: 'Data & Analytics',
+            icon: 'chart',
+            accentColor: 'dark',
+            links: [
+                { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark' },
+                { title: 'Sales Performance Tracker', url: '#', variant: 'dark' },
+            ],
+        },
+        {
+            id: 'pre-booking',
+            title: 'Pre Booking',
+            icon: 'store',
+            accentColor: 'emerald',
+            links: [
+                { title: 'Out of Stock / Prebooking Form', url: '#', variant: 'dark' },
+                { title: 'Chair Waitlist', url: '#', variant: 'dark' },
+            ],
+        },
+    ],
+};
+
 // ─── Business Analytics Categories ───
 export const businessAnalyticsCategories = [
     {
@@ -463,11 +542,27 @@ export const businessAnalyticsCategories = [
         accentColor: 'emerald',
         description: 'E-commerce performance and store analytics',
         links: [
-            { 
-                title: 'Shopify Dashboard', 
+            {
+                title: 'Shopify Dashboard',
                 variant: 'dark',
                 subOptions: [
                     { title: 'Shopify Dashboard', url: 'https://analytics-dashboard-frontend-x2da.onrender.com/' }
+                ]
+            }
+        ],
+    },
+    {
+        id: 'product-ranking-dashboard',
+        title: 'Product Ranking Dashboard',
+        icon: 'chart',
+        accentColor: 'purple',
+        description: 'Product performance rankings and competitive analysis',
+        links: [
+            {
+                title: 'Product Ranking',
+                variant: 'dark',
+                subOptions: [
+                    { title: 'Product Ranking', url: 'https://app.powerbi.com/groups/db29aca0-aaea-4625-ade1-430eecbe06ae/reports/27899055-db8e-47f6-8e4b-8dcb3ee0be4e?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&pbi_source=linkShare&bookmarkGuid=49175725-8504-4fd2-8cb1-e62e4e8cecdc' }
                 ]
             }
         ],
@@ -495,16 +590,16 @@ export const businessAnalyticsCategories = [
         accentColor: 'blue',
         description: 'Retail stores and physical experience center metrics',
         links: [
-            { 
-                title: 'Dashboard PB', 
+            {
+                title: 'Dashboard PB',
                 variant: 'dark',
                 subOptions: [
                     { title: 'FES - Retail Central', url: 'https://app.powerbi.com/groups/me/reports/c78d231e-d1f7-4929-ad97-94b18268bbfa/a2f9454d3ce364e35311?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&experience=power-bi' },
                     { title: 'FES - DWM', url: 'https://app.powerbi.com/groups/db29aca0-aaea-4625-ade1-430eecbe06ae/reports/e2c0af62-bb6c-4484-946f-8dfa2d152ba9/2e745da33ddec0054198?experience=power-bi' }
                 ]
             },
-            { 
-                title: 'Manual Slack', 
+            {
+                title: 'Manual Slack',
                 variant: 'dark',
                 subOptions: [
                     { title: 'FES - DSR', url: 'https://myfrido.slack.com/archives/C0A6P3Z23TP' }
@@ -519,16 +614,16 @@ export const businessAnalyticsCategories = [
         accentColor: 'indigo',
         description: 'Non-Mobility Inside Sales performance tracking',
         links: [
-            { 
-                title: 'Dashboard PB', 
+            {
+                title: 'Dashboard PB',
                 variant: 'dark',
                 subOptions: [
                     { title: 'ISD NM India', url: 'https://app.powerbi.com/groups/me/reports/0984ce65-de9b-45f7-be27-63725fe3dbd4/a8003931256920724ade?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&experience=power-bi&bookmarkGuid=0e840b8d-047f-4e31-806d-8c6a7149a0d1' },
                     { title: 'ISD NM Middle East', url: 'https://app.powerbi.com/groups/me/reports/d8a7c2e4-b55b-40f5-9c90-164afe97b427/a0885f75825d8cc3c3da?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&experience=power-bi&bookmarkGuid=8bb4cc56-8205-4451-9a9d-3425531d1cbf' }
                 ]
             },
-            { 
-                title: 'Manual Slack', 
+            {
+                title: 'Manual Slack',
                 variant: 'dark',
                 subOptions: [
                     { title: 'ISD NM India', url: 'https://myfrido.slack.com/archives/C086WCMMY7M' },

@@ -1,6 +1,46 @@
+import React, { useState, useEffect } from 'react';
 import { dashboardCategories } from '../config/dashboardData';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
 import './Dashboard.css';
+
+const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const [index, setIndex] = useState(0);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    useEffect(() => {
+        let timeout;
+
+        if (!isDeleting && index < text.length) {
+            // Typing characters
+            timeout = setTimeout(() => {
+                setDisplayedText((prev) => prev + text[index]);
+                setIndex((prev) => prev + 1);
+            }, speed);
+        } else if (isDeleting && index > 0) {
+            // Deleting characters
+            timeout = setTimeout(() => {
+                setDisplayedText((prev) => prev.slice(0, -1));
+                setIndex((prev) => prev - 1);
+            }, speed / 2);
+        } else if (index === text.length && !isDeleting) {
+            // Pause before starting to delete
+            timeout = setTimeout(() => setIsDeleting(true), pause);
+        } else if (index === 0 && isDeleting) {
+            // Reset to typing
+            setIsDeleting(false);
+        }
+
+        return () => clearTimeout(timeout);
+    }, [index, text, speed, isDeleting, pause]);
+
+    return (
+        <span className="typewriter">
+            {displayedText}
+            <span className="typewriter-cursor">|</span>
+        </span>
+    );
+};
 
 export default function Dashboard({ 
     categories = dashboardCategories, 
@@ -12,9 +52,8 @@ export default function Dashboard({
             {/* Hero */}
             <div className="dashboard__hero animate-fade-in-up">
                 <div className="dashboard__hero-content">
-                    <p className="dashboard__greeting">SAIYED ABDAL</p>
                     <h1 className="dashboard__title">
-                        {title.split('Dashboard')[0]} <span className="dashboard__title-accent">Dashboard</span>
+                        <Typewriter text={title} speed={70} />
                     </h1>
                     <p className="dashboard__subtitle">
                         {subtitle}

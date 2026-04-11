@@ -52,21 +52,25 @@
     z-index: 1;
 }
 
-.dashboard__greeting {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--accent-amber);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: var(--space-sm);
-}
-
 .dashboard__title {
     font-size: clamp(28px, 4vw, 42px);
     font-weight: 900;
     letter-spacing: -1px;
     line-height: 1.1;
     margin-bottom: var(--space-md);
+    min-height: 1.2em;
+}
+
+.dashboard .typewriter-cursor {
+    color: var(--accent-amber);
+    font-style: normal;
+    margin-left: 2px;
+    animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
 }
 
 .dashboard__title-accent {
