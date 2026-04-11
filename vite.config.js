@@ -4,11 +4,12 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
+  // Load env file based on `mode`. Priority: process.env > env files
   const env = loadEnv(mode, process.cwd(), '');
   
-  const isGitHubPages = env.GITHUB_PAGES === 'true';
-  const repoName = env.REPO_NAME || 'Frido-Master-Dashboard';
-  const isStaffApp = env.VITE_APP_TYPE === 'STAFF';
+  const isGitHubPages = process.env.GITHUB_PAGES === 'true' || env.GITHUB_PAGES === 'true';
+  const repoName = process.env.REPO_NAME || env.REPO_NAME || 'Frido Master Dashboard';
+  const isStaffApp = process.env.VITE_APP_TYPE === 'STAFF' || env.VITE_APP_TYPE === 'STAFF';
 
   return {
     base: isGitHubPages 

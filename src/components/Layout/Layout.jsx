@@ -49,7 +49,9 @@ export default function Layout({ children }) {
     const visibleNavItems = (isStaffApp ? staffNavItems : navItems).filter(item => {
         const allowed = sidebarPermissions[item.path];
         if (!allowed) return true;
-        return user && allowed.includes(user.role);
+        // Safety check: if user is not yet loaded, hide restricted items instead of crashing
+        if (!user) return false;
+        return allowed.includes(user.role);
     });
 
     const showAdminNav = !isStaffApp && hasRole('admin');
