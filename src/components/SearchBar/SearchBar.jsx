@@ -1,20 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    dashboardCategories,
-    insideSalesIndiaData,
-    insideSalesMiddleEastData,
-    experienceStoreData,
-    retentionCallingData,
-    onlineReputationManagementData,
-    feedbackCustomerExperienceData,
     businessAnalyticsCategories,
     staffExperienceStoreData,
     retailAdminData,
 } from '../../config/dashboardData';
 import './SearchBar.css';
-
-const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
 
 function addLinkWithVariants(links, link, category) {
     if (link.subOptions?.length) {
@@ -31,81 +22,22 @@ function addLinkWithVariants(links, link, category) {
     links.push({ ...link, category });
 }
 
-// Flatten all links for search in non-staff app
-function getDefaultAppLinks() {
+/** Search index: Retail - Staff, Retail - Admin, and Business Analytics tool links only */
+function getAppSearchLinks() {
     const links = [];
 
-    // Dashboard categories
-    dashboardCategories.forEach((cat) => {
-        cat.links.forEach((link) => {
-            addLinkWithVariants(links, link, cat.title);
-        });
-    });
-
-    // Inside Sales India
-    insideSalesIndiaData.sections.forEach((sec) => {
-        sec.links.forEach((link) => {
-            addLinkWithVariants(links, link, `India → ${sec.title}`);
-        });
-    });
-
-    // Inside Sales Middle East
-    insideSalesMiddleEastData.sections.forEach((sec) => {
-        sec.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Middle East → ${sec.title}`);
-        });
-    });
-
-    // Experience Store
-    experienceStoreData.sections.forEach((sec) => {
-        sec.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Exp Store → ${sec.title}`);
-        });
-    });
-
-    // Retention Calling
-    retentionCallingData.sections.forEach((sec) => {
-        sec.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Retention → ${sec.title}`);
-        });
-    });
-
-    // Online Reputation Management
-    onlineReputationManagementData.sections.forEach((sec) => {
-        sec.links.forEach((link) => {
-            addLinkWithVariants(links, link, `ORM → ${sec.title}`);
-        });
-    });
-
-    // Feedback & Customer Experience
-    feedbackCustomerExperienceData.sections.forEach((sec) => {
-        sec.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Feedback → ${sec.title}`);
-        });
-    });
-
-    return links;
-}
-
-// Flatten links for staff app tabs (button content only)
-function getStaffAppLinks() {
-    const links = [];
-
-    // Retail - Staff: include section button contents only
     staffExperienceStoreData.sections.forEach((section) => {
         section.links.forEach((link) => {
             addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
         });
     });
 
-    // Retail - Admin: include section button contents only
     retailAdminData.sections.forEach((section) => {
         section.links.forEach((link) => {
             addLinkWithVariants(links, link, `Retail - Admin → ${section.title}`);
         });
     });
 
-    // Business Analytics: include category button contents only
     businessAnalyticsCategories.forEach((categoryGroup) => {
         categoryGroup.links.forEach((link) => {
             addLinkWithVariants(links, link, `Business Analytics → ${categoryGroup.title}`);
@@ -122,7 +54,7 @@ export default function SearchBar() {
     const inputRef = useRef(null);
     const wrapperRef = useRef(null);
     const navigate = useNavigate();
-    const allLinks = useRef(isStaffApp ? getStaffAppLinks() : getDefaultAppLinks());
+    const allLinks = useRef(getAppSearchLinks());
 
     // Keyboard shortcut Ctrl+K
     useEffect(() => {

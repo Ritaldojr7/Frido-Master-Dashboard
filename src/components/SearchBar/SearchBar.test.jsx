@@ -32,8 +32,8 @@ describe('SearchBar', () => {
   it('shows results when searching for existing term', () => {
     renderSearchBar();
     const input = screen.getByPlaceholderText(/search tools & links/i);
-    fireEvent.change(input, { target: { value: 'India' } });
-    expect(screen.getByText('Inside Sales Team India')).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: 'GST' } });
+    expect(screen.getByText('Raise a GST Bill')).toBeInTheDocument();
   });
 
   it('shows no results message when search has no matches', () => {

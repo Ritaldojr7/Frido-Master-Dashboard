@@ -1,23 +1,17 @@
-import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import AuthGate from './components/AuthGate/AuthGate';
 import RoleGuard from './components/RoleGuard/RoleGuard';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard';
-import InsideSalesIndia from './pages/InsideSalesIndia';
-import InsideSalesMiddleEast from './pages/InsideSalesMiddleEast';
-import ExperienceStore from './pages/ExperienceStore';
-import RetentionCalling from './pages/RetentionCalling';
-import OnlineReputationManagement from './pages/OnlineReputationManagement';
-import FeedbackCustomerExperience from './pages/FeedbackCustomerExperience';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
 import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
-import { ALL_ROLES, MANAGER_AND_ABOVE, ADMIN_ONLY } from './config/permissions';
-import { businessAnalyticsCategories, feedbackCustomerExperienceData } from './config/dashboardData';
+import { ALL_ROLES, ADMIN_ONLY } from './config/permissions';
+import { businessAnalyticsCategories } from './config/dashboardData';
 
 // Used HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -35,7 +29,7 @@ function App() {
                 <Route path="/" element={
                   isStaffApp
                     ? <RoleGuard roles={ALL_ROLES}><StaffDashboard /></RoleGuard>
-                    : <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
+                    : <Navigate to="/retail-staff" replace />
                 } />
                 {isStaffApp && (
                   <>
@@ -60,24 +54,6 @@ function App() {
                 )}
                 {!isStaffApp && (
                   <>
-                    <Route path="/inside-sales-india" element={
-                      <RoleGuard roles={MANAGER_AND_ABOVE}><InsideSalesIndia /></RoleGuard>
-                    } />
-                    <Route path="/inside-sales-middle-east" element={
-                      <RoleGuard roles={MANAGER_AND_ABOVE}><InsideSalesMiddleEast /></RoleGuard>
-                    } />
-                    <Route path="/experience-store" element={
-                      <RoleGuard roles={MANAGER_AND_ABOVE}><ExperienceStore /></RoleGuard>
-                    } />
-                    <Route path="/retention-calling" element={
-                      <RoleGuard roles={MANAGER_AND_ABOVE}><RetentionCalling /></RoleGuard>
-                    } />
-                    <Route path="/online-reputation-management" element={
-                      <RoleGuard roles={MANAGER_AND_ABOVE}><OnlineReputationManagement /></RoleGuard>
-                    } />
-                    <Route path="/feedback-customer-experience" element={
-                      <RoleGuard roles={MANAGER_AND_ABOVE}><FeedbackCustomerExperience /></RoleGuard>
-                    } />
                     <Route path="/admin" element={
                       <RoleGuard roles={ADMIN_ONLY}><Admin /></RoleGuard>
                     } />
