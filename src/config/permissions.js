@@ -32,9 +32,10 @@ export const routePermissions = {
     '/feedback-customer-experience': MANAGER_AND_ABOVE,
     '/profile': ALL_ROLES,
     '/admin': ADMIN_ONLY,
-    '/retail-admin': ALL_ROLES,
-    '/business-analytics': ALL_ROLES,
-    '/feedback-department': ALL_ROLES,
+    '/retail-admin': ADMIN_ONLY,
+    '/business-analytics': ADMIN_ONLY,
+    '/feedback-department': ADMIN_ONLY,
+    '/retail-staff': ALL_ROLES,
 };
 
 /**
@@ -49,9 +50,10 @@ export const sidebarPermissions = {
     '/online-reputation-management': MANAGER_AND_ABOVE,
     '/feedback-customer-experience': MANAGER_AND_ABOVE,
     '/admin': ADMIN_ONLY,
-    '/retail-admin': ALL_ROLES,
-    '/business-analytics': ALL_ROLES,
-    '/feedback-department': ALL_ROLES,
+    '/retail-admin': ADMIN_ONLY,
+    '/business-analytics': ADMIN_ONLY,
+    '/feedback-department': ADMIN_ONLY,
+    '/retail-staff': ALL_ROLES,
 };
 
 /**

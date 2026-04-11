@@ -40,10 +40,10 @@ function App() {
                 {isStaffApp && (
                   <>
                     <Route path="/retail-admin" element={
-                      <RoleGuard roles={ALL_ROLES}><RetailAdminDashboard /></RoleGuard>
+                      <RoleGuard roles={ADMIN_ONLY}><RetailAdminDashboard /></RoleGuard>
                     } />
                     <Route path="/business-analytics" element={
-                      <RoleGuard roles={ALL_ROLES}>
+                      <RoleGuard roles={ADMIN_ONLY}>
                         <Dashboard
                           categories={businessAnalyticsCategories}
                           title="Business Analytics Dashboard"
@@ -52,7 +52,7 @@ function App() {
                       </RoleGuard>
                     } />
                     <Route path="/feedback-department" element={
-                      <RoleGuard roles={ALL_ROLES}>
+                      <RoleGuard roles={ADMIN_ONLY}>
                         <FeedbackDepartment />
                       </RoleGuard>
                     } />
@@ -80,6 +80,26 @@ function App() {
                     } />
                     <Route path="/admin" element={
                       <RoleGuard roles={ADMIN_ONLY}><Admin /></RoleGuard>
+                    } />
+                    <Route path="/retail-staff" element={
+                      <RoleGuard roles={ALL_ROLES}><StaffDashboard /></RoleGuard>
+                    } />
+                    <Route path="/retail-admin" element={
+                      <RoleGuard roles={ADMIN_ONLY}><RetailAdminDashboard /></RoleGuard>
+                    } />
+                    <Route path="/business-analytics" element={
+                      <RoleGuard roles={ADMIN_ONLY}>
+                        <Dashboard
+                          categories={businessAnalyticsCategories}
+                          title="Business Analytics Dashboard"
+                          subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
+                        />
+                      </RoleGuard>
+                    } />
+                    <Route path="/feedback-department" element={
+                      <RoleGuard roles={ADMIN_ONLY}>
+                        <FeedbackDepartment />
+                      </RoleGuard>
                     } />
                   </>
                 )}
