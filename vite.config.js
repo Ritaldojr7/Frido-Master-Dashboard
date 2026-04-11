@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   const isGitHubPages = process.env.GITHUB_PAGES === 'true' || env.GITHUB_PAGES === 'true';
-  const repoName = process.env.REPO_NAME || env.REPO_NAME || 'Frido Master Dashboard';
+  const repoName = process.env.REPO_NAME || env.REPO_NAME || 'Frido-Master-Dashboard';
   const isStaffApp = process.env.VITE_APP_TYPE === 'STAFF' || env.VITE_APP_TYPE === 'STAFF';
 
   return {

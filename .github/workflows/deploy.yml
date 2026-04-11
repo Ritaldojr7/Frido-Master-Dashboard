@@ -37,7 +37,7 @@ jobs:
           VITE_DEMO_MODE: 'true'
           GITHUB_PAGES: 'true'
           VITE_APP_TYPE: 'ADMIN'
-          REPO_NAME: 'Frido Master Dashboard'
+          REPO_NAME: 'Frido-Master-Dashboard'
         run: |
           rm -f .env*
           npm run build
@@ -52,7 +52,7 @@ jobs:
           VITE_DEMO_MODE: 'true'
           GITHUB_PAGES: 'true'
           VITE_APP_TYPE: 'STAFF'
-          REPO_NAME: 'Frido Master Dashboard'
+          REPO_NAME: 'Frido-Master-Dashboard'
         run: |
           rm -f .env*
           npm run build
