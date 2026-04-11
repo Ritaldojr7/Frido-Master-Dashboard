@@ -14,11 +14,12 @@ import FeedbackCustomerExperience from './pages/FeedbackCustomerExperience';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
+import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
 import { ALL_ROLES, MANAGER_AND_ABOVE, ADMIN_ONLY } from './config/permissions';
 import { businessAnalyticsCategories, feedbackCustomerExperienceData } from './config/dashboardData';
 
-// Use HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
+// Used HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
 const Router = DEMO_MODE ? HashRouter : BrowserRouter;
@@ -32,19 +33,19 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={
-                  isStaffApp 
+                  isStaffApp
                     ? <RoleGuard roles={ALL_ROLES}><StaffDashboard /></RoleGuard>
                     : <RoleGuard roles={ALL_ROLES}><Dashboard /></RoleGuard>
                 } />
                 {isStaffApp && (
                   <>
                     <Route path="/retail-admin" element={
-                      <RoleGuard roles={ALL_ROLES}><Admin /></RoleGuard>
+                      <RoleGuard roles={ALL_ROLES}><RetailAdminDashboard /></RoleGuard>
                     } />
                     <Route path="/business-analytics" element={
                       <RoleGuard roles={ALL_ROLES}>
-                        <Dashboard 
-                          categories={businessAnalyticsCategories} 
+                        <Dashboard
+                          categories={businessAnalyticsCategories}
                           title="Business Analytics Dashboard"
                           subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
                         />
