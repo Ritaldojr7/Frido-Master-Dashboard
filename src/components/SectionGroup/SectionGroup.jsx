@@ -3,7 +3,7 @@ import { ICONS } from '../../config/dashboardData';
 import LinkCard from '../LinkCard/LinkCard';
 import './SectionGroup.css';
 
-export default function SectionGroup({ title, icon, accentColor = 'blue', links = [], description, animationBase = 0 }) {
+export default function SectionGroup({ title, icon, accentColor = 'blue', links = [], description, animationBase = 0, sectionId }) {
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const iconPath = ICONS[icon];
@@ -29,6 +29,7 @@ export default function SectionGroup({ title, icon, accentColor = 'blue', links 
     return (
         <section
             ref={sectionRef}
+            id={sectionId}
             className={`section-group section-group--${accentColor} ${isVisible ? 'section-group--visible' : ''}`}
         >
             <div className="section-group__header">

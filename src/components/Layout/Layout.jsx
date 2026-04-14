@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import SearchBar from '../SearchBar/SearchBar';
 import UserMenu from '../UserMenu/UserMenu';
 import { sidebarPermissions } from '../../config/permissions';
+import { staffExperienceStoreData } from '../../config/dashboardData';
 import './Layout.css';
 import fridoLogo from '../../assets/logo.png';
 import Footer from '../Footer/Footer';
@@ -29,6 +30,16 @@ export default function Layout({ children }) {
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { user, hasRole } = useAuth();
+    const location = useLocation();
+
+    const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
+
+    const staffStats = useMemo(() => {
+        const sections = staffExperienceStoreData.sections;
+        const total = sections.reduce((s, sec) => s + sec.links.length, 0);
+        const coming = sections.reduce((s, sec) => s + sec.links.filter(l => l.isComingSoon).length, 0);
+        return { sections: sections.length, live: total - coming, coming, sectionNames: sections.map(s => s.title) };
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -105,6 +116,50 @@ export default function Layout({ children }) {
                             </>
                         )}
                     </nav>
+
+                    {isRetailStaff && (
+                        <div className="sidebar__context">
+                            <div className="sidebar__context-title">Quick Overview</div>
+                            <div className="sidebar__context-stats">
+                                <div className="sidebar__context-stat">
+                                    <span className="sidebar__context-stat-val">{staffStats.sections}</span>
+                                    <span className="sidebar__context-stat-lbl">Sections</span>
+                                </div>
+                                <div className="sidebar__context-stat">
+                                    <span className="sidebar__context-stat-val">{staffStats.live}</span>
+                                    <span className="sidebar__context-stat-lbl">Live</span>
+                                </div>
+                                <div className="sidebar__context-stat">
+                                    <span className="sidebar__context-stat-val">{staffStats.coming}</span>
+                                    <span className="sidebar__context-stat-lbl">Soon</span>
+                                </div>
+                            </div>
+                            <div className="sidebar__context-title" style={{ marginTop: 10 }}>Jump to</div>
+                            <div className="sidebar__context-jump">
+                                {staffStats.sectionNames.map((name) => {
+                                    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                                    return (
+                                        <button
+                                            key={name}
+                                            type="button"
+                                            className="sidebar__context-jump-link"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const el = document.getElementById(slug);
+                                                if (el) {
+                                                    const headerOffset = 80;
+                                                    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+                                                    window.scrollTo({ top, behavior: 'smooth' });
+                                                }
+                                            }}
+                                        >
+                                            {name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="sidebar__footer">
                         <ThemeToggle />

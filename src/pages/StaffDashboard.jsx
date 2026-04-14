@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { staffExperienceStoreData, ICONS } from '../config/dashboardData';
+import { staffExperienceStoreData } from '../config/dashboardData';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
 import './SubPage.css';
 
@@ -68,6 +68,7 @@ export default function StaffDashboard() {
                 {data.sections.map((section, idx) => (
                     <SectionGroup
                         key={section.id}
+                        sectionId={section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
                         title={section.title}
                         icon={section.icon}
                         accentColor={section.accentColor}
@@ -77,7 +78,7 @@ export default function StaffDashboard() {
                 ))}
             </div>
 
-            <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '80ms' }}>
                 <h2 className="subpage__contacts-title">Point of Contact</h2>
                 <div className="subpage__contacts-table-wrapper">
                     <table className="subpage__contacts-table">
