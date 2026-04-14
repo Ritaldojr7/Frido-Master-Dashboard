@@ -552,8 +552,8 @@ export const businessAnalyticsCategories = [
         ],
     },
     {
-        id: 'product-ranking-dashboard',
-        title: 'Product Ranking Dashboard',
+        id: 'frido-product-dashboard',
+        title: 'Frido Product Dashboard',
         icon: 'chart',
         accentColor: 'purple',
         description: 'Product performance rankings and competitive analysis',
@@ -563,6 +563,26 @@ export const businessAnalyticsCategories = [
                 variant: 'dark',
                 subOptions: [
                     { title: 'Product Ranking', url: 'https://app.powerbi.com/groups/db29aca0-aaea-4625-ade1-430eecbe06ae/reports/27899055-db8e-47f6-8e4b-8dcb3ee0be4e?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&pbi_source=linkShare&bookmarkGuid=49175725-8504-4fd2-8cb1-e62e4e8cecdc' }
+                ]
+            },
+            {
+                title: 'Top product Dashboard',
+                variant: 'dark',
+                subOptions: [
+                    {
+                        title: 'Top product Dashboard',
+                        url: 'https://app.powerbi.com/groups/db29aca0-aaea-4625-ade1-430eecbe06ae/reports/27899055-db8e-47f6-8e4b-8dcb3ee0be4e?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&pbi_source=linkShare&bookmarkGuid=705f52f5-e9d0-44bc-8900-f444a65261f8'
+                    }
+                ]
+            },
+            {
+                title: 'Product Catalogue Dashboard',
+                variant: 'dark',
+                subOptions: [
+                    {
+                        title: 'Product Catalogue Dashboard',
+                        url: 'https://app.powerbi.com/groups/db29aca0-aaea-4625-ade1-430eecbe06ae/reports/f6f4a1dc-47a5-4371-8f5b-20abf883dc81?ctid=7e5ccb3a-f189-4e3a-95b2-5cfcc0e30f90&pbi_source=linkShare&bookmarkGuid=68f0ea57-fe9f-481e-8c4c-2894e3cdccfb'
+                    }
                 ]
             }
         ],
