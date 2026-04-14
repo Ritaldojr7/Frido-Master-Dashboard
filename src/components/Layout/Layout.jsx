@@ -117,7 +117,7 @@ export default function Layout({ children }) {
                         )}
                     </nav>
 
-                    {isRetailStaff && (
+                    {isStaffApp && isRetailStaff && (
                         <div className="sidebar__context">
                             <div className="sidebar__context-title">Quick Overview</div>
                             <div className="sidebar__context-stats">
