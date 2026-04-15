@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ICONS } from '../../config/dashboardData';
+import { useAuth } from '../../context/AuthContext';
 import './LinkCard.css';
 
 export default function LinkCard({
@@ -17,8 +18,11 @@ export default function LinkCard({
     isComingSoon = false,
 }) {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [expanded, setExpanded] = useState(false);
     const iconPath = ICONS[icon];
+    const isAdminUser = user?.role === 'admin';
+    const showTooltip = Boolean(tooltip) && !isAdminUser;
 
     const handleClick = (e) => {
         if (isComingSoon) {
@@ -47,7 +51,7 @@ export default function LinkCard({
         <div 
             className="link-card-container" 
             style={{ animationDelay: `${animationDelay}ms` }}
-            {...(tooltip ? { 'data-tooltip': tooltip } : {})}
+            {...(showTooltip ? { 'data-tooltip': tooltip } : {})}
         >
             <a
                 href={isInternal || hasSubOptions || isComingSoon ? route || '#' : (url || '#')}
