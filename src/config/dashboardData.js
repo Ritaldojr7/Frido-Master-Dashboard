@@ -465,8 +465,9 @@ export const retailAdminData = {
             icon: 'ticket',
             accentColor: 'amber',
             links: [
-                { title: 'Raise a Customer Success Ticket', url: '#', variant: 'dark', tooltip: 'POC : Shernyl | Redirects to Slack workflow' },
-                { title: 'Request a GST Bill', url: '#', variant: 'dark', tooltip: 'POC : Shernyl' },
+                { title: 'Customer Success Ticket Asana Project', url: 'https://app.asana.com/1/1207389811595677/project/1213316876312751/list', variant: 'dark' },
+                { title: 'GST Bill Asana Project', url: 'https://app.asana.com/1/1207389811595677/project/1213316878589495/list', variant: 'dark' },
+                { title: 'Maintenance Tracking Project-Asana', url: 'https://app.asana.com/1/1207389811595677/project/1213894531209883/list/1213894776502119', variant: 'dark' },
             ],
         },
         {
