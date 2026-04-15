@@ -419,7 +419,7 @@ export const staffExperienceStoreData = {
                         { title: 'Install iOS', url: 'https://apps.apple.com/in/app/amply-aiborne/id6447426082' }
                     ]
                 },
-                { title: 'LMS Login', url: '#', variant: 'dark' },
+                { title: 'LMS Login', url: 'https://academy.myfrido.com/login', variant: 'dark' },
                 {
                     title: 'GreyT HR Login',
                     variant: 'dark',
@@ -495,7 +495,7 @@ export const retailAdminData = {
                         { title: 'iOS', url: 'https://apps.apple.com/in/app/amply-aiborne/id6447426082' }
                     ]
                 },
-                { title: 'LMS Login', url: '#', variant: 'dark', isComingSoon: true },
+                { title: 'LMS Login', url: 'https://academy.myfrido.com/login', variant: 'dark' },
                 { title: 'Zoho CRM', url: '#', variant: 'dark', tooltip: 'For credentials contact Rishab', isComingSoon: true },
                 { title: 'Wilyer CMS', url: 'https://cms.wilyersignage.com/', variant: 'dark' },
                 { title: 'Razorpay Bill Me', url: '#', variant: 'dark', isComingSoon: true },
@@ -509,16 +509,6 @@ export const retailAdminData = {
             links: [
                 { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark', isComingSoon: true },
                 { title: 'Sales Performance Tracker', url: '#', variant: 'dark', isComingSoon: true },
-            ],
-        },
-        {
-            id: 'pre-booking',
-            title: 'Pre Booking',
-            icon: 'store',
-            accentColor: 'emerald',
-            links: [
-                { title: 'Out of Stock / Prebooking Form', url: '#', variant: 'dark', isComingSoon: true },
-                { title: 'Chair Waitlist', url: '#', variant: 'dark', isComingSoon: true },
             ],
         },
     ],
