@@ -481,8 +481,8 @@ export const retailAdminData = {
                     variant: 'dark',
                     tooltip: 'For credentials contact Arsh',
                     subOptions: [
-                        { title: 'Mobility', url: '#' },
-                        { title: 'Non-Mobility', url: '#' }
+                        { title: 'DevX Admin Non-Mobility', url: 'https://frido-admin.devxcommerce.com/' },
+                        { title: 'DevX Admin Mobility', url: 'https://posx-frido-mobility-admin.devxcommerce.com/login' }
                     ]
                 },
                 {
@@ -490,25 +490,15 @@ export const retailAdminData = {
                     variant: 'dark',
                     tooltip: 'For credentials contact Arsh',
                     subOptions: [
-                        { title: 'Login Dashboard', url: '#' },
-                        { title: 'Install Android', url: '#' },
-                        { title: 'Install iOS', url: '#' }
+                        { title: 'Dashboard Link', url: 'https://dashboard.getamply.co/login/?next=/amply/' },
+                        { title: 'Android', url: 'https://play.google.com/store/apps/details?id=com.aiborne.amplyv1' },
+                        { title: 'iOS', url: 'https://apps.apple.com/in/app/amply-aiborne/id6447426082' }
                     ]
                 },
                 { title: 'LMS Login', url: '#', variant: 'dark' },
-                {
-                    title: 'GreyT HR Login',
-                    variant: 'dark',
-                    tooltip: 'For credentials contact Tanmay',
-                    subOptions: [
-                        { title: 'Login', url: '#' }
-                    ]
-                },
                 { title: 'Zoho CRM', url: '#', variant: 'dark', tooltip: 'For credentials contact Rishab' },
-                { title: 'Frido Internal Tech', url: '#', variant: 'dark' },
-                { title: 'Wilyer CMS', url: '#', variant: 'dark' },
+                { title: 'Wilyer CMS', url: 'https://cms.wilyersignage.com/', variant: 'dark' },
                 { title: 'Razorpay Bill Me', url: '#', variant: 'dark' },
-                { title: 'ES – Customer Facing', url: '#', variant: 'dark' },
             ],
         },
         {
