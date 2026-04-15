@@ -495,10 +495,10 @@ export const retailAdminData = {
                         { title: 'iOS', url: 'https://apps.apple.com/in/app/amply-aiborne/id6447426082' }
                     ]
                 },
-                { title: 'LMS Login', url: '#', variant: 'dark' },
-                { title: 'Zoho CRM', url: '#', variant: 'dark', tooltip: 'For credentials contact Rishab' },
+                { title: 'LMS Login', url: '#', variant: 'dark', isComingSoon: true },
+                { title: 'Zoho CRM', url: '#', variant: 'dark', tooltip: 'For credentials contact Rishab', isComingSoon: true },
                 { title: 'Wilyer CMS', url: 'https://cms.wilyersignage.com/', variant: 'dark' },
-                { title: 'Razorpay Bill Me', url: '#', variant: 'dark' },
+                { title: 'Razorpay Bill Me', url: '#', variant: 'dark', isComingSoon: true },
             ],
         },
         {
@@ -507,8 +507,8 @@ export const retailAdminData = {
             icon: 'chart',
             accentColor: 'dark',
             links: [
-                { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark' },
-                { title: 'Sales Performance Tracker', url: '#', variant: 'dark' },
+                { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark', isComingSoon: true },
+                { title: 'Sales Performance Tracker', url: '#', variant: 'dark', isComingSoon: true },
             ],
         },
         {
@@ -517,8 +517,8 @@ export const retailAdminData = {
             icon: 'store',
             accentColor: 'emerald',
             links: [
-                { title: 'Out of Stock / Prebooking Form', url: '#', variant: 'dark' },
-                { title: 'Chair Waitlist', url: '#', variant: 'dark' },
+                { title: 'Out of Stock / Prebooking Form', url: '#', variant: 'dark', isComingSoon: true },
+                { title: 'Chair Waitlist', url: '#', variant: 'dark', isComingSoon: true },
             ],
         },
     ],
