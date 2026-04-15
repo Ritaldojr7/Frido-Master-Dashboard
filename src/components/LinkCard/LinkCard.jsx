@@ -16,9 +16,11 @@ export default function LinkCard({
     animationDelay = 0,
     isComingSoon = false,
 }) {
+    const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
     const navigate = useNavigate();
     const [expanded, setExpanded] = useState(false);
     const iconPath = ICONS[icon];
+    const showTooltip = isStaffApp && Boolean(tooltip);
 
     const handleClick = (e) => {
         if (isComingSoon) {
@@ -47,7 +49,7 @@ export default function LinkCard({
         <div 
             className="link-card-container" 
             style={{ animationDelay: `${animationDelay}ms` }}
-            {...(tooltip ? { 'data-tooltip': tooltip } : {})}
+            {...(showTooltip ? { 'data-tooltip': tooltip } : {})}
         >
             <a
                 href={isInternal || hasSubOptions || isComingSoon ? route || '#' : (url || '#')}
