@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ICONS } from '../../config/dashboardData';
+import { useAuth } from '../../context/AuthContext';
 import './LinkCard.css';
 
 export default function LinkCard({
@@ -16,11 +17,12 @@ export default function LinkCard({
     animationDelay = 0,
     isComingSoon = false,
 }) {
-    const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [expanded, setExpanded] = useState(false);
     const iconPath = ICONS[icon];
-    const showTooltip = isStaffApp && Boolean(tooltip);
+    const isAdminUser = user?.role === 'admin';
+    const showTooltip = Boolean(tooltip) && !isAdminUser;
 
     const handleClick = (e) => {
         if (isComingSoon) {
