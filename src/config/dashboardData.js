@@ -509,13 +509,15 @@ export const retailAdminData = {
             links: [
                 { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark', isComingSoon: true },
                 { title: 'Sales Performance Tracker', url: '#', variant: 'dark', isComingSoon: true },
-                {
-                    title: 'Others',
-                    variant: 'dark',
-                    subOptions: [
-                        { title: 'KRA/KPI sheet for retail', url: 'https://docs.google.com/spreadsheets/d/1Fjb9VPcg0uL5BhOzHcqu6d9j29HdTagaqo2wN-JfSyU/edit?usp=sharing' }
-                    ]
-                },
+            ],
+        },
+        {
+            id: 'others',
+            title: 'Others',
+            icon: 'document',
+            accentColor: 'blue',
+            links: [
+                { title: 'KRA/KPI sheet for retail', url: 'https://docs.google.com/spreadsheets/d/1Fjb9VPcg0uL5BhOzHcqu6d9j29HdTagaqo2wN-JfSyU/edit?usp=sharing', variant: 'dark' },
             ],
         },
     ],
