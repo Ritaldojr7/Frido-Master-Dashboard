@@ -1,33 +1,34 @@
+# Render Blueprint — $0 on Render for the web service (free tier spins down when idle).
+# Postgres: Render no longer offers free managed Postgres for new DBs. Use a free external
+# Postgres (Neon, Supabase, etc.) and paste DATABASE_URL in the Render dashboard when prompted.
+#
+# For always-on + managed DB on Render, change web `plan` to `starter` (or higher) and add a
+# `databases:` block with e.g. `plan: basic-256mb`, wiring DATABASE_URL via `fromDatabase`.
 services:
   - type: web
     name: frido-master-dashboard
     env: node
-    plan: starter
+    plan: free
     buildCommand: npm ci && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
-      # Clerk — required at runtime for API token verification & invites
       - key: CLERK_SECRET_KEY
         sync: false
-      # Clerk — must be available during `npm run build` (Vite inlines VITE_* into the bundle)
       - key: VITE_CLERK_PUBLISHABLE_KEY
         sync: false
       - key: APP_URL
         sync: false
       - key: FRONTEND_URL
         sync: false
-      # Used for invite redirect URLs and transactional email links (your Render web URL)
       - key: DEFAULT_ADMIN_EMAIL
         sync: false
-      # Seed runs once: creates this Clerk user + SQLite row if missing (never commit real passwords)
       - key: DEFAULT_ADMIN_PASSWORD
         sync: false
+      # External Postgres (Neon / Supabase / etc.) — required for this free-tier layout
       - key: DATABASE_URL
-        fromDatabase:
-          name: frido-master-dashboard-db
-          property: connectionString
+        sync: false
       - key: ALLOWED_EMAIL_DOMAINS
         value: myfrido.com
       - key: MS_TENANT_ID
@@ -38,8 +39,3 @@ services:
         sync: false
       - key: MS_INVITE_SENDER
         sync: false
-
-databases:
-  # Legacy Postgres plan names like `starter` are rejected for new DBs (Oct 2024+ flexible plans).
-  - name: frido-master-dashboard-db
-    plan: basic-256mb
