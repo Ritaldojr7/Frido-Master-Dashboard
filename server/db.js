@@ -1,9 +1,8 @@
 /**
  * Database adapter.
  *
- * Local development uses SQLite by default. Render/production can use
- * PostgreSQL by setting DATABASE_URL. Routes use this small async API so the
- * app can run against either backend without duplicating business logic.
+ * Local development uses SQLite by default. Production uses PostgreSQL when
+ * `DATABASE_URL` is set (e.g. Supabase pooled or direct connection string).
  */
 import Database from 'better-sqlite3';
 import fs from 'fs';
@@ -11,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import { createClerkClient } from '@clerk/express';
+import { schemaStatements } from './schema/pgStatements.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -79,68 +79,6 @@ const db = {
     },
 };
 
-function createSchemaSql() {
-    return `
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            email TEXT UNIQUE NOT NULL,
-            name TEXT NOT NULL,
-            password_hash TEXT DEFAULT '',
-            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'viewer')),
-            department TEXT DEFAULT '',
-            store_name TEXT DEFAULT '',
-            avatar_url TEXT DEFAULT '',
-            status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'disabled')),
-            last_login TEXT,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS invite_tokens (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            email TEXT NOT NULL,
-            token_hash TEXT UNIQUE NOT NULL,
-            role TEXT NOT NULL DEFAULT 'staff',
-            expires_at TEXT NOT NULL,
-            used INTEGER NOT NULL DEFAULT 0,
-            invited_by TEXT NOT NULL,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (invited_by) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS notices (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            body TEXT NOT NULL,
-            priority TEXT NOT NULL DEFAULT 'normal' CHECK(priority IN ('normal', 'important', 'urgent')),
-            requires_ack INTEGER NOT NULL DEFAULT 1,
-            sent_by_name TEXT DEFAULT '',
-            cta_label TEXT DEFAULT '',
-            cta_url TEXT DEFAULT '',
-            starts_at TEXT,
-            ends_at TEXT,
-            active INTEGER NOT NULL DEFAULT 1,
-            created_by TEXT NOT NULL,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS notice_receipts (
-            notice_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            seen_at TEXT,
-            acknowledged_at TEXT,
-            dismissed_at TEXT,
-            PRIMARY KEY (notice_id, user_id),
-            FOREIGN KEY (notice_id) REFERENCES notices(id) ON DELETE CASCADE,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-    `;
-}
-
 function migrateSqliteUsersTableIfNeeded() {
     if (isPostgres) return;
 
@@ -198,7 +136,7 @@ function migrateSqliteUsersTableIfNeeded() {
 }
 
 /**
- * Seed default admin in Clerk + SQLite when configured.
+ * Seed default admin in Clerk + DB when configured.
  * Requires CLERK_SECRET_KEY. If no Clerk user exists for DEFAULT_ADMIN_EMAIL,
  * sets DEFAULT_ADMIN_PASSWORD in the environment (never hardcode secrets).
  */
@@ -245,7 +183,7 @@ async function seedDefaultAdmin() {
             }
         }
 
-        // Sync to SQLite (upsert to ensure role is updated locally too)
+        // Sync to DB (upsert so Clerk id + admin role match locally)
         await db.run(
             `INSERT INTO users (id, email, name, password_hash, role, department, status, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -261,14 +199,8 @@ async function seedDefaultAdmin() {
     }
 }
 
-/**
- * Idempotent column-add for both SQLite and Postgres.
- */
+/** Idempotent column-add for SQLite legacy DBs only (Postgres uses ensurePostgresOptionalColumns). */
 async function ensureColumn(table, column, sqlDef) {
-    if (isPostgres) {
-        await pool.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${column} ${sqlDef}`);
-        return;
-    }
     const cols = sqlite.prepare(`PRAGMA table_info(${table})`).all();
     if (!cols.some((c) => c.name === column)) {
         sqlite.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${sqlDef}`);
@@ -290,12 +222,30 @@ async function purgeExpiredDeletedUsers() {
     }
 }
 
+/**
+ * Legacy SQLite DBs may lack columns present in newer schemas.
+ * Postgres: omit DEFAULT '' here — empty-string defaults are interpreted inconsistently in ALTER ADD across dialects/parsers.
+ */
+async function ensurePostgresOptionalColumns() {
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TEXT');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TEXT');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS store_name TEXT');
+    await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
+}
+
 migrateSqliteUsersTableIfNeeded();
-await db.exec(createSchemaSql());
-await ensureColumn('users', 'deleted_at', 'TEXT');
-await ensureColumn('users', 'last_login', 'TEXT');
-await ensureColumn('users', 'store_name', 'TEXT DEFAULT ""');
-await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
+if (isPostgres) {
+    for (const stmt of schemaStatements()) {
+        await pool.query(stmt);
+    }
+    await ensurePostgresOptionalColumns();
+} else {
+    await db.exec(schemaStatements().join(';\n') + ';');
+    await ensureColumn('users', 'deleted_at', 'TEXT');
+    await ensureColumn('users', 'last_login', 'TEXT');
+    await ensureColumn('users', 'store_name', "TEXT DEFAULT ''");
+    await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
+}
 await seedDefaultAdmin();
 await purgeExpiredDeletedUsers();
 
