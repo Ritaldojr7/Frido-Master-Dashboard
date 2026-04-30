@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ICONS } from '../../config/dashboardData';
-import { useAuth } from '../../context/AuthContext';
+import { AuthContext } from '../../context/AuthContext';
 import './LinkCard.css';
 
 export default function LinkCard({
@@ -18,7 +18,8 @@ export default function LinkCard({
     isComingSoon = false,
 }) {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const auth = useContext(AuthContext);
+    const user = auth?.user;
     const [expanded, setExpanded] = useState(false);
     const iconPath = ICONS[icon];
     const isAdminUser = user?.role === 'admin';

@@ -139,26 +139,27 @@
 }
 
 .feedback-page__title {
-    font-size: 28px;
-    font-weight: 800;
+    font-size: 22px;
+    font-weight: 700;
     color: var(--text-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.3px;
     margin-bottom: var(--space-xs);
     min-height: 1.2em;
 }
 
 .feedback-page__header-accent {
-    width: 60px;
-    height: 4px;
-    background: var(--gradient-amber);
-    border-radius: var(--radius-full);
+    width: 36px;
+    height: 2px;
+    background: var(--brand-yellow);
+    border-radius: 2px;
 }
 
 .typewriter-cursor {
-    color: var(--accent-amber);
+    color: var(--brand-yellow-strong);
     font-style: normal;
     margin-left: 2px;
-    animation: blink 0.8s infinite;
+    animation: blink 1s steps(1) infinite;
+    font-weight: 400;
 }
 
 @keyframes blink {

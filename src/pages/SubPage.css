@@ -65,6 +65,101 @@
     gap: var(--space-lg);
 }
 
+.subpage__notices {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.subpage__notices-title {
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg-tertiary);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.subpage__notices-empty {
+    padding: var(--space-lg);
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.subpage__notices-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.subpage__notice-item {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.subpage__notice-item:last-child {
+    border-bottom: none;
+}
+
+.subpage__notice-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 8px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+.subpage__notice-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border-primary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.subpage__notice-status--ack {
+    color: var(--accent-emerald);
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.subpage__notice-status--dismissed {
+    color: var(--text-secondary);
+    border-color: var(--border-primary);
+    background: var(--bg-tertiary);
+}
+
+.subpage__notice-status--new {
+    color: var(--brand-yellow-strong);
+    border-color: rgba(255, 210, 0, 0.55);
+    background: rgba(255, 210, 0, 0.12);
+}
+
+.subpage__notice-heading {
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+}
+
+.subpage__notice-body {
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
 /* ── Footer ── */
 .subpage__footer {
     display: flex;

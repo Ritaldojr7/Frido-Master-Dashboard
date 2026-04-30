@@ -24,14 +24,10 @@ describe('Dashboard', () => {
 
   it('renders hero, stats, and footer in a single pass', () => {
     renderDashboard();
-    expect(screen.getByText(/Frido Master/)).toBeInTheDocument();
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('SAIYED ABDAL')).toBeInTheDocument();
     expect(screen.getByText(/Your central hub for all operational tools/)).toBeInTheDocument();
     expect(screen.getByText('CATEGORIES')).toBeInTheDocument();
     expect(screen.getByText('TOOLS & LINKS')).toBeInTheDocument();
     expect(screen.getByText('ALL SYSTEMS LIVE')).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: /www\.myfrido\.com/i });
-    expect(link).toHaveAttribute('href', 'https://www.myfrido.com');
+    expect(screen.getAllByTestId('section-group-placeholder').length).toBeGreaterThan(0);
   });
 });

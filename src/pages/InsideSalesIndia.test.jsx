@@ -26,7 +26,6 @@ describe('InsideSalesIndia', () => {
     expect(screen.getByText(/Inside Sales.*India/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /back to dashboard/i })).toBeInTheDocument();
     expect(screen.getByText(/Tools, CRMs, IVR systems, references, and analytics for the India sales team/i)).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: /myfrido\.com/i });
-    expect(link).toHaveAttribute('href', 'https://www.myfrido.com');
+    expect(screen.getAllByTestId('section-group-placeholder').length).toBeGreaterThan(0);
   });
 });

@@ -25,64 +25,43 @@
 }
 
 .section-group__icon-badge {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
 }
 
 .section-group__icon-badge svg {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
 }
 
-/* Badge Colors */
-.section-group__icon-badge--emerald {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
-    color: var(--accent-emerald-light);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-.section-group__icon-badge--amber {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.08));
-    color: var(--accent-amber-light);
-    border: 1px solid rgba(245, 158, 11, 0.25);
-}
-
-.section-group__icon-badge--blue {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.08));
-    color: var(--accent-blue-light);
-    border: 1px solid rgba(59, 130, 246, 0.25);
-}
-
-.section-group__icon-badge--purple {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.08));
-    color: var(--accent-purple-light);
-    border: 1px solid rgba(139, 92, 246, 0.25);
-}
-
-.section-group__icon-badge--rose {
-    background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.08));
-    color: var(--accent-rose-light);
-    border: 1px solid rgba(244, 63, 94, 0.25);
-}
+/* Badge accents — flat tinted backgrounds, no gradient */
+.section-group__icon-badge--emerald { background: rgba(16, 185, 129, 0.10); border-color: rgba(16, 185, 129, 0.25); color: var(--accent-emerald); }
+.section-group__icon-badge--amber   { background: rgba(255, 210, 0, 0.14);  border-color: rgba(255, 210, 0, 0.40);  color: var(--brand-yellow-strong); }
+.section-group__icon-badge--blue    { background: rgba(59, 130, 246, 0.10); border-color: rgba(59, 130, 246, 0.28); color: var(--accent-blue); }
+.section-group__icon-badge--purple  { background: rgba(139, 92, 246, 0.10); border-color: rgba(139, 92, 246, 0.28); color: var(--accent-purple); }
+.section-group__icon-badge--rose    { background: rgba(244, 63, 94, 0.10);  border-color: rgba(244, 63, 94, 0.28);  color: var(--accent-rose); }
 
 .section-group__info {
     flex: 1;
 }
 
 .section-group__title {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 15.5px;
+    font-weight: 600;
     color: var(--text-primary);
-    letter-spacing: -0.3px;
+    letter-spacing: -0.1px;
 }
 
 .section-group__desc {
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--text-tertiary);
     margin-top: 2px;
 }

@@ -24,8 +24,6 @@ const adminNavItem = {
     path: '/admin', label: 'User Management', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
 };
 
-const isStaffApp = import.meta.env.VITE_APP_TYPE === 'STAFF';
-
 export default function Layout({ children }) {
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -48,11 +46,7 @@ export default function Layout({ children }) {
     }, []);
 
     // Filter nav items by user role
-    const staffNavItems = [
-        { path: '/', label: 'Retail - Staff', icon: retailStaffIcon }
-    ];
-
-    const visibleNavItems = (isStaffApp ? staffNavItems : navItems).filter(item => {
+    const visibleNavItems = navItems.filter(item => {
         const allowed = sidebarPermissions[item.path];
         if (!allowed) return true;
         // Safety check: if user is not yet loaded, hide restricted items instead of crashing
@@ -60,7 +54,7 @@ export default function Layout({ children }) {
         return allowed.includes(user.role);
     });
 
-    const showAdminNav = !isStaffApp && hasRole('admin');
+    const showAdminNav = hasRole('admin');
 
     return (
         <div className="layout">
@@ -117,7 +111,7 @@ export default function Layout({ children }) {
                         )}
                     </nav>
 
-                    {isStaffApp && isRetailStaff && (
+                    {!hasRole('admin') && isRetailStaff && (
                         <div className="sidebar__context">
                             <div className="sidebar__context-title">Quick Overview</div>
                             <div className="sidebar__context-stats">
@@ -176,9 +170,9 @@ export default function Layout({ children }) {
                 <header className={`header glass ${scrolled ? 'header--scrolled' : ''}`}>
                     <div className="header__right">
                         <div className="header__search">
-                            <SearchBar />
+                            <SearchBar isAdmin={hasRole('admin')} />
                         </div>
-                        {!isStaffApp && <UserMenu />}
+                        <UserMenu />
                     </div>
                 </header>
 
