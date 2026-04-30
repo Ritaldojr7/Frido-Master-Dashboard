@@ -1,15 +1,16 @@
-# Render Blueprint — $0 on Render for the web service (free tier spins down when idle).
-# Postgres: Render no longer offers free managed Postgres for new DBs. Use a free external
-# Postgres (Neon, Supabase, etc.) and paste DATABASE_URL in the Render dashboard when prompted.
+# Render Blueprint — $0 web tier; Postgres via Supabase (set DATABASE_URL in Render UI).
+# Create a Supabase project → Settings → Database → copy URI connection string.
 #
-# For always-on + managed DB on Render, change web `plan` to `starter` (or higher) and add a
-# `databases:` block with e.g. `plan: basic-256mb`, wiring DATABASE_URL via `fromDatabase`.
+# One-time data copy from local SQLite: npm run migrate:supabase (with DATABASE_URL set).
+#
+# For managed Postgres on Render instead, use a `databases:` block + paid web plan (see Render docs).
 services:
   - type: web
     name: frido-master-dashboard
     env: node
     plan: free
-    buildCommand: npm ci && npm run build
+    # NODE_ENV=production skips devDependencies — Vite would be missing (exit 127).
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
