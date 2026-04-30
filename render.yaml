@@ -40,5 +40,6 @@ services:
         sync: false
 
 databases:
+  # Legacy Postgres plan names like `starter` are rejected for new DBs (Oct 2024+ flexible plans).
   - name: frido-master-dashboard-db
-    plan: starter
+    plan: basic-256mb
