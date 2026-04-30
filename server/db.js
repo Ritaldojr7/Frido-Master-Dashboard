@@ -15,7 +15,21 @@ import { schemaStatements } from './schema/pgStatements.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
 const DEFAULT_DB_PATH = path.join(DATA_DIR, 'frido.db');
-const isPostgres = Boolean(process.env.DATABASE_URL) && process.env.DB_CLIENT !== 'sqlite';
+
+/** Ignore stray whitespace so empty-ish DATABASE_URL does not enable Postgres. */
+const postgresUrl = String(process.env.DATABASE_URL ?? '').trim();
+
+/** Vitest / npm test lifecycle — avoid CI `secrets: inherit` pointing tests at Supabase. */
+const lifecycle = process.env.npm_lifecycle_event || '';
+const runningVitestNpmScript =
+    lifecycle === 'test' || lifecycle === 'test:run' || lifecycle === 'test:ui';
+const vitestEnv = process.env.VITEST === 'true';
+
+const isPostgres =
+    Boolean(postgresUrl) &&
+    process.env.DB_CLIENT !== 'sqlite' &&
+    !runningVitestNpmScript &&
+    !vitestEnv;
 
 function toPostgresQuery(sql) {
     let index = 0;
@@ -31,7 +45,7 @@ let pool = null;
 
 if (isPostgres) {
     pool = new Pool({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: postgresUrl,
         ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
     });
 } else {
