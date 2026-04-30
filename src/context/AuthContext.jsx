@@ -1,50 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- context + hook in one file is intentional */
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useCallback, useMemo, useState, useEffect } from 'react';
+import { useUser, useAuth as useClerkAuth, useClerk } from '@clerk/react';
 
-const AuthContext = createContext();
-
-const TOKEN_KEY = 'frido-token';
-const USER_KEY = 'frido-user';
-
-/**
- * API helper — automatically attaches JWT token.
- */
-async function apiFetch(path, options = {}) {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const headers = {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-    };
-
-    let res;
-    try {
-        res = await fetch(path, { ...options, headers });
-    } catch (networkErr) {
-        throw new Error('Unable to connect to the server. Please check your connection.');
-    }
-
-    // Read body as text first, then try to parse as JSON.
-    // This prevents "Unexpected end of JSON input" when the backend is down
-    // and the proxy returns an empty or non-JSON response.
-    const text = await res.text();
-    let data;
-    try {
-        data = text ? JSON.parse(text) : {};
-    } catch {
-        throw new Error(
-            res.ok
-                ? 'Server returned an invalid response.'
-                : `Server error (${res.status}). The API server may not be running.`
-        );
-    }
-
-    if (!res.ok) {
-        throw new Error(data.error || `Request failed (${res.status})`);
-    }
-
-    return data;
-}
+export const AuthContext = createContext();
 
 /**
  * Demo mode — bypasses all backend auth when VITE_DEMO_MODE is set.
@@ -62,102 +20,160 @@ const DEMO_USER = {
     status: 'active',
 };
 
-export function AuthProvider({ children }) {
-    const [user, setUser] = useState(() => {
-        if (DEMO_MODE) return DEMO_USER;
+/**
+ * API helper — automatically attaches Clerk session token.
+ */
+let _getToken = null;
+
+async function apiFetch(path, options = {}) {
+    let token = null;
+    if (_getToken) {
         try {
-            const saved = localStorage.getItem(USER_KEY);
-            return saved ? JSON.parse(saved) : null;
+            token = await _getToken();
         } catch {
-            return null;
+            // Token retrieval failed — proceed without auth header
         }
-    });
-    const [isAuthenticated, setIsAuthenticated] = useState(() => DEMO_MODE || !!localStorage.getItem(TOKEN_KEY));
-    const [isLoading, setIsLoading] = useState(!DEMO_MODE);
+    }
 
-    // Restore session on mount (skipped in demo mode)
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+    };
+
+    let res;
+    try {
+        res = await fetch(path, { ...options, headers });
+    } catch {
+        throw new Error('Unable to connect to the server. Please check your connection.');
+    }
+
+    const text = await res.text();
+    let data;
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        throw new Error(
+            res.ok
+                ? 'Server returned an invalid response.'
+                : `Server error (${res.status}). The API server may not be running.`
+        );
+    }
+
+    if (!res.ok) {
+        const fromBody =
+            (typeof data?.error === 'string' && data.error) ||
+            (typeof data?.message === 'string' && data.message);
+        const trimmedText = typeof text === 'string' ? text.trim() : '';
+        throw new Error(
+            fromBody ||
+                (trimmedText.length > 0 && trimmedText.length < 500 ? trimmedText : '') ||
+                `Request failed (${res.status})`
+        );
+    }
+
+    return data;
+}
+
+export function AuthProvider({ children }) {
+    // ── Clerk hooks ──────────────────────────────────────────
+    const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
+    const { isSignedIn, getToken } = useClerkAuth();
+    const { signOut } = useClerk();
+    const [backendUser, setBackendUser] = useState(null);
+    const [isBackendLoaded, setIsBackendLoaded] = useState(false);
+
+    // Keep the module-level _getToken in sync so apiFetch can use it
+    _getToken = getToken;
+
+    // Fetch backend user data when signed in
     useEffect(() => {
-        if (DEMO_MODE) return;
-        const token = localStorage.getItem(TOKEN_KEY);
-        if (token && !user) {
-            // Validate token by fetching profile
-            apiFetch('/api/users/me')
-                .then(data => {
-                    setUser(data.user);
-                    setIsAuthenticated(true);
-                })
-                .catch(() => {
-                    // Token invalid — clear
-                    localStorage.removeItem(TOKEN_KEY);
-                    localStorage.removeItem(USER_KEY);
-                    setUser(null);
-                    setIsAuthenticated(false);
-                })
-                .finally(() => setIsLoading(false));
-        } else {
-            setIsLoading(false);
+        let isMounted = true;
+        async function fetchMe() {
+            if (!isSignedIn || DEMO_MODE) {
+                setIsBackendLoaded(true);
+                return;
+            }
+            try {
+                const data = await apiFetch('/api/users/me');
+                if (isMounted) {
+                    setBackendUser(data.user);
+                }
+            } catch (err) {
+                console.error('Failed to fetch backend user:', err);
+            } finally {
+                if (isMounted) {
+                    setIsBackendLoaded(true);
+                }
+            }
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        fetchMe();
+        return () => { isMounted = false; };
+    }, [isSignedIn]);
+
+    const isLoading = DEMO_MODE ? false : (!isUserLoaded || (isSignedIn && !isBackendLoaded));
+    const isAuthenticated = DEMO_MODE ? true : !!isSignedIn;
+
+    // Map Clerk user to the shape the rest of the app expects
+    const user = useMemo(() => {
+        if (DEMO_MODE) return DEMO_USER;
+        if (!clerkUser) return null;
+
+        const email = clerkUser.primaryEmailAddress?.emailAddress || '';
+        let name = backendUser?.name || clerkUser.fullName || clerkUser.firstName;
+
+        if (!name || name === 'User') {
+            const prefix = email.split('@')[0] || '';
+            const firstPart = prefix.split('.')[0] || 'User';
+            name = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
+        }
+
+        return {
+            id: clerkUser.id,
+            email,
+            name,
+            role: backendUser?.role || clerkUser.publicMetadata?.role || 'staff',
+            department: backendUser?.department || clerkUser.publicMetadata?.department || '',
+            store_name: backendUser?.store_name || clerkUser.publicMetadata?.store_name || '',
+            avatar_url: clerkUser.imageUrl || '',
+            status: backendUser?.status || 'active',
+        };
+    }, [clerkUser, backendUser]);
 
     /**
-     * Login with email + password via backend API.
-     */
-    const login = useCallback(async (email, password) => {
-        if (DEMO_MODE) { setUser(DEMO_USER); setIsAuthenticated(true); return DEMO_USER; }
-        const data = await apiFetch('/api/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password }),
-        });
-
-        localStorage.setItem(TOKEN_KEY, data.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-        setUser(data.user);
-        setIsAuthenticated(true);
-        return data.user;
-    }, []);
-
-    /**
-     * Logout — no-op in demo mode.
+     * Logout — calls Clerk signOut.
      */
     const logout = useCallback(() => {
         if (DEMO_MODE) return;
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        setUser(null);
-        setIsAuthenticated(false);
-    }, []);
+        signOut();
+    }, [signOut]);
 
     /**
-     * Update the current user's profile.
+     * Update the current user's profile via backend API.
      */
     const updateProfile = useCallback(async (updates) => {
-        if (DEMO_MODE) { const u = { ...DEMO_USER, ...updates }; setUser(u); return u; }
+        if (DEMO_MODE) return { ...DEMO_USER, ...updates };
         const data = await apiFetch('/api/users/me', {
             method: 'PUT',
             body: JSON.stringify(updates),
         });
-        setUser(data.user);
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        if (data.user) {
+            setBackendUser(data.user);
+        }
         return data.user;
-    }, []);
-
-    /**
-     * Change the current user's password.
-     */
-    const changePassword = useCallback(async (currentPassword, newPassword) => {
-        if (DEMO_MODE) return { message: 'Demo mode — password not changed.' };
-        return apiFetch('/api/users/me/password', {
-            method: 'PUT',
-            body: JSON.stringify({ currentPassword, newPassword }),
-        });
     }, []);
 
     /**
      * Check if user has one of the given roles.
      */
     const hasRole = useCallback(
-        (...roles) => user && roles.includes(user.role),
-        [user]
+        (...roles) => {
+            if (DEMO_MODE) return true;
+            if (!clerkUser) return false;
+            const userRole = backendUser?.role || clerkUser.publicMetadata?.role || 'staff';
+            return roles.includes(userRole);
+        },
+        [clerkUser, backendUser]
     );
 
     return (
@@ -166,10 +182,8 @@ export function AuthProvider({ children }) {
                 user,
                 isAuthenticated,
                 isLoading,
-                login,
                 logout,
                 updateProfile,
-                changePassword,
                 hasRole,
                 apiFetch,
             }}

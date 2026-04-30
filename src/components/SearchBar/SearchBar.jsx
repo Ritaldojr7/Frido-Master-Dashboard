@@ -23,7 +23,7 @@ function addLinkWithVariants(links, link, category) {
 }
 
 /** Search index: Retail - Staff, Retail - Admin, and Business Analytics tool links only */
-function getAppSearchLinks() {
+function getAppSearchLinks(isAdmin) {
     const links = [];
 
     staffExperienceStoreData.sections.forEach((section) => {
@@ -32,29 +32,35 @@ function getAppSearchLinks() {
         });
     });
 
-    retailAdminData.sections.forEach((section) => {
-        section.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Retail - Admin → ${section.title}`);
+    if (isAdmin) {
+        retailAdminData.sections.forEach((section) => {
+            section.links.forEach((link) => {
+                addLinkWithVariants(links, link, `Retail - Admin → ${section.title}`);
+            });
         });
-    });
 
-    businessAnalyticsCategories.forEach((categoryGroup) => {
-        categoryGroup.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Business Analytics → ${categoryGroup.title}`);
+        businessAnalyticsCategories.forEach((categoryGroup) => {
+            categoryGroup.links.forEach((link) => {
+                addLinkWithVariants(links, link, `Business Analytics → ${categoryGroup.title}`);
+            });
         });
-    });
+    }
 
     return links;
 }
 
-export default function SearchBar() {
+export default function SearchBar({ isAdmin = true }) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [results, setResults] = useState([]);
     const inputRef = useRef(null);
     const wrapperRef = useRef(null);
     const navigate = useNavigate();
-    const allLinks = useRef(getAppSearchLinks());
+    const allLinks = useRef([]);
+
+    useEffect(() => {
+        allLinks.current = getAppSearchLinks(isAdmin);
+    }, [isAdmin]);
 
     // Keyboard shortcut Ctrl+K
     useEffect(() => {

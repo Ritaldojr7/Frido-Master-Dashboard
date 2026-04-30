@@ -6,36 +6,64 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
+import noticeRoutes from './routes/notices.js';
+
+if (!process.env.CLERK_SECRET_KEY && process.env.NODE_ENV === 'production') {
+    console.warn(
+        '[Frido Dashboard] CLERK_SECRET_KEY is not set — /api/users and /api/notices will reject tokens.'
+    );
+}
 
 const app = express();
-const PORT = process.env.API_PORT || 4000;
+app.set('trust proxy', 1);
+const PORT = process.env.PORT || process.env.API_PORT || 4000;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DIST_DIR = path.resolve(__dirname, '..', 'dist');
+const BRAND_DIR = path.resolve(__dirname, '..', 'src', 'assets');
 
 // ── Middleware ───────────────────────────────────────────
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-}));
+// Reflect requesting Origin when credentials are used (dev-friendly for localhost:3000 + :4000 + LAN).
+app.use(
+    cors({
+        origin: true,
+        credentials: true,
+    })
+);
 app.use(express.json());
 app.use(cookieParser());
 
 // ── Routes ──────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notices', noticeRoutes);
 
 // ── Health check ────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', service: 'frido-dashboard-api', timestamp: new Date().toISOString() });
 });
 
+// ── Public branding assets (used by transactional emails) ─
+app.use('/brand', express.static(BRAND_DIR, {
+    immutable: true,
+    maxAge: '7d',
+}));
+
+// ── Static frontend for Render/full-stack production ─────
+app.use(express.static(DIST_DIR));
+
 // ── 404 handler ─────────────────────────────────────────
 app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API endpoint not found' });
     }
-    next();
+    res.sendFile(path.join(DIST_DIR, 'index.html'), (err) => {
+        if (err) next();
+    });
 });
 
 // ── Error handler ───────────────────────────────────────

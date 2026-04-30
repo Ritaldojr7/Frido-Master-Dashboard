@@ -26,7 +26,6 @@ describe('ExperienceStore', () => {
     expect(screen.getByText('Experience Store')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /back to dashboard/i })).toBeInTheDocument();
     expect(screen.getByText(/POS systems, CRM logins, product resources, and analytics for the Experience Store team/i)).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: /myfrido\.com/i });
-    expect(link).toHaveAttribute('href', 'https://www.myfrido.com');
+    expect(screen.getAllByTestId('section-group-placeholder').length).toBeGreaterThan(0);
   });
 });

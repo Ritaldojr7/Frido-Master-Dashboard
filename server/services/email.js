@@ -1,136 +1,172 @@
 /**
- * Azure Communication Services — Email Service
- * Handles sending invitation and password-reset emails.
+ * Branded transactional email templates.
+ * Delivery is handled by Microsoft Graph in graphEmail.js.
  *
- * Required env vars:
- *   AZURE_EMAIL_CONNECTION_STRING — ACS connection string
- *   AZURE_EMAIL_SENDER           — verified sender address (e.g., DoNotReply@xxxx.azurecomm.net)
+ * Logos are embedded inline (CID) so they render for every recipient; plain
+ * http(s) URLs pointing at localhost break when the inbox tries to fetch them.
  */
-import { EmailClient } from '@azure/communication-email';
+import { sendGraphMail } from './graphEmail.js';
+import { getBrandImagesForEmail } from './emailAssets.js';
 
-let emailClient = null;
+const APP_NAME = 'Frido Dashboard';
+const APP_URL = process.env.APP_URL || 'http://localhost:4000';
+/** Fallback only when PNG files are missing on disk */
+const EMAIL_HEADER_LOGO_URL =
+    process.env.EMAIL_HEADER_LOGO_URL ||
+    `${APP_URL}/brand/email/frido_logo_yellow_banner.png`;
+const BRAND_FOOTER_LOGO_URL =
+    process.env.BRAND_FOOTER_LOGO_URL || `${APP_URL}/brand/footer_logo.png`;
+const SUPPORT_CONTACT = process.env.SUPPORT_CONTACT || 'support@myfrido.com';
+const COMPANY_NAME = 'Frido';
 
-function getClient() {
-    if (!emailClient) {
-        const connectionString = process.env.AZURE_EMAIL_CONNECTION_STRING;
-        if (!connectionString) {
-            console.warn('⚠ AZURE_EMAIL_CONNECTION_STRING not set — emails will be logged to console');
-            return null;
-        }
-        emailClient = new EmailClient(connectionString);
-    }
-    return emailClient;
+const ROLE_LABEL = {
+    admin: 'Administrator',
+    manager: 'Manager',
+    staff: 'Team Member',
+};
+
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
-const SENDER = () => process.env.AZURE_EMAIL_SENDER || 'DoNotReply@myfrido.com';
-const APP_NAME = 'Frido Master Dashboard';
-const APP_URL = process.env.APP_URL || 'http://localhost:3000';
-
 /**
- * Common HTML wrapper for branded emails.
+ * Common branded HTML wrapper. Uses table-based layout for broad email-client
+ * support (Outlook, Gmail, Apple Mail). Fonts rely on the recipient device's
+ * system stack so the email never looks templated or AI-generated.
  */
-function wrapHtml(body) {
-    return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0e1a; color: #f1f5f9; margin: 0; padding: 0; }
-            .container { max-width: 560px; margin: 0 auto; padding: 40px 24px; }
-            .card { background: #1e293b; border-radius: 16px; padding: 40px 32px; border: 1px solid rgba(148,163,184,0.12); }
-            .logo { font-size: 28px; font-weight: 800; margin-bottom: 32px; }
-            .logo span { color: #f59e0b; }
-            h1 { font-size: 22px; font-weight: 700; margin: 0 0 12px; color: #f1f5f9; }
-            p { font-size: 15px; line-height: 1.7; color: #94a3b8; margin: 0 0 16px; }
-            .btn { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-size: 15px; font-weight: 700; text-decoration: none; border-radius: 10px; margin: 8px 0 24px; }
-            .code-box { background: #0f172a; border: 1px solid rgba(148,163,184,0.15); border-radius: 10px; padding: 16px 20px; font-family: monospace; font-size: 18px; letter-spacing: 2px; color: #fbbf24; text-align: center; margin: 12px 0 24px; }
-            .footer { text-align: center; padding-top: 24px; font-size: 12px; color: #64748b; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="card">
-                <div class="logo">⚡ <span>Frido</span></div>
-                ${body}
-            </div>
-            <div class="footer">
-                <p>© ${new Date().getFullYear()} Frido — All rights reserved</p>
-            </div>
-        </div>
-    </body>
-    </html>`;
+function wrapHtml({ previewText = '', body, headerImgSrc, footerImgSrc }) {
+    const fontStack = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${APP_NAME}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:${fontStack};color:#1f2937;">
+    <span style="display:none!important;visibility:hidden;opacity:0;color:transparent;height:0;width:0;overflow:hidden;mso-hide:all;">${previewText}</span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f5;">
+        <tr>
+            <td align="center" style="padding:24px 12px;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:6px;overflow:hidden;">
+                    <tr>
+                        <td align="center" style="background-color:#000000;padding:22px 24px;">
+                            <img src="${headerImgSrc}" alt="${COMPANY_NAME}" width="240" style="display:block;border:0;outline:none;text-decoration:none;width:240px;max-width:85%;height:auto;margin:0 auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:32px 36px 24px 36px;font-family:${fontStack};color:#1f2937;font-size:15px;line-height:1.6;">
+                            ${body}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#0a0a0a;padding:24px 36px;font-family:${fontStack};color:#cbd5e1;font-size:13px;line-height:1.6;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td valign="top" style="padding-bottom:8px;">
+                                        <img src="${footerImgSrc}" alt="${COMPANY_NAME}" height="28" style="display:block;border:0;outline:none;text-decoration:none;height:28px;width:auto;max-width:160px;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#cbd5e1;font-size:13px;">Best regards,<br><strong style="color:#ffffff;">The ${COMPANY_NAME} Team</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-top:14px;color:#94a3b8;font-size:12px;line-height:1.6;">
+                                        You received this message because your administrator added you to the ${APP_NAME}.<br>
+                                        For help, contact <a href="mailto:${SUPPORT_CONTACT}" style="color:#fbbf24;text-decoration:none;">${SUPPORT_CONTACT}</a>.
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <p style="margin:14px 0 0 0;color:#9ca3af;font-family:${fontStack};font-size:11px;">© ${new Date().getFullYear()} ${COMPANY_NAME}. All rights reserved.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+}
+
+function primaryButton(label, url) {
+    const fontStack = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:24px auto;">
+        <tr>
+            <td bgcolor="#0a0a0a" style="border-radius:6px;">
+                <a href="${url}" target="_blank" style="display:inline-block;padding:14px 36px;font-family:${fontStack};font-size:15px;font-weight:700;color:#facc15;background-color:#0a0a0a;border-radius:6px;text-decoration:none;letter-spacing:0.3px;">${label}</a>
+            </td>
+        </tr>
+    </table>`;
+}
+
+function resolveImageSources() {
+    const { headerSrc, footerSrc, attachments } = getBrandImagesForEmail();
+    return {
+        headerImgSrc: headerSrc || EMAIL_HEADER_LOGO_URL,
+        footerImgSrc: footerSrc || BRAND_FOOTER_LOGO_URL,
+        attachments,
+    };
 }
 
 /**
  * Send an invitation email to a new user.
  */
-export async function sendInviteEmail(toEmail, toName, tempPassword) {
-    const html = wrapHtml(`
-        <h1>Welcome to ${APP_NAME}!</h1>
-        <p>Hi ${toName},</p>
-        <p>You've been invited to join the Frido Master Dashboard. Use the credentials below to sign in:</p>
-        <p style="color: #f1f5f9; font-weight: 600; margin-bottom: 4px;">Email</p>
-        <div class="code-box">${toEmail}</div>
-        <p style="color: #f1f5f9; font-weight: 600; margin-bottom: 4px;">Temporary Password</p>
-        <div class="code-box">${tempPassword}</div>
-        <a href="${APP_URL}" class="btn">Sign In to Dashboard →</a>
-        <p style="font-size: 13px;">Please change your password after your first login for security.</p>
-    `);
+export async function sendInviteEmail(params) {
+    const { toEmail, toName, inviteLink, inviterName, inviterEmail, role } = params;
+    const safeName = escapeHtml(toName);
+    const safeInviter = escapeHtml(inviterName);
+    const roleLabel = ROLE_LABEL[role] || 'Team Member';
+    const inviterLine = inviterEmail
+        ? `<strong>${safeInviter}</strong> (${escapeHtml(inviterEmail)})`
+        : `<strong>${safeInviter}</strong>`;
 
-    return sendEmail(toEmail, toName, `You're invited to ${APP_NAME}`, html);
+    const body = `
+        <h1 style="margin:0 0 16px 0;font-size:22px;font-weight:700;color:#0f172a;">Hi ${safeName},</h1>
+        <p style="margin:0 0 14px 0;">${inviterLine} has invited you to access the ${APP_NAME} as a <strong>${roleLabel}</strong>.</p>
+        <p style="margin:0 0 14px 0;">Use the button below to set a password and finish creating your account. The link is unique to you and can only be used once.</p>
+        ${primaryButton('Accept Invite', inviteLink)}
+        <p style="margin:0 0 8px 0;color:#475569;font-size:13px;">This invitation expires in 7 days. If it is no longer needed, you can ignore this email.</p>
+        <p style="margin:0;color:#94a3b8;font-size:12px;word-break:break-all;">If the button does not work, copy and paste this link into your browser:<br>${inviteLink}</p>
+    `;
+
+    const subject = `${inviterName} invited you to ${APP_NAME}`;
+    const { headerImgSrc, footerImgSrc, attachments } = resolveImageSources();
+    const html = wrapHtml({
+        previewText: `${inviterName} has invited you to access the ${APP_NAME}.`,
+        body,
+        headerImgSrc,
+        footerImgSrc,
+    });
+
+    return sendGraphMail({ toEmail, toName, subject, html, attachments });
 }
 
 /**
  * Send a password reset email.
  */
 export async function sendPasswordResetEmail(toEmail, toName, resetToken) {
+    const safeName = escapeHtml(toName);
     const resetLink = `${APP_URL}?reset=${resetToken}`;
-    const html = wrapHtml(`
-        <h1>Password Reset Request</h1>
-        <p>Hi ${toName},</p>
-        <p>We received a request to reset your password for the Frido Master Dashboard. Click the button below to set a new password:</p>
-        <a href="${resetLink}" class="btn">Reset Password →</a>
-        <p style="font-size: 13px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
-        <p style="font-size: 12px; color: #64748b; word-break: break-all;">Direct link: ${resetLink}</p>
-    `);
+    const body = `
+        <h1 style="margin:0 0 16px 0;font-size:22px;font-weight:700;color:#0f172a;">Hi ${safeName},</h1>
+        <p style="margin:0 0 14px 0;">We received a request to reset the password on your ${APP_NAME} account.</p>
+        <p style="margin:0 0 14px 0;">Click the button below to choose a new password. This link is valid for the next hour.</p>
+        ${primaryButton('Reset Password', resetLink)}
+        <p style="margin:0 0 8px 0;color:#475569;font-size:13px;">If you did not request this, you can safely ignore this email — your password will remain unchanged.</p>
+        <p style="margin:0;color:#94a3b8;font-size:12px;word-break:break-all;">If the button does not work, copy and paste this link into your browser:<br>${resetLink}</p>
+    `;
 
-    return sendEmail(toEmail, toName, `${APP_NAME} — Password Reset`, html);
-}
+    const { headerImgSrc, footerImgSrc, attachments } = resolveImageSources();
+    const html = wrapHtml({
+        previewText: `Reset your ${APP_NAME} password.`,
+        body,
+        headerImgSrc,
+        footerImgSrc,
+    });
 
-/**
- * Core send function — uses Azure or logs to console as fallback.
- */
-async function sendEmail(toEmail, toName, subject, html) {
-    const client = getClient();
-
-    const message = {
-        senderAddress: SENDER(),
-        content: {
-            subject,
-            html,
-        },
-        recipients: {
-            to: [{ address: toEmail, displayName: toName }],
-        },
-    };
-
-    if (!client) {
-        console.log('\n📧 EMAIL (console fallback — Azure not configured):');
-        console.log(`   To: ${toName} <${toEmail}>`);
-        console.log(`   Subject: ${subject}`);
-        console.log(`   (HTML body omitted)\n`);
-        return { status: 'logged', message: 'Email logged to console (Azure not configured)' };
-    }
-
-    try {
-        const poller = await client.beginSend(message);
-        const result = await poller.pollUntilDone();
-        console.log(`✓ Email sent to ${toEmail}: ${result.id}`);
-        return { status: 'sent', id: result.id };
-    } catch (err) {
-        console.error(`✗ Failed to send email to ${toEmail}:`, err.message);
-        throw err;
-    }
+    return sendGraphMail({ toEmail, toName, subject: `${APP_NAME} — Password reset`, html, attachments });
 }

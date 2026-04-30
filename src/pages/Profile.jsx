@@ -1,22 +1,18 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { UserButton, useUser } from '@clerk/react';
 import './Profile.css';
 
 export default function Profile() {
-    const { user, updateProfile, changePassword } = useAuth();
+    const { user, updateProfile } = useAuth();
+    const { user: clerkUser } = useUser();
     const [editing, setEditing] = useState(false);
     const [name, setName] = useState(user?.name || '');
     const [department, setDepartment] = useState(user?.department || '');
+    const [storeName, setStoreName] = useState(user?.store_name || '');
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
-
-    // Password change
-    const [showPasswordForm, setShowPasswordForm] = useState(false);
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [passwordMessage, setPasswordMessage] = useState('');
-    const [passwordSaving, setPasswordSaving] = useState(false);
+    const fileInputRef = useRef(null);
 
     if (!user) return null;
 
@@ -27,6 +23,7 @@ export default function Profile() {
     const roleBadge = {
         admin: { label: 'Administrator', color: 'amber' },
         manager: { label: 'Manager', color: 'purple' },
+        staff: { label: 'Staff', color: 'blue' },
         viewer: { label: 'Viewer', color: 'blue' },
     }[user.role] || { label: user.role, color: 'blue' };
 
@@ -34,7 +31,7 @@ export default function Profile() {
         setSaving(true);
         setMessage('');
         try {
-            await updateProfile({ name, department });
+            await updateProfile({ name, department, store_name: storeName });
             setMessage('Profile updated successfully');
             setEditing(false);
         } catch (err) {
@@ -44,39 +41,32 @@ export default function Profile() {
         }
     };
 
-    const handlePasswordChange = async (e) => {
-        e.preventDefault();
-        setPasswordMessage('');
-
-        if (newPassword !== confirmPassword) {
-            setPasswordMessage('Passwords do not match');
-            return;
-        }
-        if (newPassword.length < 4) {
-            setPasswordMessage('Password must be at least 4 characters');
-            return;
-        }
-
-        setPasswordSaving(true);
-        try {
-            await changePassword(currentPassword, newPassword);
-            setPasswordMessage('Password changed successfully');
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            setTimeout(() => setShowPasswordForm(false), 1500);
-        } catch (err) {
-            setPasswordMessage(err.message || 'Failed to change password');
-        } finally {
-            setPasswordSaving(false);
-        }
-    };
-
     const handleCancel = () => {
         setName(user.name);
         setDepartment(user.department || '');
+        setStoreName(user.store_name || '');
         setEditing(false);
         setMessage('');
+    };
+
+    const handlePhotoClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handlePhotoChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setSaving(true);
+        setMessage('');
+        try {
+            await clerkUser.setProfileImage({ file });
+            setMessage('Profile photo updated successfully');
+        } catch (err) {
+            setMessage(err.message || 'Failed to update photo');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -92,7 +82,29 @@ export default function Profile() {
                     <div className="profile__card-header">
                         <div className="profile__avatar-section">
                             <div className="profile__avatar">
-                                <span>{initials}</span>
+                                {user.avatar_url ? (
+                                    <img src={user.avatar_url} alt={user.name} />
+                                ) : (
+                                    <span>{initials}</span>
+                                )}
+                                <button 
+                                    className="profile__avatar-upload" 
+                                    onClick={handlePhotoClick}
+                                    title="Change Photo"
+                                    disabled={saving}
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                        <circle cx="12" cy="13" r="4" />
+                                    </svg>
+                                </button>
+                                <input 
+                                    type="file" 
+                                    ref={fileInputRef} 
+                                    onChange={handlePhotoChange} 
+                                    accept="image/*" 
+                                    style={{ display: 'none' }} 
+                                />
                             </div>
                             <div>
                                 <h2 className="profile__name">{user.name}</h2>
@@ -147,6 +159,25 @@ export default function Profile() {
                                 <label className="profile__label">Role</label>
                                 <p className="profile__value">{roleBadge.label}</p>
                             </div>
+
+                            {user.role === 'staff' && (
+                                <div className="profile__field">
+                                    <label className="profile__label">Store Name</label>
+                                    {editing ? (
+                                        <input
+                                            type="text"
+                                            className="profile__input"
+                                            value={storeName}
+                                            onChange={(e) => setStoreName(e.target.value)}
+                                            placeholder="e.g., Mumbai - Phoenix"
+                                        />
+                                    ) : (
+                                        <p className="profile__value">
+                                            {user.store_name || <span className="profile__value--muted">Not set</span>}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {message && (
@@ -186,46 +217,25 @@ export default function Profile() {
                         </svg>
                         <h3 className="profile__card-title">Security</h3>
                     </div>
-
-                    {showPasswordForm ? (
-                        <form onSubmit={handlePasswordChange} className="profile__password-form">
-                            <div className="profile__field">
-                                <label className="profile__label">Current Password</label>
-                                <input type="password" className="profile__input" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-                            </div>
-                            <div className="profile__field">
-                                <label className="profile__label">New Password</label>
-                                <input type="password" className="profile__input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-                            </div>
-                            <div className="profile__field">
-                                <label className="profile__label">Confirm Password</label>
-                                <input type="password" className="profile__input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                            </div>
-                            {passwordMessage && (
-                                <div className={`profile__message ${passwordMessage.includes('success') ? 'profile__message--success' : 'profile__message--error'}`}>
-                                    {passwordMessage}
-                                </div>
-                            )}
-                            <div className="profile__actions">
-                                <button type="submit" className="profile__btn profile__btn--primary" disabled={passwordSaving}>
-                                    {passwordSaving ? 'Changing...' : 'Change Password'}
-                                </button>
-                                <button type="button" className="profile__btn profile__btn--ghost" onClick={() => { setShowPasswordForm(false); setPasswordMessage(''); }}>
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="profile__security-item">
-                            <div>
-                                <p className="profile__security-title">Password</p>
-                                <p className="profile__security-desc">Last updated: Unknown</p>
-                            </div>
-                            <button className="profile__btn profile__btn--outline profile__btn--sm" onClick={() => setShowPasswordForm(true)}>
-                                Change
-                            </button>
+                    <div className="profile__security-item">
+                        <div>
+                            <p className="profile__security-title">Account Security</p>
+                            <p className="profile__security-desc">Manage your password, two-factor authentication, and security settings through Clerk.</p>
                         </div>
-                    )}
+                        <UserButton
+                            appearance={{
+                                elements: {
+                                    userButtonTrigger: {
+                                        padding: '8px 16px',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--border-hover)',
+                                        background: 'transparent',
+                                        fontSize: '13px',
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* ── Account Info Card ── */}
@@ -239,22 +249,6 @@ export default function Profile() {
                         <h3 className="profile__card-title">Account Info</h3>
                     </div>
                     <div className="profile__info-grid">
-                        <div className="profile__info-item">
-                            <span className="profile__info-label">Member since</span>
-                            <span className="profile__info-value">
-                                {user.created_at
-                                    ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-                                    : 'N/A'}
-                            </span>
-                        </div>
-                        <div className="profile__info-item">
-                            <span className="profile__info-label">Last login</span>
-                            <span className="profile__info-value">
-                                {user.last_login
-                                    ? new Date(user.last_login).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
-                                    : 'N/A'}
-                            </span>
-                        </div>
                         <div className="profile__info-item">
                             <span className="profile__info-label">Account status</span>
                             <span className="profile__info-value profile__info-value--active">Active</span>

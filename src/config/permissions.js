@@ -3,20 +3,20 @@
  * Maps route paths to allowed roles.
  *
  * Roles hierarchy:
- *   admin   → Retail admin, analytics, feedback department, user management
- *   manager → Same retail-staff visibility as viewer for listed routes
- *   viewer  → Retail - Staff and profile
+ *   admin → Retail admin, analytics, feedback department, user management, notices
+ *   staff → Retail staff and profile
+ *   viewer → Legacy alias (treated like staff for routes)
  */
 
 export const ROLES = {
     ADMIN: 'admin',
-    MANAGER: 'manager',
-    VIEWER: 'viewer',
+    STAFF: 'staff',
+    VIEWER: 'viewer', // legacy alias for older local/demo data
 };
 
-export const ALL_ROLES = [ROLES.ADMIN, ROLES.MANAGER, ROLES.VIEWER];
-export const MANAGER_AND_ABOVE = [ROLES.ADMIN, ROLES.MANAGER];
+export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER];
 export const ADMIN_ONLY = [ROLES.ADMIN];
+export const STAFF_ONLY = [ROLES.STAFF, ROLES.VIEWER];
 
 /**
  * Route-level permissions.

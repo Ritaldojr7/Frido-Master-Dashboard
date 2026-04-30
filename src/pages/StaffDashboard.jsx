@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { staffExperienceStoreData } from '../config/dashboardData';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
+import { apiFetch } from '../context/AuthContext';
 import './SubPage.css';
 
 const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
@@ -51,6 +52,42 @@ const contactBoxData = [
 
 export default function StaffDashboard() {
     const data = staffExperienceStoreData;
+    const [notices, setNotices] = useState([]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchNoticeFeed = async () => {
+            try {
+                const response = await apiFetch('/api/notices/feed');
+                if (isMounted) {
+                    setNotices(response.notices || []);
+                }
+            } catch (err) {
+                console.warn('Unable to load notice feed:', err.message);
+            }
+        };
+
+        fetchNoticeFeed();
+        const interval = window.setInterval(fetchNoticeFeed, 60_000);
+        return () => {
+            isMounted = false;
+            window.clearInterval(interval);
+        };
+    }, []);
+
+    const formatSentAt = (value) => {
+        if (!value) return 'Unknown time';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Unknown time';
+        return date.toLocaleString([], {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
 
     return (
         <div className="subpage">
@@ -76,6 +113,29 @@ export default function StaffDashboard() {
                         animationBase={idx * 80}
                     />
                 ))}
+            </div>
+
+            <div className="subpage__notices animate-fade-in-up" style={{ animationDelay: '60ms' }}>
+                <h2 className="subpage__notices-title">Notice Center</h2>
+                {notices.length === 0 ? (
+                    <p className="subpage__notices-empty">No active notices right now.</p>
+                ) : (
+                    <div className="subpage__notices-list">
+                        {notices.map((notice) => (
+                            <article key={notice.id} className="subpage__notice-item">
+                                <div className="subpage__notice-meta">
+                                    <span>From {notice.sender_name || notice.created_by_name || 'Frido Admin'}</span>
+                                    <span>{formatSentAt(notice.created_at)}</span>
+                                    <span className={`subpage__notice-status subpage__notice-status--${notice.acknowledged_at ? 'ack' : notice.dismissed_at ? 'dismissed' : 'new'}`}>
+                                        {notice.acknowledged_at ? 'Acknowledged' : notice.dismissed_at ? 'Dismissed' : 'New'}
+                                    </span>
+                                </div>
+                                <h3 className="subpage__notice-heading">{notice.title}</h3>
+                                <p className="subpage__notice-body">{notice.body}</p>
+                            </article>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '80ms' }}>

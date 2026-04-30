@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       open: true,
+      allowedHosts: true,
       proxy: {
         '/api': {
           target: 'http://localhost:4000',
@@ -30,7 +31,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
       setupFiles: './src/test/setup.js',
-      include: ['src/**/*.{test,spec}.{js,jsx}'],
+      include: ['src/**/*.{test,spec}.{js,jsx}', 'server/**/*.{test,spec}.{js,jsx}'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html'],

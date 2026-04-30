@@ -1,29 +1,32 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
-// App uses AuthGate which requires AuthContext; AuthGate shows login form when not authenticated.
-// So when we render App, we see the login form unless we mock AuthContext to be authenticated.
-// We can test that the app renders (login form or content) and that routes work when authenticated.
-// For a simple smoke test, render with MemoryRouter and check that something from the app renders.
-function renderApp(initialEntries = ['/']) {
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <App />
-    </MemoryRouter>
-  );
-}
+// Mock Clerk at the top level
+vi.mock('@clerk/react', () => ({
+  ClerkProvider: ({ children }) => children,
+  Show: ({ when, children }) => {
+    if (when === 'signed-out') return children;
+    if (when === 'signed-in') return null;
+    return children;
+  },
+  SignInButton: ({ children }) => children,
+  SignUpButton: ({ children }) => children,
+  UserButton: () => null,
+  useUser: () => ({ user: null, isLoaded: true }),
+  useAuth: () => ({ isSignedIn: false, getToken: vi.fn() }),
+  useClerk: () => ({ signOut: vi.fn() }),
+}));
 
 describe('App', () => {
   it('renders without crashing', () => {
-    renderApp();
-    // When not authenticated, AuthGate shows the login form
-    expect(screen.getByText('Welcome Back')).toBeInTheDocument();
+    render(<App />);
+    // When not authenticated, AuthGate shows the login page
+    expect(screen.getByText('Welcome back')).toBeInTheDocument();
   });
 
   it('shows Frido branding on login screen', () => {
-    renderApp();
-    expect(screen.getByText('Frido')).toBeInTheDocument();
+    render(<App />);
+    expect(screen.getByRole('img', { name: /frido master dashboard/i })).toBeInTheDocument();
   });
 });

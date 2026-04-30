@@ -42,6 +42,7 @@ export default function UserMenu() {
     const roleBadge = {
         admin: { label: 'Admin', className: 'user-menu__role--admin' },
         manager: { label: 'Manager', className: 'user-menu__role--manager' },
+        staff: { label: 'Staff', className: 'user-menu__role--viewer' },
         viewer: { label: 'Viewer', className: 'user-menu__role--viewer' },
     }[user.role] || { label: user.role, className: '' };
 
@@ -60,7 +61,11 @@ export default function UserMenu() {
                 id="user-menu-trigger"
             >
                 <div className="user-menu__avatar">
-                    <span>{initials}</span>
+                    {user.avatar_url ? (
+                        <img src={user.avatar_url} alt={user.name} />
+                    ) : (
+                        <span>{initials}</span>
+                    )}
                 </div>
                 <span className="user-menu__name">{user.name?.split(' ')[0]}</span>
                 <svg className={`user-menu__chevron ${open ? 'user-menu__chevron--open' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -73,7 +78,11 @@ export default function UserMenu() {
                     {/* User Info */}
                     <div className="user-menu__info">
                         <div className="user-menu__avatar user-menu__avatar--lg">
-                            <span>{initials}</span>
+                            {user.avatar_url ? (
+                                <img src={user.avatar_url} alt={user.name} />
+                            ) : (
+                                <span>{initials}</span>
+                            )}
                         </div>
                         <div className="user-menu__details">
                             <span className="user-menu__fullname">{user.name}</span>
