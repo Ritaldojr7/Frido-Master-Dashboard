@@ -3,19 +3,28 @@ import { createRoot } from 'react-dom/client'
 import { ClerkProvider } from '@clerk/react'
 import './index.css'
 import App from './App.jsx'
+import MissingClerkPublishableKey from './MissingClerkPublishableKey.jsx'
 
-const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const clerkPublishableKey = String(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? '').trim()
+
+const rootEl = document.getElementById('root')
+const root = createRoot(rootEl)
 
 if (!clerkPublishableKey && import.meta.env.PROD) {
-    console.error(
-        '[Frido Dashboard] Missing VITE_CLERK_PUBLISHABLE_KEY — build with Clerk keys set (Render: define at build time).'
-    );
+    root.render(
+        <StrictMode>
+            <MissingClerkPublishableKey />
+        </StrictMode>,
+    )
+} else {
+    if (!clerkPublishableKey && !import.meta.env.PROD) {
+        console.warn('[Frido Dashboard] VITE_CLERK_PUBLISHABLE_KEY is empty — Clerk sign-in will not work.')
+    }
+    root.render(
+        <StrictMode>
+            <ClerkProvider afterSignOutUrl="/" publishableKey={clerkPublishableKey}>
+                <App />
+            </ClerkProvider>
+        </StrictMode>,
+    )
 }
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ClerkProvider afterSignOutUrl="/" publishableKey={clerkPublishableKey}>
-      <App />
-    </ClerkProvider>
-  </StrictMode>,
-)

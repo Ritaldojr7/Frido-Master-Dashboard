@@ -43,7 +43,7 @@ async function apiFetch(path, options = {}) {
 
     let res;
     try {
-        res = await fetch(path, { ...options, headers });
+        res = await fetch(path, { ...options, headers, signal: options.signal });
     } catch {
         throw new Error('Unable to connect to the server. Please check your connection.');
     }
@@ -75,10 +75,13 @@ async function apiFetch(path, options = {}) {
     return data;
 }
 
+/** Avoid infinite spinner if /api/users/me never resolves (proxy / cold start). */
+const BACKEND_ME_TIMEOUT_MS = 25_000;
+
 export function AuthProvider({ children }) {
     // ── Clerk hooks ──────────────────────────────────────────
     const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
-    const { isSignedIn, getToken } = useClerkAuth();
+    const { isSignedIn, getToken, isLoaded: isAuthLoaded } = useClerkAuth();
     const { signOut } = useClerk();
     const [backendUser, setBackendUser] = useState(null);
     const [isBackendLoaded, setIsBackendLoaded] = useState(false);
@@ -91,17 +94,32 @@ export function AuthProvider({ children }) {
         let isMounted = true;
         async function fetchMe() {
             if (!isSignedIn || DEMO_MODE) {
+                setBackendUser(null);
                 setIsBackendLoaded(true);
                 return;
             }
+            setIsBackendLoaded(false);
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), BACKEND_ME_TIMEOUT_MS);
             try {
-                const data = await apiFetch('/api/users/me');
+                const data = await apiFetch('/api/users/me', { signal: controller.signal });
                 if (isMounted) {
                     setBackendUser(data.user);
                 }
             } catch (err) {
-                console.error('Failed to fetch backend user:', err);
+                const aborted =
+                    err?.name === 'AbortError' ||
+                    err?.constructor?.name === 'AbortError' ||
+                    /aborted|AbortError/i.test(String(err?.message));
+                if (aborted) {
+                    console.error(
+                        'Timed out loading profile from /api/users/me — check API health and Clerk secret key.'
+                    );
+                } else {
+                    console.error('Failed to fetch backend user:', err);
+                }
             } finally {
+                clearTimeout(tid);
                 if (isMounted) {
                     setIsBackendLoaded(true);
                 }
@@ -111,7 +129,9 @@ export function AuthProvider({ children }) {
         return () => { isMounted = false; };
     }, [isSignedIn]);
 
-    const isLoading = DEMO_MODE ? false : (!isUserLoaded || (isSignedIn && !isBackendLoaded));
+    /** Wait for Clerk session machinery; when signed in, also wait for Clerk user + backend /me. */
+    const clerkReady = isAuthLoaded && (!isSignedIn || isUserLoaded);
+    const isLoading = DEMO_MODE ? false : (!clerkReady || (isSignedIn && !isBackendLoaded));
     const isAuthenticated = DEMO_MODE ? true : !!isSignedIn;
 
     // Map Clerk user to the shape the rest of the app expects

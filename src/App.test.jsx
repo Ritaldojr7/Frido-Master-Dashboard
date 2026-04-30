@@ -14,7 +14,7 @@ vi.mock('@clerk/react', () => ({
   SignUpButton: ({ children }) => children,
   UserButton: () => null,
   useUser: () => ({ user: null, isLoaded: true }),
-  useAuth: () => ({ isSignedIn: false, getToken: vi.fn() }),
+  useAuth: () => ({ isSignedIn: false, isLoaded: true, getToken: vi.fn() }),
   useClerk: () => ({ signOut: vi.fn() }),
 }));
 

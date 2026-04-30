@@ -15,6 +15,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # CLERK_SECRET_KEY + VITE_CLERK_PUBLISHABLE_KEY must be the SAME Clerk application (dev vs prod keys match).
+      # VITE_* is inlined at npm run build — set both before deploy or the SPA hangs on loading / seed fails with Unauthorized.
       - key: CLERK_SECRET_KEY
         sync: false
       - key: VITE_CLERK_PUBLISHABLE_KEY

@@ -32,6 +32,11 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: './src/test/setup.js',
       include: ['src/**/*.{test,spec}.{js,jsx}', 'server/**/*.{test,spec}.{js,jsx}'],
+      env: {
+        // ClerkProvider requires a non-empty publishable key shape in tests / CI without repo .env.
+        VITE_CLERK_PUBLISHABLE_KEY:
+          process.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_00000000000000000000000000000000',
+      },
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html'],
