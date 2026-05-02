@@ -152,7 +152,7 @@ export function AuthProvider({ children }) {
             id: clerkUser.id,
             email,
             name,
-            role: backendUser?.role || clerkUser.publicMetadata?.role || 'staff',
+            role: backendUser?.role ?? clerkUser.publicMetadata?.role ?? 'staff',
             department: backendUser?.department || clerkUser.publicMetadata?.department || '',
             store_name: backendUser?.store_name || clerkUser.publicMetadata?.store_name || '',
             avatar_url: clerkUser.imageUrl || '',
@@ -190,7 +190,7 @@ export function AuthProvider({ children }) {
         (...roles) => {
             if (DEMO_MODE) return true;
             if (!clerkUser) return false;
-            const userRole = backendUser?.role || clerkUser.publicMetadata?.role || 'staff';
+            const userRole = backendUser?.role ?? clerkUser.publicMetadata?.role ?? 'staff';
             return roles.includes(userRole);
         },
         [clerkUser, backendUser]

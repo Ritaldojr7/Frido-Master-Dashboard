@@ -7,7 +7,10 @@ export function normalizeEmail(email) {
 }
 
 export function normalizeRole(role) {
-    return VALID_ROLES.includes(role) ? role : 'staff';
+    const r = String(role ?? '')
+        .toLowerCase()
+        .trim();
+    return VALID_ROLES.includes(r) ? r : 'staff';
 }
 
 export function createRawToken() {

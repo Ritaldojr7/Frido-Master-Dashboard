@@ -18,6 +18,43 @@ import {
 const router = Router();
 const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
+/**
+ * Merge role into Clerk publicMetadata. Invite rows often use placeholder UUID ids;
+ * Clerk only recognizes real ids (`user_…`), so fall back to lookup by email.
+ */
+async function syncClerkPublicRole({ dbUserId, email }, role) {
+    const mergeMd = async (clerkUserId, prevMd) => {
+        await clerkClient.users.updateUserMetadata(clerkUserId, {
+            publicMetadata: { ...(prevMd || {}), role },
+        });
+    };
+
+    const emailNorm = normalizeEmail(email);
+
+    if (typeof dbUserId === 'string' && dbUserId.startsWith('user_')) {
+        try {
+            const u = await clerkClient.users.getUser(dbUserId);
+            await mergeMd(dbUserId, u.publicMetadata);
+            return;
+        } catch (err) {
+            console.warn('[users] Clerk role sync by id failed, trying email:', err.message);
+        }
+    }
+
+    if (!emailNorm) return;
+
+    const { data: list } = await clerkClient.users.getUserList({
+        emailAddress: [emailNorm],
+        limit: 10,
+    });
+    const clerkUser = list?.[0];
+    if (!clerkUser) {
+        console.warn('[users] No Clerk user for email — metadata sync skipped:', emailNorm);
+        return;
+    }
+    await mergeMd(clerkUser.id, clerkUser.publicMetadata);
+}
+
 // All routes require authentication
 router.use(verifyToken);
 
@@ -288,21 +325,17 @@ router.put('/:id/role', requireRole(['admin']), async (req, res) => {
         return res.status(400).json({ error: 'You cannot change your own role' });
     }
 
-    const target = await db.get('SELECT id FROM users WHERE id = ?', [id]);
+    const target = await db.get('SELECT id, email FROM users WHERE id = ?', [id]);
     if (!target) {
         return res.status(404).json({ error: 'User not found' });
     }
 
     await db.run('UPDATE users SET role = ?, updated_at = ? WHERE id = ?', [role, now(), id]);
 
-    // Sync with Clerk
     try {
-        await clerkClient.users.updateUserMetadata(id, {
-            publicMetadata: { role }
-        });
+        await syncClerkPublicRole(target, role);
     } catch (err) {
         console.error('Failed to sync role update to Clerk:', err);
-        // We continue because the local DB is updated, but this is a warning sign.
     }
 
     const user = await db.get(
