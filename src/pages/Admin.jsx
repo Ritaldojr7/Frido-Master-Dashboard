@@ -270,21 +270,18 @@ export default function Admin() {
                     <h1 className="admin__title">User Management</h1>
                     <p className="admin__subtitle">Manage team members, roles, and access permissions</p>
                 </div>
-                <button className="admin__invite-btn" onClick={() => setShowInviteModal(true)}>
+                <button
+                    type="button"
+                    className="admin__invite-btn"
+                    onClick={() => setShowInviteModal(true)}
+                >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
                         <circle cx="8.5" cy="7" r="4" />
                         <line x1="20" y1="8" x2="20" y2="14" />
                         <line x1="23" y1="11" x2="17" y2="11" />
                     </svg>
-                    Invite User
-                </button>
-                <button className="admin__invite-btn admin__invite-btn--secondary" onClick={() => setShowNoticeModal(true)}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 01-3.46 0" />
-                    </svg>
-                    Send Notice
+                    Invite user
                 </button>
             </div>
 
@@ -437,8 +434,12 @@ export default function Admin() {
                     <h2>Staff Notices</h2>
                     <p>Publish urgent popups and track staff acknowledgement.</p>
                 </div>
-                <button className="admin__invite-btn admin__invite-btn--secondary" onClick={() => setShowNoticeModal(true)}>
-                    New Notice
+                <button type="button" className="admin__invite-btn" onClick={() => setShowNoticeModal(true)}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 01-3.46 0" />
+                    </svg>
+                    New notice
                 </button>
             </div>
 
