@@ -170,3 +170,90 @@ export async function sendPasswordResetEmail(toEmail, toName, resetToken) {
 
     return sendGraphMail({ toEmail, toName, subject: `${APP_NAME} — Password reset`, html, attachments });
 }
+
+const PRIORITY_SUBJECT_PREFIX = {
+    urgent: '[Urgent] ',
+    important: '[Important] ',
+    normal: '',
+};
+
+function formatNoticeSentAt(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const tz = process.env.NOTICES_EMAIL_TIMEZONE || 'Asia/Kolkata';
+    try {
+        return d.toLocaleString('en-IN', {
+            dateStyle: 'long',
+            timeStyle: 'short',
+            timeZone: tz,
+        });
+    } catch {
+        return d.toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' });
+    }
+}
+
+/**
+ * Email copy of a staff notice (Microsoft Graph). Shown in-app when online; email reaches staff who are not logged in.
+ */
+export async function sendStaffNoticeEmail({ toEmail, toName, notice }) {
+    const {
+        title,
+        body: noticeBody,
+        priority = 'normal',
+        sent_by_name: senderName = 'Frido Admin',
+        cta_label: ctaLabel = '',
+        cta_url: ctaUrl = '',
+        created_at: createdAt,
+    } = notice;
+
+    const safeName = escapeHtml(toName || 'there');
+    const safeTitle = escapeHtml(title);
+    const safeBody = escapeHtml(String(noticeBody ?? '')).replace(/\r\n|\r|\n/g, '<br>');
+    const safeSender = escapeHtml(senderName);
+    const prefix = PRIORITY_SUBJECT_PREFIX[priority] || '';
+    const priorityLabel =
+        priority === 'urgent' ? 'Urgent' : priority === 'important' ? 'Important' : 'Normal';
+    const subject = `${prefix}${APP_NAME} notice: ${title}`;
+
+    const sentFormatted = formatNoticeSentAt(createdAt);
+    const sentLine = sentFormatted
+        ? `<p style="margin:0 0 12px 0;color:#64748b;font-size:13px;"><strong style="color:#475569;">Sent:</strong> ${escapeHtml(sentFormatted)}</p>`
+        : '';
+
+    const requiresAck = Boolean(notice.requires_ack);
+
+    const ackLine = requiresAck
+        ? '<p style="margin:16px 0 0 0;padding:12px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;color:#92400e;font-size:13px;"><strong>Action required:</strong> Please open the dashboard and acknowledge this notice when you can.</p>'
+        : '';
+
+    const ctaBlock =
+        ctaLabel?.trim() && ctaUrl?.trim()
+            ? `${primaryButton(escapeHtml(ctaLabel.trim()), ctaUrl.trim())}`
+            : `${primaryButton('Open dashboard', APP_URL)}`;
+
+    const body = `
+        <h1 style="margin:0 0 16px 0;font-size:22px;font-weight:700;color:#0f172a;">Hi ${safeName},</h1>
+        <p style="margin:0 0 6px 0;color:#475569;font-size:14px;"><strong style="color:#334155;">From:</strong> ${safeSender}</p>
+        ${sentLine}
+        <p style="margin:0 0 14px 0;color:#475569;font-size:14px;">This is a team notice on the ${APP_NAME}.</p>
+        <p style="margin:0 0 4px 0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;">${escapeHtml(priorityLabel)} priority</p>
+        <h2 style="margin:8px 0 12px 0;font-size:18px;font-weight:700;color:#0f172a;">${safeTitle}</h2>
+        <p style="margin:0 0 8px 0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;">Message</p>
+        <div style="margin:0 0 20px 0;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:15px;line-height:1.55;color:#334155;">${safeBody}</div>
+        ${ackLine}
+        ${ctaBlock}
+        <p style="margin:20px 0 0 0;color:#64748b;font-size:13px;">When you sign in, you will also see this notice in the dashboard.</p>
+    `;
+
+    const previewBits = [senderName, sentFormatted || null, title].filter(Boolean);
+    const { headerImgSrc, footerImgSrc, attachments } = resolveImageSources();
+    const html = wrapHtml({
+        previewText: previewBits.join(' · '),
+        body,
+        headerImgSrc,
+        footerImgSrc,
+    });
+
+    return sendGraphMail({ toEmail, toName, subject, html, attachments });
+}
