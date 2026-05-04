@@ -60,6 +60,40 @@
     gap: 18px;
 }
 
+.profile__avatar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.profile__avatar-remove {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.profile__avatar-remove:hover:not(:disabled) {
+    color: var(--text-primary);
+}
+
+.profile__avatar-remove:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.profile__avatar-meta {
+    min-width: 0;
+}
+
 .profile__avatar {
     width: 56px;
     height: 56px;

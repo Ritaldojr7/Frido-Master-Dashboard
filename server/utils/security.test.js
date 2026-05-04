@@ -43,8 +43,8 @@ describe('normalizeEmail', () => {
 
 describe('normalizeRole', () => {
     it('accepts valid roles unchanged', () => {
-        expect(normalizeRole('admin')).toBe('admin');
-        expect(normalizeRole('staff')).toBe('staff');
+        expect(normalizeRole('Admin')).toBe('admin');
+        expect(normalizeRole('STAFF')).toBe('staff');
     });
 
     it('falls back to staff for unknown roles', () => {

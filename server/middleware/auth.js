@@ -5,6 +5,7 @@
  */
 import { createClerkClient, verifyToken as clerkVerifyToken } from '@clerk/express';
 import db, { now } from '../db.js';
+import { normalizeEmail, normalizeRole } from '../utils/security.js';
 
 const clerkClient = createClerkClient({
     secretKey: process.env.CLERK_SECRET_KEY,
@@ -36,25 +37,38 @@ export async function verifyToken(req, res, next) {
             // Fetch their full profile from Clerk to get the authoritative role and email.
             try {
                 const clerkUser = await clerkClient.users.getUser(userId);
-                const role = clerkUser.publicMetadata?.role || 'staff';
-                const email = clerkUser.emailAddresses[0]?.emailAddress || '';
-                const name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'User';
+                const roleFromClerk = normalizeRole(clerkUser.publicMetadata?.role || 'staff');
+                const email = normalizeEmail(clerkUser.emailAddresses[0]?.emailAddress || '');
+                const name =
+                    `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'User';
 
-                // Sync Clerk user to local SQLite (updates placeholder ID from invitation)
-                if (email) {
-                    await db.run(
-                        `INSERT INTO users (id, email, name, password_hash, role, status, updated_at)
-                         VALUES (?, ?, ?, ?, ?, 'active', ?)
-                         ON CONFLICT (email) DO UPDATE SET
-                         id = excluded.id,
-                         status = 'active',
-                         role = excluded.role,
-                         last_login = excluded.updated_at,
-                         updated_at = excluded.updated_at`,
-                        [userId, email, name, '', role, now()]
+                if (!email) {
+                    userRow = { id: userId, role: 'staff', email: '', name: 'User' };
+                } else {
+                    const existingByEmail = await db.get(
+                        'SELECT id, role, email, name FROM users WHERE email = ?',
+                        [email]
                     );
+
+                    if (existingByEmail) {
+                        // Linked Clerk ID after invite — preserve DB role/department/etc.; Clerk sync often lagged or broken during invite (placeholder id).
+                        await db.run(
+                            `UPDATE users SET id = ?, status = 'active', last_login = ?, updated_at = ? WHERE email = ?`,
+                            [userId, now(), now(), email]
+                        );
+                        userRow = await db.get(
+                            'SELECT id, role, email, name FROM users WHERE id = ?',
+                            [userId]
+                        );
+                    } else {
+                        await db.run(
+                            `INSERT INTO users (id, email, name, password_hash, role, status, updated_at)
+                             VALUES (?, ?, ?, ?, ?, 'active', ?)`,
+                            [userId, email, name, '', roleFromClerk, now()]
+                        );
+                        userRow = { id: userId, role: roleFromClerk, email, name };
+                    }
                 }
-                userRow = { id: userId, role, email, name };
             } catch (clerkErr) {
                 console.error('Failed to fetch user from Clerk:', clerkErr.message);
                 userRow = { id: userId, role: 'staff', email: '', name: 'User' }; // Safe fallback

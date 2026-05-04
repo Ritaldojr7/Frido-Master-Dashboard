@@ -327,7 +327,11 @@ export default function Admin() {
                             </thead>
                             <tbody>
                                 {users.map((u) => {
-                                    const userInitials = u.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                                    const nameStr = String(u.name || '').trim();
+                                    const userInitials = nameStr
+                                        ? nameStr.split(/\s+/).map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+                                        : '–';
+                                    const avatarSrc = typeof u.avatar_url === 'string' ? u.avatar_url.trim() : '';
                                     const pendingDelete = Boolean(u.deleted_at);
                                     const remainingDays = daysUntilPurge(u.deleted_at);
                                     const rowClasses = ['admin__row--disabled', 'admin__row--deleted']
@@ -341,7 +345,15 @@ export default function Admin() {
                                             <td>
                                                 <div className="admin__user-cell">
                                                     <div className="admin__user-avatar">
-                                                        <span>{userInitials}</span>
+                                                        {avatarSrc ? (
+                                                            <img
+                                                                src={avatarSrc}
+                                                                alt={`${nameStr || 'User'} avatar`}
+                                                                referrerPolicy="no-referrer"
+                                                            />
+                                                        ) : (
+                                                            <span>{userInitials}</span>
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <span className="admin__user-name">{u.name}</span>
