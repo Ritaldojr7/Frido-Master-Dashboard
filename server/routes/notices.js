@@ -2,8 +2,59 @@ import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import db, { now } from '../db.js';
 import { verifyToken, requireRole } from '../middleware/auth.js';
+import { sendStaffNoticeEmail } from '../services/email.js';
 
 const router = Router();
+
+/**
+ * Email all active non-admin users (staff) a copy of a new notice. Runs async so POST /admin returns quickly.
+ * Requires the same Microsoft Graph env vars as invitations (see graphEmail.js). Set NOTICES_EMAIL_DISABLED=1 to skip.
+ */
+function scheduleStaffNoticeEmails(noticeRow) {
+    if (process.env.NOTICES_EMAIL_DISABLED === 'true' || process.env.NOTICES_EMAIL_DISABLED === '1') {
+        return;
+    }
+    const isActive =
+        Number(noticeRow.active) === 1 || noticeRow.active === true;
+    if (!isActive) return;
+
+    void (async () => {
+        let recipients = [];
+        try {
+            recipients = await db.all(
+                `SELECT TRIM(email) AS email, TRIM(COALESCE(name, '')) AS name FROM users
+                 WHERE status = 'active'
+                   AND role != 'admin'
+                   AND deleted_at IS NULL
+                   AND email IS NOT NULL
+                   AND LENGTH(TRIM(COALESCE(email, ''))) > 0`
+            );
+        } catch (err) {
+            console.error('[notices] Failed to load email recipients:', err.message);
+            return;
+        }
+
+        let ok = 0;
+        let failed = 0;
+        for (const row of recipients) {
+            const toEmail = row.email;
+            if (!toEmail) continue;
+            const toName = row.name || toEmail;
+            try {
+                await sendStaffNoticeEmail({ toEmail, toName, notice: noticeRow });
+                ok++;
+            } catch (e) {
+                failed++;
+                console.error(`[notices] Staff notice email failed for ${toEmail}:`, e?.message || e);
+            }
+        }
+        if (recipients.length) {
+            console.log(
+                `[notices] Email copy for "${noticeRow.title}" (${noticeRow.id}): ${ok} sent, ${failed} failed, ${recipients.length} recipients`
+            );
+        }
+    })().catch((e) => console.error('[notices] Staff notice email job failed:', e.message));
+}
 
 router.use(verifyToken);
 
@@ -208,6 +259,8 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
             notice.updated_at,
         ]
     );
+
+    scheduleStaffNoticeEmails(notice);
 
     res.status(201).json({ notice: serializeNotice(notice) });
 });
