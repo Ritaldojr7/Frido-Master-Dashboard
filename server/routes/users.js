@@ -105,7 +105,7 @@ router.put('/me', async (req, res) => {
     }
     if (avatar_url !== undefined) {
         updates.push('avatar_url = ?');
-        values.push(avatar_url);
+        values.push(avatar_url == null ? '' : String(avatar_url).trim());
     }
 
     if (updates.length === 0) {

@@ -129,6 +129,34 @@ export function AuthProvider({ children }) {
         return () => { isMounted = false; };
     }, [isSignedIn]);
 
+    /** Keep DB avatar_url aligned with Clerk (header uses Clerk URL; Admin user list reads DB). */
+    useEffect(() => {
+        if (DEMO_MODE || !isSignedIn || !isBackendLoaded || !clerkUser || !backendUser?.id) return;
+
+        const fromClerk = String(clerkUser.imageUrl ?? '').trim();
+        const fromDb = String(backendUser.avatar_url ?? '').trim();
+        if (fromClerk === fromDb) return;
+
+        let cancelled = false;
+        const t = window.setTimeout(async () => {
+            try {
+                const data = await apiFetch('/api/users/me', {
+                    method: 'PUT',
+                    body: JSON.stringify({ avatar_url: fromClerk }),
+                });
+                if (!cancelled && data?.user) {
+                    setBackendUser(data.user);
+                }
+            } catch {
+                // Non-fatal: admin list may show initials until Clerk/DB converge.
+            }
+        }, 400);
+        return () => {
+            cancelled = true;
+            window.clearTimeout(t);
+        };
+    }, [isSignedIn, isBackendLoaded, clerkUser, backendUser?.id, backendUser?.avatar_url]);
+
     /** Wait for Clerk session machinery; when signed in, also wait for Clerk user + backend /me. */
     const clerkReady = isAuthLoaded && (!isSignedIn || isUserLoaded);
     const isLoading = DEMO_MODE ? false : (!clerkReady || (isSignedIn && !isBackendLoaded));

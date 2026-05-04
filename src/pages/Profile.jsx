@@ -61,9 +61,30 @@ export default function Profile() {
         setMessage('');
         try {
             await clerkUser.setProfileImage({ file });
+            if (typeof clerkUser.reload === 'function') {
+                await clerkUser.reload();
+            }
             setMessage('Profile photo updated successfully');
         } catch (err) {
             setMessage(err.message || 'Failed to update photo');
+        } finally {
+            setSaving(false);
+            e.target.value = '';
+        }
+    };
+
+    const handlePhotoRemove = async () => {
+        if (!confirm('Remove your profile photo? It will also clear from the user directory for admins.')) return;
+        setSaving(true);
+        setMessage('');
+        try {
+            await clerkUser.setProfileImage({ file: null });
+            if (typeof clerkUser.reload === 'function') {
+                await clerkUser.reload();
+            }
+            setMessage('Profile photo removed');
+        } catch (err) {
+            setMessage(err.message || 'Failed to remove photo');
         } finally {
             setSaving(false);
         }
@@ -81,32 +102,45 @@ export default function Profile() {
                 <div className="profile__card profile__card--main">
                     <div className="profile__card-header">
                         <div className="profile__avatar-section">
-                            <div className="profile__avatar">
-                                {user.avatar_url ? (
-                                    <img src={user.avatar_url} alt={user.name} />
-                                ) : (
-                                    <span>{initials}</span>
+                            <div className="profile__avatar-column">
+                                <div className="profile__avatar">
+                                    {user.avatar_url ? (
+                                        <img src={user.avatar_url} alt="" />
+                                    ) : (
+                                        <span>{initials}</span>
+                                    )}
+                                    <button 
+                                        type="button"
+                                        className="profile__avatar-upload" 
+                                        onClick={handlePhotoClick}
+                                        title="Change Photo"
+                                        disabled={saving}
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                                            <circle cx="12" cy="13" r="4" />
+                                        </svg>
+                                    </button>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        onChange={handlePhotoChange} 
+                                        accept="image/*" 
+                                        style={{ display: 'none' }} 
+                                    />
+                                </div>
+                                {Boolean(clerkUser?.imageUrl && String(clerkUser.imageUrl).trim()) && (
+                                    <button
+                                        type="button"
+                                        className="profile__avatar-remove"
+                                        onClick={handlePhotoRemove}
+                                        disabled={saving}
+                                    >
+                                        Remove photo
+                                    </button>
                                 )}
-                                <button 
-                                    className="profile__avatar-upload" 
-                                    onClick={handlePhotoClick}
-                                    title="Change Photo"
-                                    disabled={saving}
-                                >
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                                        <circle cx="12" cy="13" r="4" />
-                                    </svg>
-                                </button>
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef} 
-                                    onChange={handlePhotoChange} 
-                                    accept="image/*" 
-                                    style={{ display: 'none' }} 
-                                />
                             </div>
-                            <div>
+                            <div className="profile__avatar-meta">
                                 <h2 className="profile__name">{user.name}</h2>
                                 <span className="profile__email">{user.email}</span>
                             </div>
