@@ -218,7 +218,6 @@ export const experienceStoreData = {
                 { title: 'Raise a CS Ticket', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark' },
                 { title: 'Request a GST Bill', url: 'https://form.asana.com/?k=aRlrsFCkrJRDTUdLHizQ1g&d=1207389811595677', variant: 'dark' },
                 { title: 'Raise a Custom Insole Ticket', url: '#', variant: 'dark' },
-                { title: 'Raise a Custom MT Ticket', url: '#', variant: 'dark' },
             ],
         },
         {
@@ -389,10 +388,7 @@ export const staffExperienceStoreData = {
             title: 'Request Custom Product',
             icon: 'shopping-cart',
             accentColor: 'purple',
-            links: [
-                { title: 'Request a Custom Insole', url: '#', variant: 'dark', isComingSoon: true },
-                { title: 'Request a Custom MT', url: '#', variant: 'dark', isComingSoon: true },
-            ],
+            links: [{ title: 'Request a Custom Insole', url: '#', variant: 'dark', isComingSoon: true }],
         },
         {
             id: 'crm-logins',
@@ -437,8 +433,8 @@ export const staffExperienceStoreData = {
             icon: 'users',
             accentColor: 'rose',
             links: [
-                { title: 'Knowlarity IVR Login', url: '#', variant: 'dark', tooltip: 'For credentials contact Asma', isComingSoon: true },
-                { title: 'Limechat CRM Login', url: '#', variant: 'dark', isComingSoon: true },
+                { title: 'Knowlarity IVR Login', url: 'https://sr.knowlarity.com/', variant: 'dark', tooltip: 'For credentials contact Asma' },
+                { title: 'Limechat CRM Login', url: 'https://lcdemo.limechat.ai/app/login', variant: 'dark' },
             ],
         },
 

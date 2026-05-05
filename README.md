@@ -2,47 +2,32 @@
 
 Internal dashboard for Frido: links to Shopify, stores, tooling, feedback, and a small admin area for users/notices.
 
-<p align="center">
-  <img src="docs/screenshots/login.png" alt="Login" width="800" />
-</p>
-
 ---
 
 ## What it does
 
 **Access** — Sign-in goes through Clerk. Invites decide who gets in; permissions split admin vs staff (see `src/config/permissions.js`).
 
-<p align="center">
-  <img src="docs/screenshots/analytics.png" alt="Dashboard / analytics view" width="800" />
-</p>
-
 Rough overview by area:
 
 - **Analytics** — Quick links/metrics hooked to your Shopify (and related) workflows; specifics live in-app.
 - **Retail / ops** — Store and admin shortcuts (CRM, after-sales, etc.) in one place.
-
-<p align="center">
-  <img src="docs/screenshots/retail-admin.png" alt="Retail and admin shortcuts" width="800" />
-</p>
-
 - **Feedback** — Product feedback views and leaderboard-style summaries where configured.
-
-<p align="center">
-  <img src="docs/screenshots/feedback.png" alt="Feedback" width="800" />
-</p>
 
 ---
 
 ## Stack
 
-| Layer        | Choices |
-|-------------|---------|
-| Frontend    | React 19, Vite, React Router 7 |
-| Auth        | Clerk |
-| Styles      | Plain CSS (shared tokens / layout in `src/`) |
-| API         | Express 5 |
-| Database    | PostgreSQL via Supabase in production; SQLite locally |
-| Email       | Microsoft Graph where invites/transactions need it |
+
+| Layer    | Choices                                               |
+| -------- | ----------------------------------------------------- |
+| Frontend | React 19, Vite, React Router 7                        |
+| Auth     | Clerk                                                 |
+| Styles   | Plain CSS (shared tokens / layout in `src/`)          |
+| API      | Express 5                                             |
+| Database | PostgreSQL via Supabase in production; SQLite locally |
+| Email    | Microsoft Graph where invites/transactions need it    |
+
 
 ---
 
@@ -64,7 +49,7 @@ Handy scripts:
 - `npm run dev` — Vite only  
 - `npm run dev:server` — API only  
 - `npm run dev:all` — both  
-- `npm run build` — production build  
+- `npm run build` — production build
 
 Production deploy details (Render, env vars, DB ping for Supabase) are in `.env.example` comments and hosting config—not duplicated here unless you ask.
 
