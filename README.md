@@ -1,16 +1,81 @@
-# React + Vite
+# Frido Master Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Internal dashboard for Frido: links to Shopify, stores, tooling, feedback, and a small admin area for users/notices.
 
-Currently, two official plugins are available:
+<p align="center">
+  <img src="docs/screenshots/login.png" alt="Login" width="800" />
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## What it does
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Access** — Sign-in goes through Clerk. Invites decide who gets in; permissions split admin vs staff (see `src/config/permissions.js`).
 
-## Expanding the ESLint configuration
+<p align="center">
+  <img src="docs/screenshots/analytics.png" alt="Dashboard / analytics view" width="800" />
+</p>
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and `[typescript-eslint](https://typescript-eslint.io)` in your project.
+Rough overview by area:
+
+- **Analytics** — Quick links/metrics hooked to your Shopify (and related) workflows; specifics live in-app.
+- **Retail / ops** — Store and admin shortcuts (CRM, after-sales, etc.) in one place.
+
+<p align="center">
+  <img src="docs/screenshots/retail-admin.png" alt="Retail and admin shortcuts" width="800" />
+</p>
+
+- **Feedback** — Product feedback views and leaderboard-style summaries where configured.
+
+<p align="center">
+  <img src="docs/screenshots/feedback.png" alt="Feedback" width="800" />
+</p>
+
+---
+
+## Stack
+
+| Layer        | Choices |
+|-------------|---------|
+| Frontend    | React 19, Vite, React Router 7 |
+| Auth        | Clerk |
+| Styles      | Plain CSS (shared tokens / layout in `src/`) |
+| API         | Express 5 |
+| Database    | PostgreSQL via Supabase in production; SQLite locally |
+| Email       | Microsoft Graph where invites/transactions need it |
+
+---
+
+## Run it locally
+
+You’ll need Node 18+ and npm.
+
+```bash
+git clone https://github.com/Ritaldojr7/Frido-Master-Dashboard.git
+cd Frido-Master-Dashboard
+npm install
+cp .env.example .env
+# fill Clerk keys and anything else from .env.example
+npm run dev:all
+```
+
+Handy scripts:
+
+- `npm run dev` — Vite only  
+- `npm run dev:server` — API only  
+- `npm run dev:all` — both  
+- `npm run build` — production build  
+
+Production deploy details (Render, env vars, DB ping for Supabase) are in `.env.example` comments and hosting config—not duplicated here unless you ask.
+
+---
+
+## Look & feel
+
+Yellow accent (`#FFE100`), dark mode, and lightweight glass-style panels are intentional; tweaks are mostly in `src/App.css` and page CSS alongside components.
+
+---
+
+## License
+
+© 2026 Frido. Proprietary—all rights reserved.
