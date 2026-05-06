@@ -71,36 +71,62 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Bottom wash only: tall strip anchored to viewport bottom (does not “travel” with scroll). */
+/* Page fill — no global gradient here (bottom hue uses html::after, toggled when scrolled to end). */
 [data-theme="light"] body {
   background-color: var(--color-bg-top);
-  background-image: linear-gradient(
+  background-image: none;
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--color-bg-top);
+  background-image: none;
+  color: var(--color-text-primary);
+}
+
+/* Bottom hue: fixed strip, hidden until Layout adds .doc-at-bottom-hue on <html>. */
+[data-theme="light"] html::after,
+[data-theme="dark"] html::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+}
+
+[data-theme="light"] html::after {
+  height: min(380px, 48vh);
+  background: linear-gradient(
     to top,
     var(--color-bg-bottom) 0%,
     var(--color-bg-warm) 42%,
     rgba(255, 253, 240, 0.65) 72%,
     rgba(255, 255, 255, 0) 100%
   );
-  background-repeat: no-repeat;
-  background-position: bottom center;
-  background-size: 100% min(380px, 48vh);
-  background-attachment: fixed;
-  color: var(--color-text-primary);
 }
 
-[data-theme="dark"] body {
-  background-color: var(--color-bg-top);
-  background-image: linear-gradient(
+[data-theme="dark"] html::after {
+  height: min(280px, 40vh);
+  background: linear-gradient(
     to top,
     var(--color-bg-bottom) 0%,
     var(--color-bg-mid) 55%,
     rgba(14, 17, 22, 0) 100%
   );
-  background-repeat: no-repeat;
-  background-position: bottom center;
-  background-size: 100% min(280px, 40vh);
-  background-attachment: fixed;
-  color: var(--color-text-primary);
+}
+
+[data-theme="light"] html.doc-at-bottom-hue::after,
+[data-theme="dark"] html.doc-at-bottom-hue::after {
+  opacity: 1;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 :focus-visible {
@@ -203,6 +229,11 @@
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.section-group--visible .glass-panel--section {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .glass-panel--section .section-group__grid > *,

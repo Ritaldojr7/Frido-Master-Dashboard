@@ -49,6 +49,33 @@ export default function Layout({ children }) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    /** Yellow bottom hue: only while viewport is near the document bottom (not mid-page). */
+    useEffect(() => {
+        const THRESHOLD_PX = 96;
+
+        const updateBottomHue = () => {
+            const root = document.documentElement;
+            const scrollTop = root.scrollTop;
+            const viewport = window.innerHeight;
+            const docHeight = root.scrollHeight;
+            const nearBottom = scrollTop + viewport >= docHeight - THRESHOLD_PX;
+            root.classList.toggle('doc-at-bottom-hue', nearBottom);
+        };
+
+        updateBottomHue();
+        const t = window.setTimeout(updateBottomHue, 50);
+
+        window.addEventListener('scroll', updateBottomHue, { passive: true });
+        window.addEventListener('resize', updateBottomHue, { passive: true });
+
+        return () => {
+            window.clearTimeout(t);
+            window.removeEventListener('scroll', updateBottomHue);
+            window.removeEventListener('resize', updateBottomHue);
+            document.documentElement.classList.remove('doc-at-bottom-hue');
+        };
+    }, [location.pathname]);
+
     // Filter nav items by user role
     const visibleNavItems = navItems.filter(item => {
         const allowed = sidebarPermissions[item.path];
