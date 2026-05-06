@@ -31,7 +31,10 @@ export default function Layout({ children }) {
     const location = useLocation();
 
     const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
-    const isWideMain = location.pathname.startsWith('/feedback-department');
+    const isWideMain =
+        location.pathname.startsWith('/feedback-department') ||
+        location.pathname === '/retail-staff' ||
+        location.pathname === '/retail-admin';
 
     const staffStats = useMemo(() => {
         const sections = staffExperienceStoreData.sections;

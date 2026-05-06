@@ -188,6 +188,7 @@
   margin-bottom: var(--layout-section-gap);
   opacity: 1;
   transform: none;
+  min-width: 0;
 }
 
 .glass-panel--section {
@@ -344,7 +345,10 @@
 
 /* ── Subpages / staff ── */
 .subpage {
+  width: 100%;
   max-width: var(--layout-content-max);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .subpage__sections {
