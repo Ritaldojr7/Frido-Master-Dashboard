@@ -4,15 +4,6 @@
 
 .section-group {
     position: relative;
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    margin-bottom: var(--space-xl);
-}
-
-.section-group--visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 .section-group__header {
@@ -76,18 +67,25 @@
     white-space: nowrap;
 }
 
-/* ── Card Grid ── */
-.section-group__grid {
+.glass-panel--section .section-group__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-md);
 }
 
-@media (max-width: 600px) {
-    .section-group__grid {
-        grid-template-columns: 1fr;
+@media (min-width: 768px) {
+    .glass-panel--section .section-group__grid {
+        grid-template-columns: repeat(2, 1fr);
     }
+}
 
+@media (min-width: 1280px) {
+    .glass-panel--section .section-group__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
     .section-group__header {
         flex-wrap: wrap;
     }
