@@ -5,14 +5,16 @@ import fridoLogo from '../../assets/footer_logo.png';
 export default function Footer() {
     return (
         <footer className="footer">
+            <div className="footer-line" />
             <div className="footer-top">
                 <div className="footer-top-left">
                     <div className="footer-brand">
                         <img src={fridoLogo} alt="Frido" className="footer-logo" />
+                        <div className="footer-copyright">© 2026 ALL RIGHTS RESERVED.</div>
                     </div>
                 </div>
                 <div className="footer-top-center">
-                    <p className="footer-slogan">Freedom To Do More</p>
+                    <div className="footer-slogan">Freedom To Do More</div>
                 </div>
                 <div className="footer-top-right">
                     <div className="footer-socials">
@@ -44,7 +46,6 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
-            <div className="footer-bottom-bar">© 2026 ALL RIGHTS RESERVED.</div>
         </footer>
     );
 }
