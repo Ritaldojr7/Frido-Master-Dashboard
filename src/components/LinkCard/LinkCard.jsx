@@ -60,8 +60,6 @@ export default function LinkCard({
                 target={!isInternal && !hasSubOptions && !isComingSoon && url && url !== '#' ? '_blank' : undefined}
                 rel={!isInternal && !hasSubOptions && !isComingSoon ? 'noopener noreferrer' : undefined}
                 className={`link-card ${colorClass} ${expanded ? 'link-card--expanded' : ''} ${comingSoonClass}`}
-                aria-disabled={isComingSoon ? 'true' : undefined}
-                tabIndex={isComingSoon ? -1 : undefined}
             >
                 <div className="link-card__content">
                     {iconPaths.length > 0 && (

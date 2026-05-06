@@ -31,10 +31,6 @@ export default function Layout({ children }) {
     const location = useLocation();
 
     const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
-    const isWideMain =
-        location.pathname.startsWith('/feedback-department') ||
-        location.pathname === '/retail-staff' ||
-        location.pathname === '/retail-admin';
 
     const staffStats = useMemo(() => {
         const sections = staffExperienceStoreData.sections;
@@ -181,7 +177,7 @@ export default function Layout({ children }) {
                 </header>
 
                 {/* Page Content */}
-                <main className={`main-content ${isWideMain ? 'main-content--wide' : ''}`}>
+                <main className="main-content">
                     {children}
                 </main>
                 <Footer />
