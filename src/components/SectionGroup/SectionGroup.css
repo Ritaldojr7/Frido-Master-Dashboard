@@ -69,9 +69,20 @@
 
 .glass-panel--section .section-group__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-md);
-    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .glass-panel--section .section-group__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .glass-panel--section .section-group__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (max-width: 600px) {

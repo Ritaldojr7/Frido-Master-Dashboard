@@ -116,7 +116,6 @@
   gap: 4px;
   animation: fadeInUp var(--transition-slow) ease-out both;
   width: 100%;
-  min-width: 0;
   position: relative;
 }
 
