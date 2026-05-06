@@ -50,6 +50,17 @@ const contactBoxData = [
     { name: 'Saiyed Abdal', pocFor: 'Highest Escalations', email: 'saiyed.a@myfrido.com', phone: '+917987962503' },
 ];
 
+/** Maps POC label → glass badge tint (data-poc) */
+function pocBadgeSlug(pocFor) {
+    const map = {
+        Tech: 'tech',
+        MIS: 'mis',
+        Overall: 'overall',
+        'Highest Escalations': 'escalation',
+    };
+    return map[pocFor] || 'default';
+}
+
 export default function StaffDashboard() {
     const data = staffExperienceStoreData;
     const [notices, setNotices] = useState([]);
@@ -154,7 +165,7 @@ export default function StaffDashboard() {
                             {contactBoxData.map((contact, idx) => (
                                 <tr key={idx}>
                                     <td className="subpage__contact-name">Level {idx + 1}: {contact.name}</td>
-                                    <td><span className="subpage__contact-badge">{contact.pocFor}</span></td>
+                                    <td><span className="subpage__contact-badge" data-poc={pocBadgeSlug(contact.pocFor)}>{contact.pocFor}</span></td>
                                     <td><a href={`mailto:${contact.email}`}>{contact.email}</a></td>
                                     <td><a href={`tel:${contact.phone}`}>{contact.phone}</a></td>
                                 </tr>
