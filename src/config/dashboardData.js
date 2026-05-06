@@ -37,7 +37,34 @@ export const ICONS = {
     speakerphone: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z',
     hashtag: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14',
     table: 'M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z',
+
+    // Section headers (Heroicons outline-style paths — MIT)
+    /** Customer care / after-sales dialogue */
+    supportChat:
+        'M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155',
+    /** Daily ops — forms, tasks, checklists */
+    opsClipboard:
+        'M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75',
+    /** Product / cart requests */
+    shoppingCart:
+        'M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z',
+    /** Secure access / credentials */
+    credentialsKey:
+        'M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z',
+    /** Walk-in leads — add / capture people */
+    leadCapture:
+        'M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z',
+    /** Store / ops analytics board */
+    analyticsPresentation:
+        'M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605',
 };
+
+/** Paths for inline SVG (string or multi-path array). */
+export function iconPathList(iconKey) {
+    const def = ICONS[iconKey];
+    if (def == null) return [];
+    return Array.isArray(def) ? def : [def];
+}
 
 // ─── Master Dashboard Categories ───
 export const dashboardCategories = [
@@ -363,7 +390,7 @@ export const staffExperienceStoreData = {
         {
             id: 'after-sales-support',
             title: 'After Sales Support',
-            icon: 'ticket',
+            icon: 'supportChat',
             accentColor: 'amber',
             links: [
                 { title: 'Raise a Customer Success Ticket', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark', tooltip: 'POC : Shernyl | Note: This link will redirect you to the slack channel where you can use the workflow to submit the form' },
@@ -373,7 +400,7 @@ export const staffExperienceStoreData = {
         {
             id: 'day-to-day-operations',
             title: 'Day to Day Operations',
-            icon: 'document',
+            icon: 'opsClipboard',
             accentColor: 'blue',
             links: [
                 { title: 'Raise Maintainence Ticket', url: 'https://form.asana.com/?k=T88A9GJZzo-RaSyJDacLYw&d=1207389811595677', variant: 'dark' },
@@ -386,14 +413,14 @@ export const staffExperienceStoreData = {
         {
             id: 'request-custom-product',
             title: 'Request Custom Product',
-            icon: 'shopping-cart',
+            icon: 'shoppingCart',
             accentColor: 'purple',
             links: [{ title: 'Request a Custom Insole', url: '#', variant: 'dark', isComingSoon: true }],
         },
         {
             id: 'crm-logins',
             title: 'CRM & Logins',
-            icon: 'login',
+            icon: 'credentialsKey',
             accentColor: 'emerald',
             links: [
                 {
@@ -430,7 +457,7 @@ export const staffExperienceStoreData = {
         {
             id: 'walk-in-lead-management',
             title: 'Walk In Lead Management',
-            icon: 'users',
+            icon: 'leadCapture',
             accentColor: 'rose',
             links: [
                 { title: 'Knowlarity IVR Login', url: 'https://sr.knowlarity.com/', variant: 'dark', tooltip: 'For credentials contact Asma' },
@@ -441,7 +468,7 @@ export const staffExperienceStoreData = {
         {
             id: 'analytics',
             title: 'Analytics',
-            icon: 'chart',
+            icon: 'analyticsPresentation',
             accentColor: 'dark',
             links: [
                 { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark', isComingSoon: true },
@@ -458,7 +485,7 @@ export const retailAdminData = {
         {
             id: 'after-sales-support',
             title: 'After Sales Support',
-            icon: 'ticket',
+            icon: 'supportChat',
             accentColor: 'amber',
             links: [
                 { title: 'Customer Success Ticket Asana Project', url: 'https://app.asana.com/1/1207389811595677/project/1213316876312751/list', variant: 'dark' },
@@ -469,7 +496,7 @@ export const retailAdminData = {
         {
             id: 'crm-logins',
             title: 'CRM & Logins',
-            icon: 'login',
+            icon: 'credentialsKey',
             accentColor: 'emerald',
             links: [
                 {
@@ -500,7 +527,7 @@ export const retailAdminData = {
         {
             id: 'data-analytics',
             title: 'Data & Analytics',
-            icon: 'chart',
+            icon: 'analyticsPresentation',
             accentColor: 'dark',
             links: [
                 { title: 'Store Level Analytics Dashboard', url: '#', variant: 'dark', isComingSoon: true },

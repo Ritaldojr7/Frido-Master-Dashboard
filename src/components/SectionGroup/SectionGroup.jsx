@@ -1,12 +1,12 @@
 import { useRef, useEffect, useState } from 'react';
-import { ICONS } from '../../config/dashboardData';
+import { iconPathList } from '../../config/dashboardData';
 import LinkCard from '../LinkCard/LinkCard';
 import './SectionGroup.css';
 
 export default function SectionGroup({ title, icon, accentColor = 'blue', links = [], description, animationBase = 0, sectionId }) {
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
-    const iconPath = ICONS[icon];
+    const iconPaths = iconPathList(icon);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -34,9 +34,11 @@ export default function SectionGroup({ title, icon, accentColor = 'blue', links 
         >
             <div className="section-group__header">
                 <div className={`section-group__icon-badge section-group__icon-badge--${accentColor}`}>
-                    {iconPath && (
+                    {iconPaths.length > 0 && (
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d={iconPath} />
+                            {iconPaths.map((d, i) => (
+                                <path key={i} d={d} />
+                            ))}
                         </svg>
                     )}
                 </div>

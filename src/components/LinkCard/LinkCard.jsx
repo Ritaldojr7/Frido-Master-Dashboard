@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ICONS } from '../../config/dashboardData';
+import { iconPathList } from '../../config/dashboardData';
 import { AuthContext } from '../../context/AuthContext';
 import './LinkCard.css';
 
@@ -21,7 +21,7 @@ export default function LinkCard({
     const auth = useContext(AuthContext);
     const user = auth?.user;
     const [expanded, setExpanded] = useState(false);
-    const iconPath = ICONS[icon];
+    const iconPaths = iconPathList(icon);
     const isAdminUser = user?.role === 'admin';
     const showTooltip = Boolean(tooltip) && !isAdminUser;
 
@@ -62,9 +62,11 @@ export default function LinkCard({
                 className={`link-card ${colorClass} ${expanded ? 'link-card--expanded' : ''} ${comingSoonClass}`}
             >
                 <div className="link-card__content">
-                    {iconPath && (
+                    {iconPaths.length > 0 && (
                         <svg className="link-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d={iconPath} />
+                            {iconPaths.map((d, i) => (
+                                <path key={i} d={d} />
+                            ))}
                         </svg>
                     )}
                     <span className="link-card__title">{title}</span>
