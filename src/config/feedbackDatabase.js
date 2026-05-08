@@ -10,22 +10,27 @@ export const feedbackData = [
         category: 'Ergonomic Furniture',
         productName: 'Frido ErgoLuxe Executive Chair',
         productImage: 'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/FEEC_LI_Red_08_f13493cb-220a-41e4-83e1-c3e4ba92263c.jpg?v=1770878329&width=1296',
-        reportLink: 'https://drive.google.com/file/d/1Wb4aSVp6qsB4drRsx5e6OG013YHQgn-9/view?usp=drive_link',
+        reportLink: 'https://drive.google.com/file/d/1laMZBSPKVOg2HzPYwpUqilP2OgmsQdkt/view',
         releaseHistory: [
             {
-                date: '19/11/2025',
-                reportLink: 'https://drive.google.com/file/d/1Wb4aSVp6qsB4drRsx5e6OG013YHQgn-9/view?usp=drive_link'
+                date: '27/04/2026',
+                reportLink: 'https://drive.google.com/file/d/1laMZBSPKVOg2HzPYwpUqilP2OgmsQdkt/view',
+                loomLink: 'https://www.loom.com/share/53ceb69fdb04462689f48f41215583b8'
             },
             {
                 date: '21/03/2026',
                 reportLink: 'https://drive.google.com/file/d/1attQmipwkASde04EvPrrR4OLXe7lQkIW/view?usp=drive_link'
+            },
+            {
+                date: '19/11/2025',
+                reportLink: 'https://drive.google.com/file/d/1Wb4aSVp6qsB4drRsx5e6OG013YHQgn-9/view?usp=drive_link'
             }
         ],
         dataType: 'Delivered Data',
-        iterations: 2,
-        loomLink: 'https://www.loom.com/share/b97fa64f56694f34a0de1b7d3c73068a',
+        iterations: 3,
+        loomLink: 'https://www.loom.com/share/53ceb69fdb04462689f48f41215583b8',
         intentDate: '',
-        releaseDate: '19/11/2025'
+        releaseDate: '27/04/2026'
     },
     {
         id: 3,
@@ -121,21 +126,21 @@ export const feedbackData = [
         reportLink: 'https://drive.google.com/file/d/1j695yKSbl2R7rjuRQOKY7kurPXjf7zZI/view?usp=drive_link',
         releaseHistory: [
             {
-                date: '13/01/2026',
-                reportLink: 'https://drive.google.com/file/d/1j695yKSbl2R7rjuRQOKY7kurPXjf7zZI/view?usp=drive_link',
+                date: '13/02/2026',
+                reportLink: 'https://drive.google.com/file/d/1gmqtsdAUNIh8qJRKEyM0oaGeimJjSARw/view?usp=drive_link',
                 loomLink: 'https://www.loom.com/share/8d2e6339e4b8447fbe17e8446ae8d08f'
             },
             {
-                date: '13/02/2026',
-                reportLink: 'https://drive.google.com/file/d/1gmqtsdAUNIh8qJRKEyM0oaGeimJjSARw/view?usp=drive_link',
+                date: '13/01/2026',
+                reportLink: 'https://drive.google.com/file/d/1j695yKSbl2R7rjuRQOKY7kurPXjf7zZI/view?usp=drive_link',
                 loomLink: 'https://www.loom.com/share/bf517d77537944c0ac486e710571c794'
             }
         ],
         dataType: 'Delivered & Returned Data',
-        iterations: 1,
+        iterations: 2,
         loomLink: 'https://www.loom.com/share/8d2e6339e4b8447fbe17e8446ae8d08f',
         intentDate: '',
-        releaseDate: '13/01/2026'
+        releaseDate: '13/02/2026'
     },
     {
         id: 28,
@@ -154,7 +159,7 @@ export const feedbackData = [
             }
         ],
         dataType: 'Delivered & Returned Data',
-        iterations: 1,
+        iterations: 2,
         loomLink: '',
         intentDate: '',
         releaseDate: '13/01/2026'
@@ -210,24 +215,51 @@ export const feedbackData = [
         category: 'Footwear',
         productName: "Frido Men's Comfort Dual Strap Sandals",
         productImage: 'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/01C_be91769c-74e2-49c0-880d-facc7bd3a6d7.jpg?v=1770974413&width=639',
-        reportLink: 'https://drive.google.com/file/d/17QX-U7dmmYWZstQ2L_lqu8xwpOvhlRFp/view?usp=drive_link',
+        reportLink: 'https://drive.google.com/file/d/1KXzGghA7dL7UMzF4mwpH7igMWqcGi5uU/view?usp=sharing',
+        releaseHistory: [
+            {
+                date: '07/05/2026',
+                reportLink: 'https://drive.google.com/file/d/1KXzGghA7dL7UMzF4mwpH7igMWqcGi5uU/view?usp=sharing',
+                loomLink: 'https://www.loom.com/share/48c18f37a7524b4195ce18174f0fe04d'
+            },
+            {
+                date: '11/04/2026',
+                reportLink: 'https://drive.google.com/file/d/16vyT63NAyHg8EThlK2Vodcp5vhLr6doh/view?usp=drive_link',
+                loomLink: 'https://www.loom.com/share/8b5beed939544d66848e3f5e6dcdbc73'
+            },
+            {
+                date: '30/03/2026',
+                loomLink: 'https://www.loom.com/share/b3c92538ae66487198661639e988fbeb'
+            }
+        ],
         dataType: 'Delivered Data',
-        iterations: 1,
-        loomLink: 'https://www.loom.com/share/b3c92538ae66487198661639e988fbeb',
+        iterations: 3,
+        loomLink: 'https://www.loom.com/share/48c18f37a7524b4195ce18174f0fe04d',
         intentDate: '',
-        releaseDate: '30/03/2026'
+        releaseDate: '07/05/2026'
     },
     {
         id: 20,
         category: 'Footwear',
         productName: "Frido Men's Cloud Comfort Sandal",
         productImage: 'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/CCM-01B_d48a0335-962c-4c1e-b58b-86a451548a98.jpg?v=1771318268&width=639',
-        reportLink: 'https://drive.google.com/file/d/17QX-U7dmmYWZstQ2L_lqu8xwpOvhlRFp/view?usp=drive_link',
+        reportLink: 'https://drive.google.com/file/d/16vyT63NAyHg8EThlK2Vodcp5vhLr6doh/view?usp=drive_link',
+        releaseHistory: [
+            {
+                date: '11/04/2026',
+                reportLink: 'https://drive.google.com/file/d/16vyT63NAyHg8EThlK2Vodcp5vhLr6doh/view?usp=drive_link',
+                loomLink: 'https://www.loom.com/share/8b5beed939544d66848e3f5e6dcdbc73'
+            },
+            {
+                date: '30/03/2026',
+                loomLink: 'https://www.loom.com/share/b3c92538ae66487198661639e988fbeb'
+            }
+        ],
         dataType: 'Delivered Data',
-        iterations: 1,
-        loomLink: 'https://www.loom.com/share/b3c92538ae66487198661639e988fbeb',
+        iterations: 2,
+        loomLink: 'https://www.loom.com/share/8b5beed939544d66848e3f5e6dcdbc73',
         intentDate: '',
-        releaseDate: '30/03/2026'
+        releaseDate: '11/04/2026'
     },
     {
         id: 21,
@@ -422,6 +454,19 @@ export const feedbackData = [
         releaseDate: '07/01/26'
     },
     {
+        id: 34,
+        category: 'Socks',
+        productName: 'Frido Five Toe Socks',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/gray-FTS-01A_7740af3c-a6f6-4157-b5de-08e805167cfb.jpg?v=1768037822&width=1296',
+        reportLink: 'https://drive.google.com/file/d/1VrghFT0uwN27IthFIOMlTHH16PXvv11L/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/2d738d17bad1402b856ea872ae036e9b',
+        intentDate: '',
+        releaseDate: '20/04/2026'
+    },
+    {
         id: 12,
         category: 'Pillows',
         productName: 'Frido Maternity Pillow',
@@ -442,6 +487,19 @@ export const feedbackData = [
         loomLink: '',
         intentDate: '',
         releaseDate: '18/07/2025'
+    },
+    {
+        id: 35,
+        category: 'Pillows',
+        productName: 'Frido Maternity Pillow Bundle Plus',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/MB-01_Pink_6f33467f-039c-42e9-80ad-12d53f584718.jpg?v=1777707402&width=1296',
+        reportLink: 'https://drive.google.com/file/d/1AWvfMnbewkRe7xxQ27Pn7S1BnxPemPee/view?usp=sharing',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/08bd044040ad444a9ea445742f3e5126',
+        intentDate: '',
+        releaseDate: '04/05/2026'
     },
     {
         id: 13,

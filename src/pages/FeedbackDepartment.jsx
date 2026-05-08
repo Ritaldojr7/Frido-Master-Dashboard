@@ -17,11 +17,13 @@ const PRODUCT_RATINGS = {
     'Frido Sleep Eye Mask': 8.2,
     "Frido Men's Cloud Comfort Sandal": 8.1,
     'Frido Maternity Pillow': 8.1,
+    'Frido Maternity Pillow Bundle Plus': 8.1,
     'Frido Orthotics Knee Support Wrap': 8.0,
     'Frido ErgoLuxe Executive Chair': 8.0,
     'Frido Portable Standing Desk': 8.0,
     'Frido Active Knee Cap Support': 8.0,
     'Frido Active Socks- Ankle Length': 8.0,
+    'Frido Five Toe Socks': 8.0,
     'Frido Orthotics Wrist Support Brace': 7.9,
     "Frido Women's Cloud Comfort Sandal": 7.8,
     'Frido Cloud Comfort Shoes - Slip Ons': 7.8,
@@ -102,10 +104,12 @@ export default function FeedbackDepartment() {
 
     const getReleaseEntries = (item) => {
         if (Array.isArray(item.releaseHistory) && item.releaseHistory.length > 0) {
-            return item.releaseHistory.filter((entry) => entry?.date && entry?.reportLink);
+            return item.releaseHistory.filter(
+                (entry) => entry?.date && (entry?.reportLink || entry?.loomLink)
+            );
         }
-        if (item.releaseDate && item.reportLink) {
-            return [{ date: item.releaseDate, reportLink: item.reportLink }];
+        if (item.releaseDate && (item.reportLink || item.loomLink)) {
+            return [{ date: item.releaseDate, reportLink: item.reportLink, loomLink: item.loomLink }];
         }
         return [];
     };
