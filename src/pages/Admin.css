@@ -247,6 +247,11 @@
     color: var(--accent-blue-light);
 }
 
+.admin__badge--emerald {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+}
+
 /* ── Status ── */
 .admin__status {
     display: inline-flex;

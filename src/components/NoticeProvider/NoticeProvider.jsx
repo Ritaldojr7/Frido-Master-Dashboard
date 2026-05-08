@@ -19,7 +19,8 @@ export default function NoticeProvider({ children }) {
     const { user, isAuthenticated } = useAuth();
     const [notices, setNotices] = useState([]);
     const [busyNoticeId, setBusyNoticeId] = useState('');
-    const isStaffUser = user && user.role !== 'admin';
+    const isStaffUser =
+        user && user.role !== 'admin' && user.role !== 'feedback';
 
     const fetchNotices = useCallback(async () => {
         if (!isAuthenticated || !isStaffUser) {
