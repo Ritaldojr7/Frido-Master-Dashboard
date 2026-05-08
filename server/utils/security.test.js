@@ -16,8 +16,8 @@ import {
 // ── VALID_ROLES ──────────────────────────────────────────
 
 describe('VALID_ROLES', () => {
-    it('contains exactly admin and staff', () => {
-        expect(VALID_ROLES).toEqual(['admin', 'staff']);
+    it('contains admin, staff, and feedback', () => {
+        expect(VALID_ROLES).toEqual(['admin', 'staff', 'feedback']);
     });
 
     it('does not contain manager', () => {
@@ -45,6 +45,7 @@ describe('normalizeRole', () => {
     it('accepts valid roles unchanged', () => {
         expect(normalizeRole('Admin')).toBe('admin');
         expect(normalizeRole('STAFF')).toBe('staff');
+        expect(normalizeRole('Feedback')).toBe('feedback');
     });
 
     it('falls back to staff for unknown roles', () => {

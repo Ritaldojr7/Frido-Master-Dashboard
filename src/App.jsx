@@ -11,68 +11,98 @@ import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
 import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
-import { ALL_ROLES, ADMIN_ONLY } from './config/permissions';
+import { ALL_ROLES, ADMIN_ONLY, FEEDBACK_DEPARTMENT_ROLES, PROFILE_ROLES } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
 
-// Used HashRouter for GitHub Pages (no server-side routing), BrowserRouter otherwise
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 const Router = DEMO_MODE ? HashRouter : BrowserRouter;
 
 function HomeRedirect() {
-  const { user } = useAuth();
-  return <Navigate to={user?.role === 'admin' ? '/admin' : '/retail-staff'} replace />;
+    const { user } = useAuth();
+    if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user?.role === 'feedback') return <Navigate to="/feedback-department" replace />;
+    return <Navigate to="/retail-staff" replace />;
 }
 
 function App() {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AuthGate>
-          <Router>
-            <NoticeProvider>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<HomeRedirect />} />
-                  <Route path="/admin" element={
-                    <RoleGuard roles={ADMIN_ONLY}><Admin /></RoleGuard>
-                  } />
-                  <Route path="/retail-staff" element={
-                    <RoleGuard roles={ALL_ROLES}><StaffDashboard /></RoleGuard>
-                  } />
-                  <Route path="/retail-admin" element={
-                    <RoleGuard roles={ADMIN_ONLY}><RetailAdminDashboard /></RoleGuard>
-                  } />
-                  <Route path="/business-analytics" element={
-                    <RoleGuard roles={ADMIN_ONLY}>
-                      <Dashboard
-                        categories={businessAnalyticsCategories}
-                        title="Business Analytics Dashboard"
-                        subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
-                      />
-                    </RoleGuard>
-                  } />
-                  <Route path="/feedback-department" element={
-                    <RoleGuard roles={ADMIN_ONLY}>
-                      <FeedbackDepartment />
-                    </RoleGuard>
-                  } />
-                  <Route path="/profile" element={
-                    <RoleGuard roles={ALL_ROLES}><Profile /></RoleGuard>
-                  } />
-                  <Route path="*" element={
-                    <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-                      <h1 style={{ fontSize: '48px', fontWeight: 900, marginBottom: '16px' }}>404</h1>
-                      <p style={{ color: 'var(--text-secondary)' }}>Page not found</p>
-                    </div>
-                  } />
-                </Routes>
-              </Layout>
-            </NoticeProvider>
-          </Router>
-        </AuthGate>
-      </AuthProvider>
-    </ThemeProvider>
-  );
+    return (
+        <ThemeProvider>
+            <AuthProvider>
+                <AuthGate>
+                    <Router>
+                        <NoticeProvider>
+                            <Layout>
+                                <Routes>
+                                    <Route path="/" element={<HomeRedirect />} />
+                                    <Route
+                                        path="/admin"
+                                        element={
+                                            <RoleGuard roles={ADMIN_ONLY}>
+                                                <Admin />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/retail-staff"
+                                        element={
+                                            <RoleGuard roles={ALL_ROLES}>
+                                                <StaffDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/retail-admin"
+                                        element={
+                                            <RoleGuard roles={ADMIN_ONLY}>
+                                                <RetailAdminDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/business-analytics"
+                                        element={
+                                            <RoleGuard roles={ADMIN_ONLY}>
+                                                <Dashboard
+                                                    categories={businessAnalyticsCategories}
+                                                    title="Business Analytics Dashboard"
+                                                    subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
+                                                />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/feedback-department"
+                                        element={
+                                            <RoleGuard roles={FEEDBACK_DEPARTMENT_ROLES}>
+                                                <FeedbackDepartment />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/profile"
+                                        element={
+                                            <RoleGuard roles={PROFILE_ROLES}>
+                                                <Profile />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="*"
+                                        element={
+                                            <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+                                                <h1 style={{ fontSize: '48px', fontWeight: 900, marginBottom: '16px' }}>404</h1>
+                                                <p style={{ color: 'var(--text-secondary)' }}>Page not found</p>
+                                            </div>
+                                        }
+                                    />
+                                </Routes>
+                            </Layout>
+                        </NoticeProvider>
+                    </Router>
+                </AuthGate>
+            </AuthProvider>
+        </ThemeProvider>
+    );
 }
 
 export default App;

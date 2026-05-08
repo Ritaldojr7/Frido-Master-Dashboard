@@ -8,6 +8,8 @@ import {
     ALL_ROLES,
     ADMIN_ONLY,
     STAFF_ONLY,
+    FEEDBACK_DEPARTMENT_ROLES,
+    PROFILE_ROLES,
     routePermissions,
     sidebarPermissions,
     hasAccess,
@@ -23,6 +25,10 @@ describe('ROLES', () => {
 
     it('does not define manager', () => {
         expect(ROLES).not.toHaveProperty('MANAGER');
+    });
+
+    it('defines feedback department role', () => {
+        expect(ROLES.FEEDBACK).toBe('feedback');
     });
 
     it('keeps viewer as a legacy alias', () => {
@@ -58,16 +64,16 @@ describe('routePermissions', () => {
         expect(routePermissions['/retail-staff']).toEqual(ALL_ROLES);
     });
 
-    it('allows all roles to access profile', () => {
-        expect(routePermissions['/profile']).toEqual(ALL_ROLES);
+    it('allows all roles to access profile including feedback', () => {
+        expect(routePermissions['/profile']).toEqual(PROFILE_ROLES);
     });
 
     it('locks business analytics to admins', () => {
         expect(routePermissions['/business-analytics']).toEqual(ADMIN_ONLY);
     });
 
-    it('locks feedback department to admins', () => {
-        expect(routePermissions['/feedback-department']).toEqual(ADMIN_ONLY);
+    it('allows admins and feedback role to access feedback department', () => {
+        expect(routePermissions['/feedback-department']).toEqual(FEEDBACK_DEPARTMENT_ROLES);
     });
 });
 
@@ -82,6 +88,9 @@ describe('sidebarPermissions', () => {
     it('shows retail-staff to everyone', () => {
         expect(sidebarPermissions['/retail-staff']).toEqual(ALL_ROLES);
     });
+    it('shows feedback department to admins and feedback users', () => {
+        expect(sidebarPermissions['/feedback-department']).toEqual(FEEDBACK_DEPARTMENT_ROLES);
+    });
 });
 
 // ── hasAccess ────────────────────────────────────────────
@@ -92,6 +101,7 @@ describe('hasAccess', () => {
         expect(hasAccess('admin', '/retail-staff')).toBe(true);
         expect(hasAccess('admin', '/profile')).toBe(true);
         expect(hasAccess('admin', '/business-analytics')).toBe(true);
+        expect(hasAccess('admin', '/feedback-department')).toBe(true);
     });
 
     it('denies staff access to admin-only routes', () => {
@@ -109,5 +119,12 @@ describe('hasAccess', () => {
     it('returns true for unlisted routes (open by default)', () => {
         expect(hasAccess('staff', '/some-unknown-page')).toBe(true);
         expect(hasAccess('admin', '/some-unknown-page')).toBe(true);
+    });
+
+    it('allows feedback users feedback department and profile only among restricted routes', () => {
+        expect(hasAccess('feedback', '/feedback-department')).toBe(true);
+        expect(hasAccess('feedback', '/profile')).toBe(true);
+        expect(hasAccess('feedback', '/retail-staff')).toBe(false);
+        expect(hasAccess('feedback', '/admin')).toBe(false);
     });
 });

@@ -255,6 +255,7 @@ export default function Admin() {
         manager: 'admin__badge--purple',
         staff: 'admin__badge--blue',
         viewer: 'admin__badge--blue',
+        feedback: 'admin__badge--emerald',
     }[role] || '');
 
     const statusClass = (status) => ({
@@ -370,6 +371,7 @@ export default function Admin() {
                                                 >
                                                     <option value="admin">Admin</option>
                                                     <option value="staff">Staff</option>
+                                                    <option value="feedback">Feedback</option>
                                                 </select>
                                             </td>
                                             <td>
@@ -554,6 +556,7 @@ export default function Admin() {
                                 <label>Role</label>
                                 <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
                                     <option value="staff">Staff — Staff dashboard only</option>
+                                    <option value="feedback">Feedback Department Access — Feedback dashboard only</option>
                                     <option value="admin">Admin — Full access + user management</option>
                                 </select>
                             </div>

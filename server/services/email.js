@@ -23,6 +23,7 @@ const ROLE_LABEL = {
     admin: 'Administrator',
     manager: 'Manager',
     staff: 'Team Member',
+    feedback: 'Feedback Department',
 };
 
 function escapeHtml(text) {
