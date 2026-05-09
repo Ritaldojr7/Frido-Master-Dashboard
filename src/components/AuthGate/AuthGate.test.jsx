@@ -35,7 +35,7 @@ describe('AuthGate', () => {
   it('renders Frido branding', () => {
     render(<AuthGate><span>Child</span></AuthGate>);
     expect(screen.getByRole('img', { name: /frido master dashboard/i })).toBeInTheDocument();
-    expect(screen.getByText(/business intelligence/i)).toBeInTheDocument();
+    expect(screen.getByText(/analytics, feedback & admin/i)).toBeInTheDocument();
   });
 
   it('renders myfrido.com footer link', () => {
