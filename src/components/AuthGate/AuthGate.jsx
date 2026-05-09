@@ -59,14 +59,15 @@ export default function AuthGate({ children }) {
                             </div>
 
                             <h2 className="login__brand-headline">
-                                Your central command
+                                One workspace for retail teams,
                                 <br />
-                                <span className="login__brand-headline-accent">for business intelligence.</span>
+                                <span className="login__brand-headline-accent">analytics, feedback &amp; admin.</span>
                             </h2>
 
                             <p className="login__brand-description">
-                                Monitor sales performance, track customer engagement, and make data-driven
-                                decisions — all from a single powerful interface.
+                                Retail staff get fast links to stores and channels; admins run Business Analytics,
+                                Retail Admin, notices, and user invites; specialists use Feedback Department — all
+                                behind invite-only sign-in with roles that match each account.
                             </p>
 
                             <div className="login__features">
@@ -79,8 +80,8 @@ export default function AuthGate({ children }) {
                                         </svg>
                                     </div>
                                     <div>
-                                        <span className="login__feature-title">Real-time Analytics</span>
-                                        <span className="login__feature-desc">Live KPIs and performance metrics</span>
+                                        <span className="login__feature-title">Retail &amp; channel dashboards</span>
+                                        <span className="login__feature-desc">Staff shortcuts to experience stores, inside sales, and daily ops tools</span>
                                     </div>
                                 </div>
                                 <div className="login__feature">
@@ -92,8 +93,8 @@ export default function AuthGate({ children }) {
                                         </svg>
                                     </div>
                                     <div>
-                                        <span className="login__feature-title">Team Management</span>
-                                        <span className="login__feature-desc">Sales teams and territory insights</span>
+                                        <span className="login__feature-title">Admin &amp; broadcast tools</span>
+                                        <span className="login__feature-desc">User invites, roles, company notices with acknowledgement, and leadership dashboards</span>
                                     </div>
                                 </div>
                                 <div className="login__feature">
@@ -103,8 +104,8 @@ export default function AuthGate({ children }) {
                                         </svg>
                                     </div>
                                     <div>
-                                        <span className="login__feature-title">Enterprise Security</span>
-                                        <span className="login__feature-desc">Role-based access and audit logs</span>
+                                        <span className="login__feature-title">Invite-only &amp; role-based access</span>
+                                        <span className="login__feature-desc">Clerk-powered sign-in with separate paths for staff, admins, and Feedback Department</span>
                                     </div>
                                 </div>
                             </div>
