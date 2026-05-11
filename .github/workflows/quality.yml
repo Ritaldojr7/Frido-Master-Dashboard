@@ -1,5 +1,5 @@
 # Reusable quality gates: lint, unit tests, production build.
-# Called from CI on pushes/PRs and from Deploy before publishing.
+# Called from CI / CD (ci.yml) on pushes, PRs, and before production deploy.
 name: Quality gates
 
 on:
