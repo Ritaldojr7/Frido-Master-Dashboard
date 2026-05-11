@@ -24,6 +24,9 @@ const ROLE_LABEL = {
     manager: 'Manager',
     staff: 'Team Member',
     feedback: 'Feedback Department',
+    executive: 'Executive',
+    team_lead: 'Team Lead',
+    viewer: 'Viewer',
 };
 
 function escapeHtml(text) {

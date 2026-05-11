@@ -546,6 +546,172 @@ export const retailAdminData = {
     ],
 };
 
+/** Copy text for ISD NM — Banking detail modal (Executive+). */
+export const ISD_NM_BANKING_DETAIL_COPY = `A/c Holder's Name: Arcatron Mobility Private
+Bank Name: HDFC Bank Ltd.
+A/c No.: 50200016030911
+Bank Address: Sector 27 A, Plot No1, Pradhikaran, Pune. PIN 411044, India
+Swift Code: HDFCINBBXXX
+Branch & IFS Code: NIGDI & HDFC0000185`;
+
+// ─── ISD NM (Finance, L&D, Communications) ───
+export const isdNmData = {
+    title: 'ISD NM',
+    backRoute: '',
+    sections: [
+        {
+            id: 'isd-finance',
+            title: 'Finance',
+            icon: 'creditCard',
+            accentColor: 'amber',
+            links: [
+                {
+                    title: 'Banking Detail (HDFC xx91)',
+                    variant: 'dark',
+                    icon: 'creditCard',
+                    isdAccess: 'executive',
+                    copyModalText: ISD_NM_BANKING_DETAIL_COPY,
+                },
+                {
+                    title: 'QR Code',
+                    url: 'https://drive.google.com/file/d/1hbJ7KaqFnaaTU-FDvsJuw-rbVRUmXBiv/view',
+                    variant: 'dark',
+                    icon: 'photograph',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Non-conventional Payments',
+                    url: 'https://docs.google.com/spreadsheets/d/16tAXCC_8FrTajg5JScJZLy0kTMhK8JkHOFA2C2Rinqw/edit?usp=sharing',
+                    variant: 'dark',
+                    icon: 'table',
+                    isdAccess: 'executive',
+                },
+            ],
+        },
+        {
+            id: 'isd-ld',
+            title: 'L&D',
+            icon: 'academic',
+            accentColor: 'blue',
+            links: [
+                {
+                    title: "Learners' Feedback Form (New employee)",
+                    url: 'https://form.asana.com/?k=ZfltGABdz1lwCvKwDiNZFw&d=1207389811595677',
+                    variant: 'dark',
+                    icon: 'clipboard',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: "Learners' Feedback Form (Existing employee)",
+                    url: 'https://form.asana.com/?k=ILU4tUf1OTrEv7zBnpMlGw&d=1207389811595677',
+                    variant: 'dark',
+                    icon: 'clipboard',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: "Learners' Feedback Submissions",
+                    url: 'https://app.asana.com/1/1207389811595677/project/1214345019726058/list/1214343793959929',
+                    variant: 'dark',
+                    icon: 'clipboard',
+                    isdAccess: 'admin',
+                },
+                {
+                    title: 'Product FAQs',
+                    url: 'https://docs.google.com/spreadsheets/d/1n1ul7PmkbJvNT-UCk46ecUC34OZ2PwO0vTFQ1fCDxxk/edit?usp=sharing',
+                    variant: 'dark',
+                    icon: 'book',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Product Briefs',
+                    url: 'https://docs.google.com/spreadsheets/d/1bPhxmRTiCEfNSf7BWsDmlwamJpjWlxsj_7VFM9y1lE4/edit?usp=sharing',
+                    variant: 'dark',
+                    icon: 'document',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'LMS Login',
+                    url: 'https://academy.myfrido.com/dashboard',
+                    variant: 'dark',
+                    icon: 'login',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Bi-Weekly Product Assessment Test Submissions',
+                    url: 'https://app.asana.com/1/1207389811595677/project/1213316889148578/list',
+                    variant: 'dark',
+                    icon: 'clipboard',
+                    isdAccess: 'team_lead',
+                },
+                {
+                    title: 'Bi-Weekly Process Assessment Test Submissions',
+                    url: 'https://app.asana.com/1/1207389811595677/project/1214675554552950/list',
+                    variant: 'dark',
+                    icon: 'clipboard',
+                    isdAccess: 'team_lead',
+                },
+            ],
+        },
+        {
+            id: 'isd-communications',
+            title: 'Communications',
+            icon: 'chat',
+            accentColor: 'emerald',
+            links: [
+                {
+                    title: 'Outlook Login',
+                    url: 'https://www.microsoft.com/en-us/microsoft-365/outlook/log-in',
+                    variant: 'dark',
+                    icon: 'login',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Slack Login',
+                    url: 'https://slack.com/workspace-signin',
+                    variant: 'dark',
+                    icon: 'chat',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Whatsapp- IST Informal',
+                    url: 'https://chat.whatsapp.com/KaZ0f1qL1Qa8fGw8I8Nb5i?mode=gi_t',
+                    variant: 'dark',
+                    icon: 'chat',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Whatsapp- Do Not Connect',
+                    url: 'https://chat.whatsapp.com/JA2Iqehqrdc0EObkBtJMyw?mode=gi_t',
+                    variant: 'dark',
+                    icon: 'chat',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Whatsapp- Snapmint',
+                    url: 'https://chat.whatsapp.com/DQRwfhjBdleLXiiwkiro88?mode=gi_t',
+                    variant: 'dark',
+                    icon: 'chat',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Whatsapp- 43 EQ Office',
+                    url: 'https://chat.whatsapp.com/IbZY3IjtufoJJk0JjbEGV2?mode=gi_t',
+                    variant: 'dark',
+                    icon: 'chat',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Whatsapp- Growth Hackers',
+                    url: 'https://chat.whatsapp.com/DfCXuteztYPJRS2YvCiNIK?mode=gi_t',
+                    variant: 'dark',
+                    icon: 'chat',
+                    isdAccess: 'team_lead',
+                },
+            ],
+        },
+    ],
+};
+
 // ─── Business Analytics Categories ───
 export const businessAnalyticsCategories = [
     {

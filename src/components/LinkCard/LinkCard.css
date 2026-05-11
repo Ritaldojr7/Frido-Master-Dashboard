@@ -218,3 +218,87 @@
   letter-spacing: 0.2px;
   text-transform: uppercase;
 }
+
+/* ── Copy-details modal (e.g. banking info) ── */
+.link-card__modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.link-card__modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: min(90vh, 560px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.link-card__modal-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.link-card__modal-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.link-card__modal-textarea {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  width: 100%;
+  min-height: 180px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.link-card__modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.link-card__modal-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.link-card__modal-btn--primary {
+  background: var(--brand-ink, #0b0f14);
+  color: var(--brand-yellow, #ffd200);
+  border-color: transparent;
+}
+
+.link-card__modal-btn--primary:hover {
+  opacity: 0.92;
+}

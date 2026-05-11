@@ -10,8 +10,9 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
 import RetailAdminDashboard from './pages/RetailAdminDashboard';
+import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
-import { ALL_ROLES, ADMIN_ONLY, FEEDBACK_DEPARTMENT_ROLES, PROFILE_ROLES } from './config/permissions';
+import { ALL_ROLES, ADMIN_ONLY, FEEDBACK_DEPARTMENT_ROLES, PROFILE_ROLES, ISD_NM_ROLES } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -67,6 +68,14 @@ function App() {
                                                     title="Business Analytics Dashboard"
                                                     subtitle="Track performance across Shopify, Experience Stores, and Inside Sales"
                                                 />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/isd-nm"
+                                        element={
+                                            <RoleGuard roles={ISD_NM_ROLES}>
+                                                <IsdNmDashboard />
                                             </RoleGuard>
                                         }
                                     />
