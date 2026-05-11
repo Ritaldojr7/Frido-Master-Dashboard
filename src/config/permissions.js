@@ -5,7 +5,7 @@
  * Roles hierarchy:
  *   admin → Full product access including ISD NM (all link tiers), retail admin, analytics, feedback, user management
  *   staff → Retail staff and profile
- *   executive / team_lead → ISD NM (role-filtered links) + retail staff + profile
+ *   executive / team_lead → ISD NM only (role-filtered links) + profile
  *   feedback → Feedback department only (+ profile)
  *   viewer → Legacy alias (treated like staff for routes)
  */
@@ -22,6 +22,9 @@ export const ROLES = {
 export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
 export const ADMIN_ONLY = [ROLES.ADMIN];
 export const STAFF_ONLY = [ROLES.STAFF, ROLES.VIEWER];
+
+/** Retail – Staff dashboard: not available to ISD-only roles (executive / team_lead). */
+export const RETAIL_STAFF_ACCESS_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER];
 
 /** ISD NM hub: executives, team leads, and admins */
 export const ISD_NM_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
@@ -42,7 +45,7 @@ export const routePermissions = {
     '/retail-admin': ADMIN_ONLY,
     '/business-analytics': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
-    '/retail-staff': ALL_ROLES,
+    '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,
 };
 
@@ -54,7 +57,7 @@ export const sidebarPermissions = {
     '/retail-admin': ADMIN_ONLY,
     '/business-analytics': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
-    '/retail-staff': ALL_ROLES,
+    '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,
 };
 
