@@ -1,8 +1,36 @@
-import { useContext, useState, useId } from 'react';
+import { useContext, useState, useId, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { iconPathList } from '../../config/dashboardData';
 import { AuthContext } from '../../context/AuthContext';
 import './LinkCard.css';
+
+async function copyTextToClipboard(text) {
+    try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        }
+    } catch {
+        /* fall through to legacy */
+    }
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        ta.style.top = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    } catch {
+        return false;
+    }
+}
 
 export default function LinkCard({
     title,
@@ -52,14 +80,29 @@ export default function LinkCard({
         }
     };
 
-    const handleCopyAll = async () => {
-        try {
-            await navigator.clipboard.writeText(copyModalText);
-            setCopied(true);
-        } catch {
-            setCopied(false);
-        }
+    const closeCopyModal = () => {
+        setCopyModalOpen(false);
+        setCopied(false);
     };
+
+    const handleCopyAll = async (e) => {
+        e.stopPropagation();
+        if (!copyModalText) return;
+        const ok = await copyTextToClipboard(copyModalText);
+        setCopied(ok);
+    };
+
+    useEffect(() => {
+        if (!copyModalOpen) return undefined;
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setCopyModalOpen(false);
+                setCopied(false);
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [copyModalOpen]);
 
     const colorClass = variant === 'dark'
         ? 'link-card--dark'
@@ -75,12 +118,56 @@ export default function LinkCard({
               ? route || '#'
               : url || '#';
 
+    const copyModalPortal =
+        hasCopyModal && copyModalOpen
+            ? createPortal(
+                  <div
+                      className="link-card__modal-overlay"
+                      role="presentation"
+                      onClick={closeCopyModal}
+                  >
+                      <div
+                          className="link-card__modal"
+                          role="dialog"
+                          aria-modal="true"
+                          aria-labelledby={copyModalTitleId}
+                          onClick={(e) => e.stopPropagation()}
+                      >
+                          <h3 id={copyModalTitleId} className="link-card__modal-title">
+                              {title}
+                          </h3>
+                          <p className="link-card__modal-hint">Select and copy, or use the button below.</p>
+                          <textarea
+                              className="link-card__modal-textarea"
+                              readOnly
+                              value={copyModalText}
+                              rows={10}
+                          />
+                          <div className="link-card__modal-actions">
+                              <button
+                                  type="button"
+                                  className="link-card__modal-btn link-card__modal-btn--primary"
+                                  onClick={handleCopyAll}
+                              >
+                                  {copied ? 'Copied' : 'Copy all'}
+                              </button>
+                              <button type="button" className="link-card__modal-btn" onClick={closeCopyModal}>
+                                  Close
+                              </button>
+                          </div>
+                      </div>
+                  </div>,
+                  document.body
+              )
+            : null;
+
     return (
-        <div 
-            className="link-card-container" 
-            style={{ animationDelay: `${animationDelay}ms` }}
-            {...(showTooltip ? { 'data-tooltip': tooltip } : {})}
-        >
+        <>
+            <div
+                className="link-card-container"
+                style={{ animationDelay: `${animationDelay}ms` }}
+                {...(showTooltip ? { 'data-tooltip': tooltip } : {})}
+            >
             <a
                 href={href}
                 onClick={handleClick}
@@ -154,40 +241,8 @@ export default function LinkCard({
                     ))}
                 </div>
             )}
-            {hasCopyModal && copyModalOpen && (
-                <div
-                    className="link-card__modal-overlay"
-                    role="presentation"
-                    onClick={() => setCopyModalOpen(false)}
-                >
-                    <div
-                        className="link-card__modal"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby={copyModalTitleId}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h3 id={copyModalTitleId} className="link-card__modal-title">
-                            {title}
-                        </h3>
-                        <p className="link-card__modal-hint">Select and copy, or use the button below.</p>
-                        <textarea
-                            className="link-card__modal-textarea"
-                            readOnly
-                            value={copyModalText}
-                            rows={10}
-                        />
-                        <div className="link-card__modal-actions">
-                            <button type="button" className="link-card__modal-btn link-card__modal-btn--primary" onClick={handleCopyAll}>
-                                {copied ? 'Copied' : 'Copy all'}
-                            </button>
-                            <button type="button" className="link-card__modal-btn" onClick={() => setCopyModalOpen(false)}>
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+            </div>
+            {copyModalPortal}
+        </>
     );
 }
