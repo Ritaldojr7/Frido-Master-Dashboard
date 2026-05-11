@@ -75,15 +75,13 @@
     display: none;
 }
 
-/* ── Left Branding Panel ──
-   Match the right panel: content lives in a max-width column centered in this half. */
+/* ── Left Branding Panel ── */
 .login__brand-panel {
     flex: 0 0 48%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: flex-start;
-    padding: 40px clamp(20px, 4vw, 40px) 24px;
+    padding: 28px 40px 18px;
     position: relative;
     z-index: 1;
     overflow: hidden;
@@ -133,8 +131,7 @@
     flex-direction: column;
     gap: 8px;
     min-height: 0;
-    width: min(100%, 520px);
-    box-sizing: border-box;
+    max-width: 520px;
 }
 
 /* Logo row */
@@ -154,27 +151,19 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 100%;
-    max-width: 420px;
+    width: min(100%, 420px);
     overflow: hidden;
 }
 
-/* Logo asset includes extra canvas; crop with overflow instead of negative margins (breaks alignment on narrow halves). */
 .login__brand-logo-img {
-    width: min(100%, 360px);
-    max-width: 100%;
+    width: 118%;
+    max-width: none;
     height: auto;
     object-fit: contain;
-    object-position: left center;
     image-rendering: -webkit-optimize-contrast;
-    margin: 0 0 4px;
-    display: block;
-}
-
-@media (min-width: 1400px) {
-    .login__brand-logo-img {
-        width: min(100%, 400px);
-    }
+    margin-top: -100px;
+    margin-left: -100px;
+    margin-bottom: -92px;
 }
 
 .login__brand-logo-img--mobile {
@@ -267,6 +256,13 @@
     color: rgba(10, 10, 10, 0.6);
 }
 
+/* Brand footer */
+.login__brand-footer {
+    margin-top: auto;
+    border-top-color: rgba(0, 0, 0, 0.1);
+    color: rgba(10, 10, 10, 0.6);
+}
+
 /* Feature list */
 .login__features {
     display: flex;
@@ -356,13 +352,10 @@
     color: #6b7280;
 }
 
-/* Brand footer — same width band as brand copy, centered in panel */
+/* Brand footer */
 .login__brand-footer {
     position: relative;
     z-index: 1;
-    width: min(100%, 520px);
-    box-sizing: border-box;
-    margin-top: auto;
     padding-top: 12px;
     border-top: 1px solid var(--border-primary);
     font-size: 12px;
@@ -754,7 +747,7 @@
 @media (max-width: 1024px) {
     .login__brand-panel {
         flex: 0 0 44%;
-        padding: 32px clamp(16px, 4vw, 32px) 20px;
+        padding: 40px 36px;
     }
 
     .login__brand-headline {
