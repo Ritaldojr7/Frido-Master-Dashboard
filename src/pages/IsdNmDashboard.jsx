@@ -59,7 +59,7 @@ export default function IsdNmDashboard() {
                 {isdNmData.sections.map((section, idx) => {
                     const links = section.links
                         .filter((l) => canSeeIsdResource(role, l.isdAccess || 'executive'))
-                        .map(({ isdAccess, ...link }) => link);
+                        .map(({ isdAccess: _tier, ...link }) => link);
                     if (links.length === 0) return null;
                     return (
                         <SectionGroup
