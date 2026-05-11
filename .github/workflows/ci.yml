@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────
-# CI/CD — quality gates on every trigger; CD to Render on main
+# CI — runs quality gates on push / PR / manual dispatch
 # ─────────────────────────────────────────────────────────
-name: CI / CD
+name: CI
 
 on:
   push:
@@ -19,86 +19,3 @@ jobs:
     name: Quality
     uses: ./.github/workflows/quality.yml
     secrets: inherit
-
-  # ── Continuous deployment (Render) ─────────────────────
-  # Set RENDER_DEPLOY_HOOK_URL in repo Secrets (Render → service → Deploy Hook).
-  # Optional: DEPLOY_SMOKE_URL — full URL of the deployed app (e.g. https://xxx.onrender.com)
-  # for a post-deploy GET /api/health check.
-  deploy-production:
-    name: Deploy (production)
-    needs: [quality]
-    if: >
-      github.ref == 'refs/heads/main' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    runs-on: ubuntu-latest
-    environment: production
-    permissions:
-      contents: read
-    steps:
-      - name: Trigger Render deploy hook
-        env:
-          HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: |
-          set -euo pipefail
-          if [ -z "${HOOK_URL:-}" ]; then
-            echo "::error::RENDER_DEPLOY_HOOK_URL is not set. In Render: open the web service → Manage Deploy → Deploy Hook → copy URL, then add it as a repository secret."
-            exit 1
-          fi
-          echo "Requesting deploy from Render…"
-          curl -fsS -X POST "$HOOK_URL" -d ''
-          echo "Deploy hook accepted (build runs on Render; check the Render dashboard for status)."
-
-      - name: Post-deploy smoke test
-        env:
-          BASE_URL: ${{ secrets.DEPLOY_SMOKE_URL }}
-        run: |
-          set -euo pipefail
-          if [ -z "${BASE_URL:-}" ]; then
-            echo "DEPLOY_SMOKE_URL not set — skipping smoke test."
-            exit 0
-          fi
-          echo "Waiting for service to pick up new revision…"
-          sleep 45
-          curl -fsS --retry 3 --retry-delay 15 "${BASE_URL%/}/api/health" | tee /dev/stderr
-          echo ""
-          echo "Smoke test passed."
-
-  # Optional: second Render service (staging). If RENDER_DEPLOY_HOOK_URL_STAGING is unset, this job succeeds without deploying.
-  deploy-staging:
-    name: Deploy (staging)
-    needs: [quality]
-    if: >
-      github.ref == 'refs/heads/develop' &&
-      github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: staging
-    permissions:
-      contents: read
-    steps:
-      - name: Trigger Render staging deploy hook
-        env:
-          HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL_STAGING }}
-        run: |
-          set -euo pipefail
-          if [ -z "${HOOK_URL:-}" ]; then
-            echo "RENDER_DEPLOY_HOOK_URL_STAGING not set — skipping staging deploy (add secret to enable)."
-            exit 0
-          fi
-          echo "Requesting staging deploy from Render…"
-          curl -fsS -X POST "$HOOK_URL" -d ''
-          echo "Staging deploy hook accepted."
-
-      - name: Post-deploy smoke test (staging)
-        env:
-          BASE_URL: ${{ secrets.DEPLOY_SMOKE_URL_STAGING }}
-        run: |
-          set -euo pipefail
-          if [ -z "${BASE_URL:-}" ]; then
-            echo "DEPLOY_SMOKE_URL_STAGING not set — skipping smoke test."
-            exit 0
-          fi
-          echo "Waiting for staging to update…"
-          sleep 45
-          curl -fsS --retry 3 --retry-delay 15 "${BASE_URL%/}/api/health" | tee /dev/stderr
-          echo ""
-          echo "Staging smoke test passed."
