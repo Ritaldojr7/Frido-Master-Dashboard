@@ -4,7 +4,9 @@ import {
     businessAnalyticsCategories,
     staffExperienceStoreData,
     retailAdminData,
+    isdNmData,
 } from '../../config/dashboardData';
+import { canSeeIsdResource, ISD_NM_ROLES } from '../../config/permissions';
 import './SearchBar.css';
 
 function addLinkWithVariants(links, link, category) {
@@ -22,8 +24,8 @@ function addLinkWithVariants(links, link, category) {
     links.push({ ...link, category });
 }
 
-/** Search index: Retail - Staff, Retail - Admin, and Business Analytics tool links only */
-function getAppSearchLinks(isAdmin) {
+/** Search index: staff/admin dashboards, business analytics (admin), ISD NM for eligible roles */
+function getAppSearchLinks(isAdmin, userRole = 'staff') {
     const links = [];
 
     staffExperienceStoreData.sections.forEach((section) => {
@@ -46,10 +48,20 @@ function getAppSearchLinks(isAdmin) {
         });
     }
 
+    if (userRole && ISD_NM_ROLES.includes(userRole)) {
+        isdNmData.sections.forEach((section) => {
+            section.links.forEach((link) => {
+                if (!canSeeIsdResource(userRole, link.isdAccess || 'executive')) return;
+                if (link.copyModalText) return;
+                addLinkWithVariants(links, link, `ISD NM → ${section.title}`);
+            });
+        });
+    }
+
     return links;
 }
 
-export default function SearchBar({ isAdmin = true }) {
+export default function SearchBar({ isAdmin = true, userRole = 'staff' }) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [results, setResults] = useState([]);
@@ -59,8 +71,8 @@ export default function SearchBar({ isAdmin = true }) {
     const allLinks = useRef([]);
 
     useEffect(() => {
-        allLinks.current = getAppSearchLinks(isAdmin);
-    }, [isAdmin]);
+        allLinks.current = getAppSearchLinks(isAdmin, userRole);
+    }, [isAdmin, userRole]);
 
     // Keyboard shortcut Ctrl+K
     useEffect(() => {

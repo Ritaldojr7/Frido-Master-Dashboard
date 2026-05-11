@@ -16,8 +16,11 @@ import {
 // ── VALID_ROLES ──────────────────────────────────────────
 
 describe('VALID_ROLES', () => {
-    it('contains admin, staff, and feedback', () => {
-        expect(VALID_ROLES).toEqual(['admin', 'staff', 'feedback']);
+    it('contains core dashboard roles', () => {
+        expect(VALID_ROLES).toEqual(
+            expect.arrayContaining(['admin', 'staff', 'viewer', 'feedback', 'executive', 'team_lead'])
+        );
+        expect(VALID_ROLES).toHaveLength(6);
     });
 
     it('does not contain manager', () => {
@@ -46,6 +49,9 @@ describe('normalizeRole', () => {
         expect(normalizeRole('Admin')).toBe('admin');
         expect(normalizeRole('STAFF')).toBe('staff');
         expect(normalizeRole('Feedback')).toBe('feedback');
+        expect(normalizeRole('Executive')).toBe('executive');
+        expect(normalizeRole('TEAM_LEAD')).toBe('team_lead');
+        expect(normalizeRole('viewer')).toBe('viewer');
     });
 
     it('falls back to staff for unknown roles', () => {
