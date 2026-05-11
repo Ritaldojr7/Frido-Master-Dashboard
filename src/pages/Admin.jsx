@@ -375,8 +375,8 @@ export default function Admin() {
                                                     <option value="staff">Staff</option>
                                                     <option value="viewer">Viewer</option>
                                                     <option value="feedback">Feedback</option>
-                                                    <option value="executive">Executive (ISD NM + retail staff)</option>
-                                                    <option value="team_lead">Team Lead (ISD NM + retail staff)</option>
+                                                    <option value="executive">Executive (ISD NM only)</option>
+                                                    <option value="team_lead">Team Lead (ISD NM only)</option>
                                                 </select>
                                             </td>
                                             <td>
@@ -562,8 +562,8 @@ export default function Admin() {
                                 <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
                                     <option value="staff">Staff — Staff dashboard only</option>
                                     <option value="feedback">Feedback Department Access — Feedback dashboard only</option>
-                                    <option value="executive">Executive — ISD NM (exec links) + retail staff</option>
-                                    <option value="team_lead">Team Lead — ISD NM (exec + team lead links) + retail staff</option>
+                                    <option value="executive">Executive — ISD NM only</option>
+                                    <option value="team_lead">Team Lead — ISD NM only</option>
                                     <option value="admin">Admin — Full access + user management</option>
                                 </select>
                             </div>

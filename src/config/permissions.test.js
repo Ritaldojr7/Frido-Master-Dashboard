@@ -11,6 +11,7 @@ import {
     FEEDBACK_DEPARTMENT_ROLES,
     PROFILE_ROLES,
     ISD_NM_ROLES,
+    RETAIL_STAFF_ACCESS_ROLES,
     routePermissions,
     sidebarPermissions,
     hasAccess,
@@ -56,6 +57,12 @@ describe('role arrays', () => {
         expect(ISD_NM_ROLES).toEqual(['admin', 'executive', 'team_lead']);
     });
 
+    it('RETAIL_STAFF_ACCESS_ROLES excludes ISD-only roles', () => {
+        expect(RETAIL_STAFF_ACCESS_ROLES).toEqual(['admin', 'staff', 'viewer']);
+        expect(RETAIL_STAFF_ACCESS_ROLES).not.toContain('executive');
+        expect(RETAIL_STAFF_ACCESS_ROLES).not.toContain('team_lead');
+    });
+
     it('ADMIN_ONLY contains only admin', () => {
         expect(ADMIN_ONLY).toEqual(['admin']);
     });
@@ -73,8 +80,8 @@ describe('routePermissions', () => {
         expect(routePermissions['/admin']).toEqual(ADMIN_ONLY);
     });
 
-    it('allows all roles to access retail-staff', () => {
-        expect(routePermissions['/retail-staff']).toEqual(ALL_ROLES);
+    it('allows admin, staff, and viewer on retail-staff (not executive / team_lead)', () => {
+        expect(routePermissions['/retail-staff']).toEqual(RETAIL_STAFF_ACCESS_ROLES);
     });
 
     it('allows all roles to access profile including feedback', () => {
@@ -96,6 +103,10 @@ describe('sidebarPermissions', () => {
     it('mirrors route-level access for admin pages', () => {
         expect(sidebarPermissions['/admin']).toEqual(ADMIN_ONLY);
         expect(sidebarPermissions['/retail-admin']).toEqual(ADMIN_ONLY);
+    });
+
+    it('shows retail-staff only to admin, staff, and viewer', () => {
+        expect(sidebarPermissions['/retail-staff']).toEqual(RETAIL_STAFF_ACCESS_ROLES);
     });
 
     it('shows feedback department to admins and feedback users', () => {
@@ -155,11 +166,11 @@ describe('hasAccess', () => {
         expect(hasAccess('staff', '/isd-nm')).toBe(false);
     });
 
-    it('allows executive and team_lead access to ISD NM and retail-staff', () => {
+    it('allows executive and team_lead access to ISD NM but not retail-staff', () => {
         expect(hasAccess('executive', '/isd-nm')).toBe(true);
         expect(hasAccess('team_lead', '/isd-nm')).toBe(true);
-        expect(hasAccess('executive', '/retail-staff')).toBe(true);
-        expect(hasAccess('team_lead', '/retail-staff')).toBe(true);
+        expect(hasAccess('executive', '/retail-staff')).toBe(false);
+        expect(hasAccess('team_lead', '/retail-staff')).toBe(false);
     });
 
     it('returns true for unlisted routes (open by default)', () => {

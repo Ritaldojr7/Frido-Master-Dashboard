@@ -51,7 +51,8 @@ export default function IsdNmDashboard() {
                     <Typewriter text={isdNmData.title} speed={70} />
                 </h1>
                 <p className="subpage__subtitle">
-                    Finance, L&amp;D, and Communications — links shown for your role (Executive, Team Lead, or Admin)
+                    Finance, L&amp;D, and Communications — links shown for your role (Executive, Team Lead, or Admin).
+                    This area is separate from Retail – Staff.
                 </p>
             </div>
 

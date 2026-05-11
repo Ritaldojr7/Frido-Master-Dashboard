@@ -12,7 +12,13 @@ import StaffDashboard from './pages/StaffDashboard';
 import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
-import { ALL_ROLES, ADMIN_ONLY, FEEDBACK_DEPARTMENT_ROLES, PROFILE_ROLES, ISD_NM_ROLES } from './config/permissions';
+import {
+    RETAIL_STAFF_ACCESS_ROLES,
+    ADMIN_ONLY,
+    FEEDBACK_DEPARTMENT_ROLES,
+    PROFILE_ROLES,
+    ISD_NM_ROLES,
+} from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -22,6 +28,7 @@ function HomeRedirect() {
     const { user } = useAuth();
     if (user?.role === 'admin') return <Navigate to="/admin" replace />;
     if (user?.role === 'feedback') return <Navigate to="/feedback-department" replace />;
+    if (user?.role === 'executive' || user?.role === 'team_lead') return <Navigate to="/isd-nm" replace />;
     return <Navigate to="/retail-staff" replace />;
 }
 
@@ -46,7 +53,7 @@ function App() {
                                     <Route
                                         path="/retail-staff"
                                         element={
-                                            <RoleGuard roles={ALL_ROLES}>
+                                            <RoleGuard roles={RETAIL_STAFF_ACCESS_ROLES}>
                                                 <StaffDashboard />
                                             </RoleGuard>
                                         }

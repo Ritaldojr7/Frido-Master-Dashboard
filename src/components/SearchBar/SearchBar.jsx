@@ -6,7 +6,7 @@ import {
     retailAdminData,
     isdNmData,
 } from '../../config/dashboardData';
-import { canSeeIsdResource, ISD_NM_ROLES } from '../../config/permissions';
+import { canSeeIsdResource, ISD_NM_ROLES, RETAIL_STAFF_ACCESS_ROLES } from '../../config/permissions';
 import './SearchBar.css';
 
 function addLinkWithVariants(links, link, category) {
@@ -28,11 +28,13 @@ function addLinkWithVariants(links, link, category) {
 function getAppSearchLinks(isAdmin, userRole = 'staff') {
     const links = [];
 
-    staffExperienceStoreData.sections.forEach((section) => {
-        section.links.forEach((link) => {
-            addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
+    if (userRole && RETAIL_STAFF_ACCESS_ROLES.includes(userRole)) {
+        staffExperienceStoreData.sections.forEach((section) => {
+            section.links.forEach((link) => {
+                addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
+            });
         });
-    });
+    }
 
     if (isAdmin) {
         retailAdminData.sections.forEach((section) => {
