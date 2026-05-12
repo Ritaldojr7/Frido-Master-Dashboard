@@ -466,6 +466,20 @@ export const staffExperienceStoreData = {
         },
 
         {
+            id: 'fes-cx-journey-guidelines',
+            title: 'FES CX Journey Guidelines',
+            icon: 'document',
+            accentColor: 'blue',
+            links: [
+                {
+                    title: 'CX Journey guidelines (PDF)',
+                    url: '/retail-staff/fes-cx-journey-guidelines.pdf',
+                    variant: 'dark',
+                },
+            ],
+        },
+
+        {
             id: 'analytics',
             title: 'Analytics',
             icon: 'analyticsPresentation',
