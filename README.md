@@ -95,6 +95,8 @@ Handy scripts:
 
 Production deploy details (Render, env vars, DB ping for Supabase) are in `.env.example` comments and hosting config—not duplicated here unless you ask.
 
+**Continuous deployment** — On every push to `main`, the [CI workflow](.github/workflows/ci.yml) runs lint, tests, and a production build; when those succeed it POSTs to a Render [deploy hook](https://render.com/docs/deploy-hooks), so you can keep **auto-deploy off** in Render and still deploy from GitHub only. Add the repository secret `RENDER_DEPLOY_HOOK_URL` (the full hook URL from Render: **Dashboard → Web Service → Settings → Deploy Hooks**).
+
 ---
 
 ## Look & feel
