@@ -574,7 +574,8 @@ export const isdNmData = {
                 },
                 {
                     title: 'QR Code',
-                    url: '/isd-nm/frido-isd-qr.png',
+                    imageModalSrc: '/isd-nm/frido-isd-qr.png',
+                    imageModalDownloadName: 'frido-isd-qr.jpg',
                     variant: 'dark',
                     icon: 'photograph',
                     isdAccess: 'executive',

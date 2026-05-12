@@ -302,3 +302,30 @@
 .link-card__modal-btn--primary:hover {
   opacity: 0.92;
 }
+
+.link-card__modal-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.link-card__modal--image {
+  max-width: min(440px, 94vw);
+  max-height: min(92vh, 720px);
+}
+
+.link-card__modal-image-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  max-height: min(72vh, 640px);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+.link-card__modal-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}

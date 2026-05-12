@@ -55,6 +55,7 @@ function getAppSearchLinks(isAdmin, userRole = 'staff') {
             section.links.forEach((link) => {
                 if (!canSeeIsdResource(userRole, link.isdAccess || 'executive')) return;
                 if (link.copyModalText) return;
+                if (link.imageModalSrc) return;
                 addLinkWithVariants(links, link, `ISD NM → ${section.title}`);
             });
         });

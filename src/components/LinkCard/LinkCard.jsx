@@ -5,6 +5,49 @@ import { iconPathList } from '../../config/dashboardData';
 import { AuthContext } from '../../context/AuthContext';
 import './LinkCard.css';
 
+function downloadImageAsJpeg(src, filename) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('Canvas not supported'));
+                    return;
+                }
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) {
+                            reject(new Error('JPEG encode failed'));
+                            return;
+                        }
+                        const u = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = u;
+                        a.download = filename;
+                        a.click();
+                        URL.revokeObjectURL(u);
+                        resolve();
+                    },
+                    'image/jpeg',
+                    0.92
+                );
+            } catch (err) {
+                reject(err);
+            }
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
+        img.src = src;
+    });
+}
+
 async function copyTextToClipboard(text) {
     try {
         if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
@@ -45,18 +88,24 @@ export default function LinkCard({
     animationDelay = 0,
     isComingSoon = false,
     copyModalText,
+    imageModalSrc,
+    imageModalDownloadName = 'frido-isd-qr.jpg',
 }) {
     const navigate = useNavigate();
     const auth = useContext(AuthContext);
     const user = auth?.user;
     const [expanded, setExpanded] = useState(false);
     const [copyModalOpen, setCopyModalOpen] = useState(false);
+    const [imageModalOpen, setImageModalOpen] = useState(false);
+    const [imageDownloading, setImageDownloading] = useState(false);
     const [copied, setCopied] = useState(false);
     const copyModalTitleId = useId();
+    const imageModalTitleId = useId();
     const iconPaths = iconPathList(icon);
     const isAdminUser = user?.role === 'admin';
     const showTooltip = Boolean(tooltip) && !isAdminUser;
     const hasCopyModal = Boolean(copyModalText);
+    const hasImageModal = Boolean(imageModalSrc);
 
     const handleClick = (e) => {
         if (isComingSoon) {
@@ -67,6 +116,11 @@ export default function LinkCard({
             e.preventDefault();
             setCopied(false);
             setCopyModalOpen(true);
+            return;
+        }
+        if (hasImageModal) {
+            e.preventDefault();
+            setImageModalOpen(true);
             return;
         }
         if (subOptions && subOptions.length > 0) {
@@ -85,6 +139,24 @@ export default function LinkCard({
         setCopied(false);
     };
 
+    const closeImageModal = () => {
+        setImageModalOpen(false);
+        setImageDownloading(false);
+    };
+
+    const handleImageDownload = async (e) => {
+        e.stopPropagation();
+        if (!imageModalSrc || imageDownloading) return;
+        setImageDownloading(true);
+        try {
+            await downloadImageAsJpeg(imageModalSrc, imageModalDownloadName || 'image.jpg');
+        } catch {
+            /* quiet fail; user can right-click the image */
+        } finally {
+            setImageDownloading(false);
+        }
+    };
+
     const handleCopyAll = async (e) => {
         e.stopPropagation();
         if (!copyModalText) return;
@@ -93,16 +165,18 @@ export default function LinkCard({
     };
 
     useEffect(() => {
-        if (!copyModalOpen) return undefined;
+        if (!copyModalOpen && !imageModalOpen) return undefined;
         const onKeyDown = (e) => {
             if (e.key === 'Escape') {
                 setCopyModalOpen(false);
                 setCopied(false);
+                setImageModalOpen(false);
+                setImageDownloading(false);
             }
         };
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
-    }, [copyModalOpen]);
+    }, [copyModalOpen, imageModalOpen]);
 
     const colorClass = variant === 'dark'
         ? 'link-card--dark'
@@ -112,7 +186,7 @@ export default function LinkCard({
     const comingSoonClass = isComingSoon ? 'link-card--coming-soon' : '';
 
     const href =
-        hasCopyModal || isComingSoon || hasSubOptions
+        hasCopyModal || hasImageModal || isComingSoon || hasSubOptions
             ? '#'
             : isInternal
               ? route || '#'
@@ -161,6 +235,51 @@ export default function LinkCard({
               )
             : null;
 
+    const imageModalPortal =
+        hasImageModal && imageModalOpen
+            ? createPortal(
+                  <div
+                      className="link-card__modal-overlay"
+                      role="presentation"
+                      onClick={closeImageModal}
+                  >
+                      <div
+                          className="link-card__modal link-card__modal--image"
+                          role="dialog"
+                          aria-modal="true"
+                          aria-labelledby={imageModalTitleId}
+                          onClick={(e) => e.stopPropagation()}
+                      >
+                          <h3 id={imageModalTitleId} className="link-card__modal-title">
+                              {title}
+                          </h3>
+                          <p className="link-card__modal-hint">Scan from the image, or download as JPG.</p>
+                          <div className="link-card__modal-image-wrap">
+                              <img
+                                  className="link-card__modal-image"
+                                  src={imageModalSrc}
+                                  alt=""
+                              />
+                          </div>
+                          <div className="link-card__modal-actions">
+                              <button
+                                  type="button"
+                                  className="link-card__modal-btn link-card__modal-btn--primary"
+                                  onClick={handleImageDownload}
+                                  disabled={imageDownloading}
+                              >
+                                  {imageDownloading ? 'Downloading…' : 'Download JPG'}
+                              </button>
+                              <button type="button" className="link-card__modal-btn" onClick={closeImageModal}>
+                                  Close
+                              </button>
+                          </div>
+                      </div>
+                  </div>,
+                  document.body
+              )
+            : null;
+
     return (
         <>
             <div
@@ -173,6 +292,7 @@ export default function LinkCard({
                 onClick={handleClick}
                 target={
                     !hasCopyModal &&
+                    !hasImageModal &&
                     !isInternal &&
                     !hasSubOptions &&
                     !isComingSoon &&
@@ -181,7 +301,7 @@ export default function LinkCard({
                         ? '_blank'
                         : undefined
                 }
-                rel={!isInternal && !hasSubOptions && !isComingSoon && !hasCopyModal ? 'noopener noreferrer' : undefined}
+                rel={!isInternal && !hasSubOptions && !isComingSoon && !hasCopyModal && !hasImageModal ? 'noopener noreferrer' : undefined}
                 className={`link-card ${colorClass} ${expanded ? 'link-card--expanded' : ''} ${comingSoonClass}`}
             >
                 <div className="link-card__content">
@@ -243,6 +363,7 @@ export default function LinkCard({
             )}
             </div>
             {copyModalPortal}
+            {imageModalPortal}
         </>
     );
 }
