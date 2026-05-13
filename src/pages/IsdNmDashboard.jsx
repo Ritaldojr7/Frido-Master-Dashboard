@@ -51,9 +51,7 @@ export default function IsdNmDashboard() {
                     <Typewriter text={isdNmData.title} speed={70} />
                 </h1>
                 <p className="subpage__subtitle">
-                    CS &amp; Logistics, HR &amp; policy, Finance and Payments, Learning and Development, Communication Channels —
-                    links are filtered by your role (Executive tier, Team Lead tier, or Admin).
-                    This area is separate from Retail – Staff.
+                Welcome to Inside Sales Department Non-Mobility. This centralised hub empowers sales agents with quick access to CRMs, Payments Details, HR policies, CS &amp; Logistics and learning resources etc. Here, agents can what they need to enable sales, without scrolling or wasting time.
                 </p>
             </div>
 
