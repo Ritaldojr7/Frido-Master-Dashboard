@@ -560,5 +560,25 @@ export const feedbackData = [
         loomLink: 'https://www.loom.com/share/e8294f76b7a94d119a74bb8180596aef',
         intentDate: '',
         releaseDate: '08/01/25'
-    }
+    },
+    {
+        id: 36,
+        category: 'Cushions',
+        productName: 'Frido Travel Neck Pillow',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/TNP_LI_Black_01.jpg?v=1740741006&width=639',
+        reportLink: 'https://drive.google.com/file/d/1SbFiqdrUyjibYUAJKHTkN_zczF2t8Imi/view?usp=sharing',
+        releaseHistory: [
+            {
+                date: '12/05/2026',
+                reportLink: 'https://drive.google.com/file/d/1SbFiqdrUyjibYUAJKHTkN_zczF2t8Imi/view?usp=sharing',
+                loomLink: 'https://www.loom.com/share/33b86128c6094b70834086156b7ca54e',
+            },
+        ],
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/33b86128c6094b70834086156b7ca54e',
+        intentDate: '',
+        releaseDate: '12/05/2026',
+    },
 ];

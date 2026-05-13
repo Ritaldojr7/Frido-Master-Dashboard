@@ -1,6 +1,24 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { feedbackData } from '../config/feedbackDatabase';
 import './FeedbackDepartment.css';
+
+const FEEDBACK_KNOWN_IDS_KEY = 'frido_feedback_known_product_ids';
+
+function parseKnownFeedbackIds(raw) {
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return null;
+        return parsed.filter((x) => Number.isFinite(Number(x))).map(Number);
+    } catch {
+        return null;
+    }
+}
+
+function feedbackShortProductName(productName) {
+    if (!productName || typeof productName !== 'string') return 'Product';
+    const trimmed = productName.replace(/^Frido\s+/i, '').trim();
+    return trimmed || productName;
+}
 
 const PRODUCT_RATINGS = {
     'Frido Ultimate Wedge Plus Cushion': 9.3,
@@ -80,6 +98,9 @@ export default function FeedbackDepartment() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedDataType, setSelectedDataType] = useState('All');
     const [selectedLeaderboardCategory, setSelectedLeaderboardCategory] = useState('All');
+    const [feedbackAnnouncements, setFeedbackAnnouncements] = useState([]);
+    const [bellPanelOpen, setBellPanelOpen] = useState(false);
+    const bellWrapRef = useRef(null);
     const itemsPerPage = 10;
 
     const parseDateValue = (value) => {
@@ -159,6 +180,61 @@ export default function FeedbackDepartment() {
 
         return categoryFiltered.sort((a, b) => b.rating - a.rating);
     }, [publishedData, selectedLeaderboardCategory]);
+
+    useEffect(() => {
+        const publishedIds = publishedData.map((item) => item.id).sort((a, b) => a - b);
+        let raw = null;
+        try {
+            raw = localStorage.getItem(FEEDBACK_KNOWN_IDS_KEY);
+        } catch {
+            raw = null;
+        }
+        const known = raw ? parseKnownFeedbackIds(raw) : null;
+
+        if (!known || known.length === 0) {
+            try {
+                localStorage.setItem(FEEDBACK_KNOWN_IDS_KEY, JSON.stringify(publishedIds));
+            } catch {
+                /* ignore quota / private mode */
+            }
+            setFeedbackAnnouncements([]);
+            return;
+        }
+
+        const knownSet = new Set(known);
+        const newIds = publishedIds.filter((id) => !knownSet.has(id));
+        const announcements = newIds.map((id) => {
+            const row = feedbackData.find((r) => r.id === id);
+            const label = feedbackShortProductName(row?.productName);
+            return {
+                id,
+                message: `Feedback Report of ${label} is now live on the dashboard`,
+            };
+        });
+        setFeedbackAnnouncements(announcements);
+    }, [publishedData]);
+
+    const dismissFeedbackAnnouncements = useCallback(() => {
+        const publishedIds = publishedData.map((item) => item.id).sort((a, b) => a - b);
+        try {
+            localStorage.setItem(FEEDBACK_KNOWN_IDS_KEY, JSON.stringify(publishedIds));
+        } catch {
+            /* ignore */
+        }
+        setFeedbackAnnouncements([]);
+        setBellPanelOpen(false);
+    }, [publishedData]);
+
+    useEffect(() => {
+        if (!bellPanelOpen) return undefined;
+        const onDocMouseDown = (e) => {
+            if (bellWrapRef.current && !bellWrapRef.current.contains(e.target)) {
+                setBellPanelOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', onDocMouseDown);
+        return () => document.removeEventListener('mousedown', onDocMouseDown);
+    }, [bellPanelOpen]);
 
     const baseFilteredData = publishedData.filter((item) => {
         const categoryMatches = selectedCategory === 'All' || item.category === selectedCategory;
@@ -253,10 +329,65 @@ export default function FeedbackDepartment() {
             <main className="feedback-page__main glass">
                 <div className="feedback-page__main-content">
                     <header className="feedback-page__header">
-                        <h2 className="feedback-page__title">
-                            <Typewriter text="Feedback Database" speed={70} />
-                        </h2>
-                        <div className="feedback-page__header-accent"></div>
+                        <div className="feedback-page__header-row">
+                            <div className="feedback-page__title-block">
+                                <h2 className="feedback-page__title">
+                                    <Typewriter text="Feedback Database" speed={70} />
+                                </h2>
+                                <div className="feedback-page__header-accent" />
+                            </div>
+                            <div className="feedback-notify" ref={bellWrapRef}>
+                                <button
+                                    type="button"
+                                    className="feedback-notify__bell-btn"
+                                    aria-label={
+                                        feedbackAnnouncements.length > 0
+                                            ? `${feedbackAnnouncements.length} new feedback report notifications`
+                                            : 'Feedback notifications'
+                                    }
+                                    aria-expanded={bellPanelOpen}
+                                    aria-haspopup="true"
+                                    onClick={() => setBellPanelOpen((o) => !o)}
+                                >
+                                    <svg
+                                        className="feedback-notify__bell-icon"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.75"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        aria-hidden
+                                    >
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                    </svg>
+                                    {feedbackAnnouncements.length > 0 ? (
+                                        <span className="feedback-notify__badge">{feedbackAnnouncements.length}</span>
+                                    ) : null}
+                                </button>
+                                {bellPanelOpen ? (
+                                    <div className="feedback-notify__panel glass-strong" role="dialog" aria-label="Feedback notifications">
+                                        {feedbackAnnouncements.length === 0 ? (
+                                            <p className="feedback-notify__empty">No new feedback reports.</p>
+                                        ) : (
+                                            <>
+                                                <ul className="feedback-notify__list">
+                                                    {feedbackAnnouncements.map((a) => (
+                                                        <li key={a.id} className="feedback-notify__item">
+                                                            {a.message}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                                <button type="button" className="feedback-notify__dismiss" onClick={dismissFeedbackAnnouncements}>
+                                                    Dismiss all
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
                     </header>
                     <div className="main-filters">
                         <div className="sidebar-filter-group">
