@@ -51,7 +51,8 @@ export default function IsdNmDashboard() {
                     <Typewriter text={isdNmData.title} speed={70} />
                 </h1>
                 <p className="subpage__subtitle">
-                    CS &amp; Logistics, HR &amp; policy, Finance, L&amp;D, Communications — links are filtered by your role (Executive tier, Team Lead tier, or Admin).
+                    CS &amp; Logistics, HR &amp; policy, Finance and Payments, Learning and Development, Communication Channels —
+                    links are filtered by your role (Executive tier, Team Lead tier, or Admin).
                     This area is separate from Retail – Staff.
                 </p>
             </div>

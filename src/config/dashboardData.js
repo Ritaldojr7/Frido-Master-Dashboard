@@ -568,14 +568,14 @@ Bank Address: Sector 27 A, Plot No1, Pradhikaran, Pune. PIN 411044, India
 Swift Code: HDFCINBBXXX
 Branch & IFS Code: NIGDI & HDFC0000185`;
 
-// ─── ISD NM (Finance, L&D, Communications) ───
+// ─── ISD NM — Inside Sales Department - Non Mobility ───
 export const isdNmData = {
-    title: 'ISD NM',
+    title: 'Inside Sales Department - Non Mobility',
     backRoute: '',
     sections: [
         {
             id: 'isd-finance',
-            title: 'Finance',
+            title: 'Finance and Payments',
             icon: 'creditCard',
             accentColor: 'amber',
             links: [
@@ -684,7 +684,7 @@ export const isdNmData = {
         },
         {
             id: 'isd-ld',
-            title: 'L&D',
+            title: 'Learning and Development',
             icon: 'academic',
             accentColor: 'blue',
             links: [
@@ -748,7 +748,7 @@ export const isdNmData = {
         },
         {
             id: 'isd-communications',
-            title: 'Communications',
+            title: 'Communication Channels',
             icon: 'chat',
             accentColor: 'emerald',
             links: [
