@@ -654,7 +654,7 @@ export const isdNmData = {
             links: [
                 {
                     title: 'Leave and Holiday Policy',
-                    url: 'https://myfrido.slack.com/files/U09TGUD6UUU/F0A1JJMTCMR/policy_-_leave_and_holiday_2026.pdf',
+                    url: '/isd-nm/policy-leave-and-holiday-2026.pdf',
                     variant: 'dark',
                     icon: 'document',
                     isdAccess: 'executive',
@@ -668,7 +668,7 @@ export const isdNmData = {
                 },
                 {
                     title: 'Marriage Gifting policy',
-                    url: 'https://myfrido.slack.com/files/U09TGUD6UUU/F0ALR9HSU94/arcatron_mobility_marriage_gifting_policy.pdf',
+                    url: '/isd-nm/marriage-gifting-policy.pdf',
                     variant: 'dark',
                     icon: 'document',
                     isdAccess: 'executive',
