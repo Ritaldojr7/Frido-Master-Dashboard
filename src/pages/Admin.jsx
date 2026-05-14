@@ -54,7 +54,7 @@ export default function Admin() {
     const [noticeSender, setNoticeSender] = useState('');
     const [noticeLoading, setNoticeLoading] = useState(false);
     const [noticeMessage, setNoticeMessage] = useState('');
-
+    const [noticeAudience, setNoticeAudience] = useState('retail_staff');
     const fetchUsers = useCallback(async () => {
         try {
             const data = await apiFetch('/api/users');
@@ -148,6 +148,7 @@ export default function Admin() {
                     priority: noticePriority,
                     requires_ack: noticeRequiresAck,
                     sent_by_name: noticeSender,
+                    audience: noticeAudience,
                 }),
             });
             setNoticeMessage('Notice published successfully!');
@@ -155,6 +156,7 @@ export default function Admin() {
             setNoticeBody('');
             setNoticePriority('normal');
             setNoticeRequiresAck(true);
+            setNoticeAudience('retail_staff');
             setNoticeSender(user?.name || '');
             fetchNotices();
             setTimeout(() => { setShowNoticeModal(false); setNoticeMessage(''); }, 1200);
@@ -177,11 +179,12 @@ export default function Admin() {
         }
     };
 
-    const handleDeleteNotice = async (noticeId, noticeTitle) => {
+    const handleDeleteNotice = async (noticeId, noticeTitle, audience = 'retail_staff') => {
+        const audLabel = audience === 'isd_nm' ? 'ISD NM' : 'retail staff';
         const ok = confirm(
             `Delete this notice permanently?\n\n` +
             `Title: ${noticeTitle}\n\n` +
-            `This will remove it for all staff and delete acknowledgement history for this notice.`
+            `This will remove it for ${audLabel} and delete acknowledgement history for this notice.`
         );
         if (!ok) return;
         try {
@@ -804,8 +807,8 @@ export default function Admin() {
             {/* Notice History */}
             <div className="admin__section-header">
                 <div>
-                    <h2>Staff Notices</h2>
-                    <p>Publish urgent popups and track staff acknowledgement.</p>
+                    <h2>Staff notices</h2>
+                    <p>Publish popups for retail staff or ISD NM (executives &amp; team leads). Email copies go to that audience.</p>
                 </div>
                 <button type="button" className="admin__invite-btn" onClick={() => setShowNoticeModal(true)}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -822,6 +825,7 @@ export default function Admin() {
                         <thead>
                             <tr>
                                 <th>Notice</th>
+                                <th>Audience</th>
                                 <th>Priority</th>
                                 <th>Seen</th>
                                 <th>Acknowledged</th>
@@ -832,7 +836,7 @@ export default function Admin() {
                         <tbody>
                             {notices.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6">
+                                    <td colSpan="7">
                                         <span className="admin__empty">No notices have been published yet.</span>
                                     </td>
                                 </tr>
@@ -842,6 +846,11 @@ export default function Admin() {
                                         <span className="admin__user-name">{notice.title}</span>
                                         <span className="admin__user-email">
                                             From {notice.sender_name || notice.created_by_name || 'Frido Admin'} • {new Date(notice.created_at).toLocaleString()}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`admin__status ${notice.audience === 'isd_nm' ? 'admin__status--invited' : 'admin__status--normal'}`}>
+                                            {notice.audience === 'isd_nm' ? 'ISD NM' : 'Retail staff'}
                                         </span>
                                     </td>
                                     <td>
@@ -867,7 +876,7 @@ export default function Admin() {
                                             </button>
                                             <button
                                                 className="admin__action-btn admin__action-btn--delete"
-                                                onClick={() => handleDeleteNotice(notice.id, notice.title)}
+                                                onClick={() => handleDeleteNotice(notice.id, notice.title, notice.audience)}
                                                 title="Delete notice permanently"
                                             >
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1105,8 +1114,15 @@ export default function Admin() {
                         </div>
                         <form onSubmit={handleCreateNotice} className="admin__modal-body">
                             <p className="admin__modal-desc">
-                                Staff will see active notices as popup messages after login and while using the dashboard.
+                                The selected audience sees this as a popup after login. A copy is emailed to active users in that audience (same Graph setup as invites). Retail staff = store staff &amp; viewers; ISD NM = executives &amp; team leads only.
                             </p>
+                            <div className="admin__modal-field">
+                                <label>Audience</label>
+                                <select value={noticeAudience} onChange={(e) => setNoticeAudience(e.target.value)}>
+                                    <option value="retail_staff">Retail staff</option>
+                                    <option value="isd_nm">ISD NM (executives &amp; team leads)</option>
+                                </select>
+                            </div>
                             <div className="admin__modal-field">
                                 <label>From</label>
                                 <input

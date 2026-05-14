@@ -426,6 +426,7 @@ async function ensurePostgresOptionalColumns() {
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TEXT');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS store_name TEXT');
     await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
+    await pool.query("ALTER TABLE notices ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'retail_staff'");
 }
 
 /** Widen `users.role` CHECK so `feedback` invites persist on existing Postgres databases. */
@@ -454,6 +455,7 @@ if (isPostgres) {
     await ensureColumn('users', 'last_login', 'TEXT');
     await ensureColumn('users', 'store_name', "TEXT DEFAULT ''");
     await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
+    await ensureColumn('notices', 'audience', 'TEXT NOT NULL DEFAULT \'retail_staff\'');
     migrateSqliteUsersRoleFeedbackCheck();
     migrateSqliteUsersRoleWidenIsdNm();
     migrateSqliteUsersStatusImportPending();
