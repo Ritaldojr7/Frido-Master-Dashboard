@@ -6,11 +6,40 @@ import { sendStaffNoticeEmail } from '../services/email.js';
 
 const router = Router();
 
+export const NOTICE_AUDIENCE_RETAIL = 'retail_staff';
+export const NOTICE_AUDIENCE_ISD_NM = 'isd_nm';
+
+/** Normalise POST body audience; defaults to retail staff. */
+export function normalizedNoticeAudience(raw) {
+    const a = String(raw ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    if (a === 'isd_nm' || a === 'isdnm') return NOTICE_AUDIENCE_ISD_NM;
+    return NOTICE_AUDIENCE_RETAIL;
+}
+
+/** SQL snippet: notices visible to this dashboard role (`staff`/`viewer` vs `executive`/`team_lead`). */
+function sqlNoticesAudienceMatchesUser(role) {
+    const r = String(role || '');
+    if (r === 'staff' || r === 'viewer') {
+        return "(COALESCE(n.audience, 'retail_staff') = 'retail_staff')";
+    }
+    if (r === 'executive' || r === 'team_lead') {
+        return `(COALESCE(n.audience, 'retail_staff') = '${NOTICE_AUDIENCE_ISD_NM}')`;
+    }
+    return '(1 = 0)';
+}
+
+/** WHERE fragment for counting email recipients */
+function recipientRolePredicateForAudience(audience) {
+    return audience === NOTICE_AUDIENCE_ISD_NM
+        ? "role IN ('executive', 'team_lead')"
+        : "role IN ('staff', 'viewer')";
+}
+
 /**
- * Email all active non-admin users (staff) a copy of a new notice. Runs async so POST /admin returns quickly.
+ * Email active recipients for this notice audience a copy via Microsoft Graph. Runs async so POST /admin returns quickly.
  * Requires the same Microsoft Graph env vars as invitations (see graphEmail.js). Set NOTICES_EMAIL_DISABLED=1 to skip.
  */
-function scheduleStaffNoticeEmails(noticeRow) {
+function scheduleAudienceNoticeEmails(noticeRow) {
     if (process.env.NOTICES_EMAIL_DISABLED === 'true' || process.env.NOTICES_EMAIL_DISABLED === '1') {
         return;
     }
@@ -18,14 +47,18 @@ function scheduleStaffNoticeEmails(noticeRow) {
         Number(noticeRow.active) === 1 || noticeRow.active === true;
     if (!isActive) return;
 
+    const audience = normalizedNoticeAudience(noticeRow.audience);
+
     void (async () => {
         let recipients = [];
         try {
+            const rolePred = recipientRolePredicateForAudience(audience);
             recipients = await db.all(
                 `SELECT TRIM(email) AS email, TRIM(COALESCE(name, '')) AS name FROM users
                  WHERE status = 'active'
                    AND role != 'admin'
                    AND deleted_at IS NULL
+                   AND (${rolePred})
                    AND email IS NOT NULL
                    AND LENGTH(TRIM(COALESCE(email, ''))) > 0`
             );
@@ -50,7 +83,7 @@ function scheduleStaffNoticeEmails(noticeRow) {
         }
         if (recipients.length) {
             console.log(
-                `[notices] Email copy for "${noticeRow.title}" (${noticeRow.id}): ${ok} sent, ${failed} failed, ${recipients.length} recipients`
+                `[notices] Email (${audience}) for "${noticeRow.title}" (${noticeRow.id}): ${ok} sent, ${failed} failed, ${recipients.length} recipients`
             );
         }
     })().catch((e) => console.error('[notices] Staff notice email job failed:', e.message));
@@ -60,8 +93,10 @@ router.use(verifyToken);
 
 function serializeNotice(row) {
     if (!row) return row;
+    const audience = normalizedNoticeAudience(row.audience);
     return {
         ...row,
+        audience,
         requires_ack: Boolean(row.requires_ack),
         active: Boolean(row.active),
     };
@@ -103,6 +138,7 @@ async function markReceipt(noticeId, userId, fields) {
 
 router.get('/active', async (req, res) => {
     const current = now();
+    const audienceWhere = sqlNoticesAudienceMatchesUser(req.user.role);
     const notices = await db.all(
         `SELECT
             n.*,
@@ -114,6 +150,7 @@ router.get('/active', async (req, res) => {
          LEFT JOIN users creator ON creator.id = n.created_by
          LEFT JOIN notice_receipts r ON r.notice_id = n.id AND r.user_id = ?
          WHERE n.active = 1
+           AND (${audienceWhere})
            AND (n.starts_at IS NULL OR n.starts_at <= ?)
            AND (n.ends_at IS NULL OR n.ends_at >= ?)
            AND r.acknowledged_at IS NULL
@@ -134,6 +171,7 @@ router.get('/active', async (req, res) => {
 });
 
 router.get('/feed', async (req, res) => {
+    const audienceWhere = sqlNoticesAudienceMatchesUser(req.user.role);
     const notices = await db.all(
         `SELECT
             n.*,
@@ -144,6 +182,7 @@ router.get('/feed', async (req, res) => {
          FROM notices n
          LEFT JOIN users creator ON creator.id = n.created_by
          LEFT JOIN notice_receipts r ON r.notice_id = n.id AND r.user_id = ?
+         WHERE (${audienceWhere})
          ORDER BY n.created_at DESC`,
         [req.user.id]
     );
@@ -152,7 +191,11 @@ router.get('/feed', async (req, res) => {
 });
 
 router.post('/:id/ack', async (req, res) => {
-    const notice = await db.get('SELECT id FROM notices WHERE id = ? AND active = 1', [req.params.id]);
+    const audiencePred = sqlNoticesAudienceMatchesUser(req.user.role);
+    const notice = await db.get(
+        `SELECT n.id FROM notices n WHERE n.id = ? AND n.active = 1 AND (${audiencePred})`,
+        [req.params.id]
+    );
     if (!notice) {
         return res.status(404).json({ error: 'Notice not found' });
     }
@@ -164,7 +207,11 @@ router.post('/:id/ack', async (req, res) => {
 });
 
 router.post('/:id/dismiss', async (req, res) => {
-    const notice = await db.get('SELECT id FROM notices WHERE id = ? AND active = 1', [req.params.id]);
+    const audiencePred = sqlNoticesAudienceMatchesUser(req.user.role);
+    const notice = await db.get(
+        `SELECT n.id FROM notices n WHERE n.id = ? AND n.active = 1 AND (${audiencePred})`,
+        [req.params.id]
+    );
     if (!notice) {
         return res.status(404).json({ error: 'Notice not found' });
     }
@@ -199,6 +246,7 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
         priority = 'normal',
         requires_ack = true,
         sent_by_name = '',
+        audience: audienceRaw = NOTICE_AUDIENCE_RETAIL,
         cta_label = '',
         cta_url = '',
         starts_at = null,
@@ -209,6 +257,8 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
     if (!title?.trim() || !body?.trim()) {
         return res.status(400).json({ error: 'Title and message are required' });
     }
+
+    const audience = normalizedNoticeAudience(audienceRaw);
 
     const validPriorities = ['normal', 'important', 'urgent'];
     const creator = await db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id]);
@@ -227,6 +277,7 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
         priority: validPriorities.includes(priority) ? priority : 'normal',
         requires_ack: requires_ack ? 1 : 0,
         sent_by_name: resolvedSenderName,
+        audience,
         cta_label: cta_label?.trim() || '',
         cta_url: cta_url?.trim() || '',
         starts_at: starts_at || null,
@@ -239,9 +290,9 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
 
     await db.run(
         `INSERT INTO notices (
-            id, title, body, priority, requires_ack, sent_by_name, cta_label, cta_url,
+            id, title, body, priority, requires_ack, sent_by_name, audience, cta_label, cta_url,
             starts_at, ends_at, active, created_by, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             notice.id,
             notice.title,
@@ -249,6 +300,7 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
             notice.priority,
             notice.requires_ack,
             notice.sent_by_name,
+            notice.audience,
             notice.cta_label,
             notice.cta_url,
             notice.starts_at,
@@ -260,7 +312,7 @@ router.post('/admin', requireRole(['admin']), async (req, res) => {
         ]
     );
 
-    scheduleStaffNoticeEmails(notice);
+    scheduleAudienceNoticeEmails(notice);
 
     res.status(201).json({ notice: serializeNotice(notice) });
 });
@@ -327,7 +379,10 @@ router.get('/admin/:id/stats', requireRole(['admin']), async (req, res) => {
         `SELECT u.id, u.email, u.name, u.role, r.seen_at, r.acknowledged_at, r.dismissed_at
          FROM users u
          LEFT JOIN notice_receipts r ON r.user_id = u.id AND r.notice_id = ?
-         WHERE u.status = 'active' AND u.role != 'admin'
+         WHERE u.status = 'active'
+           AND u.role != 'admin'
+           AND u.deleted_at IS NULL
+           AND (${recipientRolePredicateForAudience(normalizedNoticeAudience(notice.audience))})
          ORDER BY u.name`,
         [req.params.id]
     );

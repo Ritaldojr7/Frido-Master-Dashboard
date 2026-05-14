@@ -58,6 +58,7 @@ async function ensurePgExtras() {
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TEXT');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS store_name TEXT');
     await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
+    await pool.query("ALTER TABLE notices ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'retail_staff'");
 }
 
 async function main() {
@@ -145,15 +146,16 @@ async function main() {
         for (const r of rows) {
             await pool.query(
                 `INSERT INTO notices (
-                    id, title, body, priority, requires_ack, sent_by_name, cta_label, cta_url,
+                    id, title, body, priority, requires_ack, sent_by_name, audience, cta_label, cta_url,
                     starts_at, ends_at, active, created_by, created_at, updated_at
-                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
                 ON CONFLICT (id) DO UPDATE SET
                     title = EXCLUDED.title,
                     body = EXCLUDED.body,
                     priority = EXCLUDED.priority,
                     requires_ack = EXCLUDED.requires_ack,
                     sent_by_name = EXCLUDED.sent_by_name,
+                    audience = EXCLUDED.audience,
                     cta_label = EXCLUDED.cta_label,
                     cta_url = EXCLUDED.cta_url,
                     starts_at = EXCLUDED.starts_at,
@@ -169,6 +171,9 @@ async function main() {
                     r.priority,
                     r.requires_ack,
                     sqliteHasColumn('notices', 'sent_by_name') ? r.sent_by_name ?? '' : '',
+                    sqliteHasColumn('notices', 'audience')
+                        ? r.audience ?? 'retail_staff'
+                        : 'retail_staff',
                     r.cta_label ?? '',
                     r.cta_url ?? '',
                     r.starts_at ?? null,

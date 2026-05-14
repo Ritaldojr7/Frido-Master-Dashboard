@@ -42,6 +42,7 @@ export function schemaStatements() {
             starts_at TEXT,
             ends_at TEXT,
             active INTEGER NOT NULL DEFAULT 1,
+            audience TEXT NOT NULL DEFAULT 'retail_staff' CHECK (audience IN ('retail_staff', 'isd_nm')),
             created_by TEXT NOT NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,

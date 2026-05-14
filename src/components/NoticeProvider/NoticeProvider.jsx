@@ -46,6 +46,13 @@ export default function NoticeProvider({ children }) {
 
     const currentNotice = useMemo(() => notices[0], [notices]);
 
+    const noticeEyebrow = useMemo(() => {
+        const n = currentNotice;
+        if (!n) return '';
+        if (n.priority === 'urgent') return 'Urgent notice';
+        return n.audience === 'isd_nm' ? 'ISD NM notice' : 'Staff notice';
+    }, [currentNotice]);
+
     const acknowledge = async (noticeId) => {
         setBusyNoticeId(noticeId);
         try {
@@ -73,7 +80,7 @@ export default function NoticeProvider({ children }) {
                 <div className="notice-popup__overlay" role="presentation">
                     <div className={`notice-popup notice-popup--${currentNotice.priority}`} role="dialog" aria-modal="true" aria-labelledby="notice-popup-title">
                         <div className="notice-popup__eyebrow">
-                            {currentNotice.priority === 'urgent' ? 'Urgent notice' : 'Staff notice'}
+                            {noticeEyebrow}
                         </div>
                         <div className="notice-popup__meta">
                             <span>From {currentNotice.sender_name || currentNotice.created_by_name || 'Frido Admin'}</span>
