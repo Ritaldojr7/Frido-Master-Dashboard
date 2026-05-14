@@ -12,6 +12,8 @@ import {
 import { apiFetch, useAuth } from '../context/AuthContext';
 import './Admin.css';
 
+const USERS_PAGE_SIZE = 10;
+
 export default function Admin() {
     const { user } = useAuth();
     const [users, setUsers] = useState([]);
@@ -41,6 +43,7 @@ export default function Admin() {
     const [bulkInviteMessage, setBulkInviteMessage] = useState('');
     const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
     const [bulkDeleteMessage, setBulkDeleteMessage] = useState('');
+    const [userTablePage, setUserTablePage] = useState(1);
 
     // Notice form
     const [notices, setNotices] = useState([]);
@@ -266,6 +269,21 @@ export default function Admin() {
 
     /** Users not yet scheduled for deletion — deleted rows disappear from this page after delete. */
     const listedUsers = useMemo(() => users.filter((u) => !u.deleted_at), [users]);
+
+    const userTableTotalPages = useMemo(
+        () => Math.max(1, Math.ceil(listedUsers.length / USERS_PAGE_SIZE)),
+        [listedUsers.length]
+    );
+
+    useEffect(() => {
+        setUserTablePage((p) => Math.min(p, userTableTotalPages));
+    }, [listedUsers.length, userTableTotalPages]);
+
+    const pagedListedUsers = useMemo(() => {
+        const indexOfLast = userTablePage * USERS_PAGE_SIZE;
+        const indexOfFirst = indexOfLast - USERS_PAGE_SIZE;
+        return listedUsers.slice(indexOfFirst, indexOfLast);
+    }, [listedUsers, userTablePage]);
 
     const selectableUsers = useMemo(
         () => listedUsers.filter((u) => u.id !== user?.id),
@@ -638,7 +656,7 @@ export default function Admin() {
                                             className="admin__row-checkbox"
                                             checked={allSelectableSelected}
                                             disabled={selectableUsers.length === 0}
-                                            title="Select every row you can act on (excludes your own account)"
+                                            title="Select all users on the roster (all pages)"
                                             onChange={(e) => toggleSelectAllSelectable(e.target.checked)}
                                         />
                                     </th>
@@ -658,7 +676,7 @@ export default function Admin() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    listedUsers.map((u) => {
+                                    pagedListedUsers.map((u) => {
                                     const nameStr = String(u.name || '').trim();
                                     const userInitials = nameStr
                                         ? nameStr.split(/\s+/).map((n) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -765,6 +783,20 @@ export default function Admin() {
                                 )}
                             </tbody>
                         </table>
+                        {listedUsers.length > 0 ? (
+                            <div className="pagination">
+                                {Array.from({ length: userTableTotalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        className={`pagination__btn ${userTablePage === page ? 'pagination__btn--active' : ''}`}
+                                        onClick={() => setUserTablePage(page)}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                            </div>
+                        ) : null}
                     </div>
                 )}
             </div>
