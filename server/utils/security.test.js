@@ -7,6 +7,7 @@ import {
     VALID_ROLES,
     normalizeEmail,
     normalizeRole,
+    resolveRoleToValidSlug,
     createRawToken,
     hashToken,
     getAllowedDomains,
@@ -44,6 +45,21 @@ describe('normalizeEmail', () => {
 
 // ── normalizeRole ────────────────────────────────────────
 
+describe('resolveRoleToValidSlug', () => {
+    it('maps human-readable labels and parenthetical suffixes', () => {
+        expect(resolveRoleToValidSlug('Team Lead')).toBe('team_lead');
+        expect(resolveRoleToValidSlug('team lead')).toBe('team_lead');
+        expect(resolveRoleToValidSlug('TEAM LEAD')).toBe('team_lead');
+        expect(resolveRoleToValidSlug('Executive (ISD NM only)')).toBe('executive');
+        expect(resolveRoleToValidSlug('team-lead')).toBe('team_lead');
+    });
+
+    it('returns null for unknown roles', () => {
+        expect(resolveRoleToValidSlug('manager')).toBeNull();
+        expect(resolveRoleToValidSlug('')).toBeNull();
+    });
+});
+
 describe('normalizeRole', () => {
     it('accepts valid roles unchanged', () => {
         expect(normalizeRole('Admin')).toBe('admin');
@@ -52,6 +68,11 @@ describe('normalizeRole', () => {
         expect(normalizeRole('Executive')).toBe('executive');
         expect(normalizeRole('TEAM_LEAD')).toBe('team_lead');
         expect(normalizeRole('viewer')).toBe('viewer');
+    });
+
+    it('accepts spaced or labelled variants used in spreadsheets', () => {
+        expect(normalizeRole('Team Lead')).toBe('team_lead');
+        expect(normalizeRole('Executive (ISD NM Only)')).toBe('executive');
     });
 
     it('falls back to staff for unknown roles', () => {

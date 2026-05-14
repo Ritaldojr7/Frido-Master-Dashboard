@@ -2,6 +2,7 @@ import {
     isAllowedCompanyEmail,
     normalizeEmail,
     normalizeRole,
+    resolveRoleToValidSlug,
     VALID_ROLES,
 } from './security.js';
 import {
@@ -39,8 +40,7 @@ export function validateImportRow(rawInput, index = 0) {
     if (!roleRaw || String(roleRaw).trim() === '') {
         errors.push('role is required');
     } else {
-        const rl = String(roleRaw).toLowerCase().trim();
-        if (!VALID_ROLES.includes(rl)) {
+        if (!resolveRoleToValidSlug(roleRaw)) {
             errors.push(`invalid role "${roleRaw}" (allowed: ${VALID_ROLES.join(', ')})`);
         }
         role = normalizeRole(roleRaw);
