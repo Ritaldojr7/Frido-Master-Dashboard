@@ -217,6 +217,48 @@
     font-size: 15px;
 }
 
+/* Pagination — matches FeedbackDepartment */
+.pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm, 8px);
+    margin-top: var(--space-xl, 20px);
+    padding: 0 16px 16px;
+}
+
+.pagination__btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 13px;
+    font-family: inherit;
+    border: 1px solid var(--border-primary);
+    cursor: pointer;
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.pagination__btn:hover {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+}
+
+.pagination__btn--active {
+    background: var(--accent-amber);
+    color: var(--text-inverse);
+    border-color: var(--accent-amber);
+}
+
 /* ── Table ── */
 .admin__table {
     width: 100%;
