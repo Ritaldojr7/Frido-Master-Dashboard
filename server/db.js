@@ -262,6 +262,75 @@ function migrateSqliteUsersRoleWidenIsdNm() {
 }
 
 /**
+ * Widen users.status CHECK to allow staged CSV imports (`import_pending`) before Clerk invite.
+ */
+function migrateSqliteUsersStatusImportPending() {
+    if (isPostgres) return;
+
+    const row = sqlite
+        .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'")
+        .get();
+
+    if (!row?.sql || row.sql.includes("'import_pending'")) return;
+
+    sqlite.pragma('foreign_keys = OFF');
+    sqlite.exec(`
+        ALTER TABLE users RENAME TO users_old;
+
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            password_hash TEXT DEFAULT '',
+            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'viewer', 'feedback', 'executive', 'team_lead')),
+            department TEXT DEFAULT '',
+            store_name TEXT DEFAULT '',
+            avatar_url TEXT DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'disabled', 'import_pending')),
+            last_login TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TEXT
+        );
+
+        INSERT INTO users (
+            id, email, name, password_hash, role, department, store_name, avatar_url, status, last_login, created_at, updated_at, deleted_at
+        )
+        SELECT
+            id,
+            email,
+            name,
+            COALESCE(password_hash, ''),
+            role,
+            COALESCE(department, ''),
+            COALESCE(store_name, ''),
+            COALESCE(avatar_url, ''),
+            status,
+            last_login,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users_old;
+
+        DROP TABLE users_old;
+    `);
+    sqlite.pragma('foreign_keys = ON');
+}
+
+/** Widen `users.status` CHECK for import staging on Postgres. */
+async function ensurePostgresUsersStatusConstraint() {
+    if (!pool) return;
+    try {
+        await pool.query('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_status_check');
+        await pool.query(
+            `ALTER TABLE users ADD CONSTRAINT users_status_check CHECK (status IN ('active', 'invited', 'disabled', 'import_pending'))`
+        );
+    } catch (err) {
+        console.warn('[db] Could not widen users.status CHECK constraint:', err.message);
+    }
+}
+
+/**
  * Seed default admin in Clerk + DB when configured.
  * Requires CLERK_SECRET_KEY. If no Clerk user exists for DEFAULT_ADMIN_EMAIL,
  * sets DEFAULT_ADMIN_PASSWORD in the environment (never hardcode secrets).
@@ -378,6 +447,7 @@ if (isPostgres) {
     }
     await ensurePostgresOptionalColumns();
     await ensurePostgresUsersRoleConstraint();
+    await ensurePostgresUsersStatusConstraint();
 } else {
     await db.exec(schemaStatements().join(';\n') + ';');
     await ensureColumn('users', 'deleted_at', 'TEXT');
@@ -386,6 +456,7 @@ if (isPostgres) {
     await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
     migrateSqliteUsersRoleFeedbackCheck();
     migrateSqliteUsersRoleWidenIsdNm();
+    migrateSqliteUsersStatusImportPending();
 }
 await seedDefaultAdmin();
 await purgeExpiredDeletedUsers();

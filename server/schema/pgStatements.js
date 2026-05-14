@@ -12,7 +12,7 @@ export function schemaStatements() {
             department TEXT DEFAULT '',
             store_name TEXT DEFAULT '',
             avatar_url TEXT DEFAULT '',
-            status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'disabled')),
+            status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'disabled', 'import_pending')),
             last_login TEXT,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP

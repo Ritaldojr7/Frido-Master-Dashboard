@@ -6,17 +6,16 @@ import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import db, { now } from '../db.js';
 import { verifyToken, requireRole } from '../middleware/auth.js';
-import { sendInviteEmail } from '../services/email.js';
-import { createClerkClient } from '@clerk/express';
+import { createClerkInvitationFlow, deliverInviteEmail, clerkClient } from '../services/userInvite.js';
 import {
     isAllowedCompanyEmail,
     normalizeEmail,
     normalizeRole,
     VALID_ROLES,
 } from '../utils/security.js';
+import { validateImportRow } from '../utils/userImport.js';
 
 const router = Router();
-const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 /**
  * Merge role into Clerk publicMetadata. Invite rows often use placeholder UUID ids;
@@ -171,11 +170,9 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
         }
 
         const userRole = normalizeRole(role);
-        
-        // Determine the correct redirect URL (ngrok from env, or fallback to request origin)
+
         const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
 
-        // Check if user already exists in SQLite
         const existing = await db.get(
             'SELECT id, deleted_at FROM users WHERE email = ?',
             [normalizedEmail]
@@ -187,109 +184,38 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
             await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
         }
 
-        // 1. Create invitation in Clerk
-        // We use ignorePolicies to bypass Clerk's default email so we can send our own MS Graph email.
-        // We also use notify: false because we are handling the notification.
-        let invitation = null;
-        let existingClerkUser = null;
+        const department = req.body.department != null ? String(req.body.department).trim() : '';
+        const storeName = req.body.store_name || '';
 
-        try {
-            invitation = await clerkClient.invitations.createInvitation({
-                emailAddress: normalizedEmail,
-                publicMetadata: { 
-                    role: userRole,
-                    store_name: req.body.store_name || '' 
-                },
-                redirectUrl: origin,
-                notify: false,
-                ignorePolicies: true,
-            });
-        } catch (clerkErr) {
-            const errorCode = clerkErr.errors?.[0]?.code;
-            
-            if (errorCode === 'form_identifier_exists') {
-                // User already has an account! Just update their role.
-                const { data: users } = await clerkClient.users.getUserList({ emailAddress: [normalizedEmail] });
-                if (users && users.length > 0) {
-                    existingClerkUser = users[0];
-                    await clerkClient.users.updateUserMetadata(existingClerkUser.id, {
-                        publicMetadata: { role: userRole }
-                    });
-                } else {
-                    return res.status(500).json({ error: 'User exists but could not be retrieved from Clerk.' });
-                }
-            } else if (errorCode === 'duplicate_record') {
-                // Invitation already exists, revoke it and create a fresh one
-                try {
-                    const { data: invites } = await clerkClient.invitations.getInvitationList({ status: 'pending' });
-                    const existingInvite = invites.find(i => i.emailAddress === normalizedEmail);
-                    if (existingInvite) {
-                        await clerkClient.invitations.revokeInvitation(existingInvite.id);
-                        invitation = await clerkClient.invitations.createInvitation({
-                            emailAddress: normalizedEmail,
-                            publicMetadata: { role: userRole },
-                            redirectUrl: origin,
-                            notify: false,
-                            ignorePolicies: true,
-                        });
-                    }
-                } catch (retryErr) {
-                    console.error('Failed to recreate invitation:', retryErr);
-                    return res.status(500).json({ error: 'An invitation already exists and could not be recreated.' });
-                }
-            } else {
-                console.error('Clerk invitation error:', clerkErr);
-                return res.status(500).json({ error: clerkErr.errors?.[0]?.message || 'Failed to create invitation in Clerk' });
-            }
+        const clerkOut = await createClerkInvitationFlow({
+            normalizedEmail,
+            userRole,
+            storeName,
+            department,
+            origin,
+        });
+
+        if (clerkOut.error) {
+            return res.status(clerkOut.errorStatus || 500).json({ error: clerkOut.error });
         }
 
-        // Extract the raw ticket from Clerk's URL and redirect to our custom frontend Sign Up page
-        let inviteLink = origin || 'http://localhost:3000';
-        if (invitation && invitation.url) {
-            try {
-                const urlObj = new URL(invitation.url);
-                const ticket = urlObj.searchParams.get('ticket') || urlObj.searchParams.get('__clerk_ticket');
-                if (ticket) {
-                    inviteLink = `${origin}/#/sign-up?__clerk_ticket=${ticket}`;
-                } else {
-                    inviteLink = invitation.url; // fallback
-                }
-            } catch {
-                inviteLink = invitation.url;
-            }
-        }
-        
-        // 2. Insert placeholder into SQLite so they appear in the Admin table
-        const id = existingClerkUser ? existingClerkUser.id : uuid(); // Use real ID if they already exist
+        const { existingClerkUser, inviteLink } = clerkOut;
+
+        const id = existingClerkUser ? existingClerkUser.id : uuid();
         await db.run(
-            `INSERT INTO users (id, email, name, password_hash, role, store_name, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, normalizedEmail, name.trim(), '', userRole, req.body.store_name || '', 'invited', now(), now()]
+            `INSERT INTO users (id, email, name, password_hash, role, department, store_name, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, normalizedEmail, name.trim(), '', userRole, department, storeName, 'invited', now(), now()]
         );
 
-        // 3. Send the custom MS Graph email
-        const inviter = await db.get(
-            'SELECT name, email FROM users WHERE id = ?',
-            [req.user.id]
-        );
-
-        let emailWarning = null;
-        try {
-            const result = await sendInviteEmail({
-                toEmail: normalizedEmail,
-                toName: name.trim(),
-                inviteLink,
-                inviterName: inviter?.name || 'A Frido administrator',
-                inviterEmail: inviter?.email || '',
-                role: userRole,
-            });
-            if (result?.status === 'logged') {
-                emailWarning = 'Email service not configured — share the invite link manually.';
-            }
-        } catch (mailErr) {
-            console.error('Invite email failed:', mailErr);
-            emailWarning = `Couldn't send the email (${mailErr.message}). Share the invite link below manually.`;
-        }
+        const { emailWarning } = await deliverInviteEmail({
+            normalizedEmail,
+            name,
+            userRole,
+            inviteLink,
+            inviterId: req.user.id,
+            db,
+        });
 
         const user = await db.get(
             'SELECT id, email, name, role, department, store_name, status, created_at FROM users WHERE id = ?',
@@ -305,6 +231,169 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
     } catch (err) {
         console.error('Invite error:', err);
         res.status(500).json({ error: 'Failed to send invitation' });
+    }
+});
+
+/**
+ * POST /api/users/import — Stage users from CSV/XLSX (admin only). Rows are `import_pending` until bulk-invite.
+ * Body: { rows: [{ email, name, role, department?, store_name? }, ...] }
+ */
+router.post('/import', requireRole(['admin']), async (req, res) => {
+    try {
+        const { rows } = req.body;
+        if (!Array.isArray(rows) || rows.length === 0) {
+            return res.status(400).json({ error: 'rows must be a non-empty array' });
+        }
+        const maxRows = 500;
+        if (rows.length > maxRows) {
+            return res.status(400).json({ error: `At most ${maxRows} rows per request` });
+        }
+
+        const created = [];
+        const skipped = [];
+        const errors = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const v = validateImportRow(rows[i], i);
+            if (!v.ok) {
+                errors.push({ rowIndex: v.rowIndex, email: v.email || null, errors: v.errors });
+                continue;
+            }
+
+            const existing = await db.get('SELECT id, deleted_at FROM users WHERE email = ?', [v.email]);
+            if (existing && !existing.deleted_at) {
+                skipped.push({ rowIndex: v.rowIndex, email: v.email, reason: 'already exists' });
+                continue;
+            }
+            if (existing?.deleted_at) {
+                await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
+            }
+
+            const id = uuid();
+            try {
+                await db.run(
+                    `INSERT INTO users (id, email, name, password_hash, role, department, store_name, status, created_at, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [id, v.email, v.name, '', v.role, v.department, v.store_name, 'import_pending', now(), now()]
+                );
+                created.push({ rowIndex: v.rowIndex, id, email: v.email });
+            } catch (e) {
+                errors.push({
+                    rowIndex: v.rowIndex,
+                    email: v.email,
+                    errors: [e.message || 'insert failed'],
+                });
+            }
+        }
+
+        res.status(201).json({
+            createdCount: created.length,
+            skipped,
+            errors,
+            created,
+        });
+    } catch (err) {
+        console.error('Import error:', err);
+        res.status(500).json({ error: 'Import failed' });
+    }
+});
+
+/**
+ * POST /api/users/bulk-invite — Clerk + email for selected `import_pending` users (admin only).
+ * Body: { userIds: string[] }
+ */
+router.post('/bulk-invite', requireRole(['admin']), async (req, res) => {
+    try {
+        const { userIds } = req.body;
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+            return res.status(400).json({ error: 'userIds must be a non-empty array' });
+        }
+
+        const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
+        const DELAY_MS = 350;
+        const results = [];
+
+        for (const uid of userIds) {
+            const row = await db.get(
+                'SELECT id, email, name, role, department, store_name, status FROM users WHERE id = ?',
+                [uid]
+            );
+
+            if (!row) {
+                results.push({ id: uid, ok: false, error: 'user not found' });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+
+            if (row.status !== 'import_pending') {
+                results.push({ id: uid, ok: false, error: `not import_pending (got ${row.status})` });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+
+            const normalizedEmail = normalizeEmail(row.email);
+            const userRole = normalizeRole(row.role);
+
+            const clerkOut = await createClerkInvitationFlow({
+                normalizedEmail,
+                userRole,
+                storeName: row.store_name || '',
+                department: row.department || '',
+                origin,
+            });
+
+            if (clerkOut.error) {
+                console.warn('[bulk-invite] Clerk failed', normalizedEmail, clerkOut.error);
+                results.push({ id: uid, ok: false, email: normalizedEmail, error: clerkOut.error });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+
+            const newId = clerkOut.existingClerkUser ? clerkOut.existingClerkUser.id : row.id;
+
+            try {
+                if (clerkOut.existingClerkUser) {
+                    await db.run(
+                        `UPDATE users SET id = ?, status = 'invited', updated_at = ? WHERE id = ?`,
+                        [newId, now(), row.id]
+                    );
+                } else {
+                    await db.run(`UPDATE users SET status = 'invited', updated_at = ? WHERE id = ?`, [
+                        now(),
+                        row.id,
+                    ]);
+                }
+            } catch (dbErr) {
+                console.error('[bulk-invite] DB update failed', dbErr);
+                results.push({ id: uid, ok: false, email: normalizedEmail, error: dbErr.message || 'db update failed' });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+
+            const { emailWarning } = await deliverInviteEmail({
+                normalizedEmail,
+                name: row.name,
+                userRole,
+                inviteLink: clerkOut.inviteLink,
+                inviterId: req.user.id,
+                db,
+            });
+
+            results.push({
+                id: newId,
+                ok: true,
+                email: normalizedEmail,
+                warning: emailWarning || undefined,
+                inviteLink: emailWarning ? clerkOut.inviteLink : undefined,
+            });
+
+            await new Promise((r) => setTimeout(r, DELAY_MS));
+        }
+
+        res.json({ results });
+    } catch (err) {
+        console.error('Bulk invite error:', err);
+        res.status(500).json({ error: 'Bulk invite failed' });
     }
 });
 

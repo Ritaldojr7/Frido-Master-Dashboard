@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import { apiFetch, useAuth } from '../context/AuthContext';
 import './Admin.css';
 
@@ -19,6 +21,16 @@ export default function Admin() {
     const [inviteMessage, setInviteMessage] = useState('');
     const [inviteWarning, setInviteWarning] = useState('');
     const [inviteLink, setInviteLink] = useState('');
+
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importParsedRows, setImportParsedRows] = useState([]);
+    const [importFileLabel, setImportFileLabel] = useState('');
+    const [importParseError, setImportParseError] = useState('');
+    const [importSubmitLoading, setImportSubmitLoading] = useState(false);
+    const [importResultSummary, setImportResultSummary] = useState('');
+    const [selectedIds, setSelectedIds] = useState({});
+    const [bulkInviteLoading, setBulkInviteLoading] = useState(false);
+    const [bulkInviteMessage, setBulkInviteMessage] = useState('');
 
     // Notice form
     const [notices, setNotices] = useState([]);
@@ -243,6 +255,171 @@ export default function Admin() {
         }
     };
 
+    const openImportModal = () => {
+        setShowImportModal(true);
+        setImportParsedRows([]);
+        setImportFileLabel('');
+        setImportParseError('');
+        setImportResultSummary('');
+    };
+
+    const importPendingUsers = users.filter((u) => u.status === 'import_pending');
+    const selectedCount = Object.keys(selectedIds).length;
+
+    const toggleSelectUser = (id) => {
+        setSelectedIds((prev) => {
+            const next = { ...prev };
+            if (next[id]) delete next[id];
+            else next[id] = true;
+            return next;
+        });
+    };
+
+    const toggleSelectAllPending = (checked) => {
+        if (!checked) {
+            setSelectedIds({});
+            return;
+        }
+        const next = {};
+        importPendingUsers.forEach((u) => {
+            next[u.id] = true;
+        });
+        setSelectedIds(next);
+    };
+
+    const allPendingSelected =
+        importPendingUsers.length > 0 && importPendingUsers.every((u) => Boolean(selectedIds[u.id]));
+
+    const handleImportFile = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        setImportFileLabel(file.name);
+        setImportParseError('');
+        setImportResultSummary('');
+
+        const ext = file.name.split('.').pop()?.toLowerCase();
+
+        try {
+            if (ext === 'csv') {
+                const text = await file.text();
+                const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+                if (parsed.errors?.length > 0) {
+                    const fatal = parsed.errors.find((err) => err.type === 'Quotes' || err.type === 'Delimiter');
+                    if (fatal) {
+                        setImportParseError(fatal.message || 'Could not parse CSV');
+                        setImportParsedRows([]);
+                        return;
+                    }
+                }
+                const rows = (parsed.data || []).filter((row) =>
+                    Object.values(row || {}).some((v) => v != null && String(v).trim() !== '')
+                );
+                setImportParsedRows(rows);
+                if (!rows.length) setImportParseError('No data rows found in CSV');
+            } else if (ext === 'xlsx' || ext === 'xls') {
+                const buf = await file.arrayBuffer();
+                const wb = XLSX.read(buf, { type: 'array' });
+                const sheetName = wb.SheetNames[0];
+                if (!sheetName) {
+                    setImportParseError('Spreadsheet has no sheets');
+                    setImportParsedRows([]);
+                    return;
+                }
+                const json = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
+                const rows = Array.isArray(json)
+                    ? json.filter((row) =>
+                          Object.values(row || {}).some((v) => v != null && String(v).trim() !== '')
+                      )
+                    : [];
+                setImportParsedRows(rows);
+                if (!rows.length) setImportParseError('No data rows found in workbook');
+            } else {
+                setImportParsedRows([]);
+                setImportParseError('Use a .csv, .xlsx, or .xls file.');
+            }
+        } catch (err) {
+            setImportParsedRows([]);
+            setImportParseError(err.message || 'Failed to read file');
+        }
+    };
+
+    const handleImportConfirm = async () => {
+        if (!importParsedRows.length) return;
+        setImportSubmitLoading(true);
+        setImportResultSummary('');
+        try {
+            const data = await apiFetch('/api/users/import', {
+                method: 'POST',
+                body: JSON.stringify({ rows: importParsedRows }),
+            });
+            const parts = [
+                `${data.createdCount ?? 0} added to roster`,
+                `${data.skipped?.length ?? 0} skipped`,
+                `${data.errors?.length ?? 0} row errors`,
+            ];
+            setImportResultSummary(parts.join(' · '));
+            await fetchUsers();
+            setTimeout(() => {
+                setShowImportModal(false);
+                setImportResultSummary('');
+                setImportParsedRows([]);
+                setImportFileLabel('');
+            }, 2000);
+        } catch (err) {
+            setImportParseError(err.message || 'Import request failed');
+        } finally {
+            setImportSubmitLoading(false);
+        }
+    };
+
+    const downloadImportTemplate = () => {
+        const csv =
+            'email,name,role,department,store_name\r\njane.doe@myfrido.com,Jane Doe,staff,SALES,Bengaluru Store\r\n';
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'user-import-template.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const handleBulkInvite = async () => {
+        const userIds = Object.keys(selectedIds);
+        if (!userIds.length || bulkInviteLoading) return;
+        setBulkInviteLoading(true);
+        setBulkInviteMessage('');
+        try {
+            const data = await apiFetch('/api/users/bulk-invite', {
+                method: 'POST',
+                body: JSON.stringify({ userIds }),
+            });
+            const results = data.results || [];
+            const okCount = results.filter((r) => r.ok).length;
+            const failCount = results.length - okCount;
+
+            const nextSel = { ...selectedIds };
+            results.forEach((r, i) => {
+                const sentId = userIds[i];
+                if (r?.ok && sentId) delete nextSel[sentId];
+            });
+            setSelectedIds(nextSel);
+
+            const warnings = results.filter((r) => r.ok && r.warning);
+            let msg = `Sent ${okCount} invitation email(s). ${failCount ? `${failCount} failed — retry selected rows.` : ''}`.trim();
+            if (warnings.length) msg += ' Some invites need the link copied (email warning).';
+
+            setBulkInviteMessage(msg);
+            await fetchUsers();
+            setTimeout(() => setBulkInviteMessage(''), 8000);
+        } catch (err) {
+            setBulkInviteMessage(err.message || 'Bulk invite failed');
+        } finally {
+            setBulkInviteLoading(false);
+        }
+    };
+
     const daysUntilPurge = (deletedAt) => {
         if (!deletedAt) return null;
         const ms = new Date(deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000 - Date.now();
@@ -263,8 +440,14 @@ export default function Admin() {
     const statusClass = (status) => ({
         active: 'admin__status--active',
         invited: 'admin__status--invited',
+        import_pending: 'admin__status--import-pending',
         disabled: 'admin__status--disabled',
     }[status] || '');
+
+    const formatStatusLabel = (status) => {
+        if (status === 'import_pending') return 'Import pending — send invite';
+        return status;
+    };
 
     return (
         <div className="admin">
@@ -273,19 +456,32 @@ export default function Admin() {
                     <h1 className="admin__title">User Management</h1>
                     <p className="admin__subtitle">Manage team members, roles, and access permissions</p>
                 </div>
-                <button
-                    type="button"
-                    className="admin__invite-btn"
-                    onClick={() => setShowInviteModal(true)}
-                >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                        <circle cx="8.5" cy="7" r="4" />
-                        <line x1="20" y1="8" x2="20" y2="14" />
-                        <line x1="23" y1="11" x2="17" y2="11" />
-                    </svg>
-                    Invite user
-                </button>
+                <div className="admin__header-actions">
+                    <button
+                        type="button"
+                        className="admin__invite-btn"
+                        onClick={openImportModal}
+                        title="Import many users from CSV or Excel — then send invites in bulk."
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                        </svg>
+                        Import users
+                    </button>
+                    <button
+                        type="button"
+                        className="admin__invite-btn"
+                        onClick={() => setShowInviteModal(true)}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <line x1="20" y1="8" x2="20" y2="14" />
+                            <line x1="23" y1="11" x2="17" y2="11" />
+                        </svg>
+                        Invite user
+                    </button>
+                </div>
             </div>
 
             {/* Stats */}
@@ -303,13 +499,42 @@ export default function Admin() {
                     <span className="admin__stat-label">Admins</span>
                 </div>
                 <div className="admin__stat">
-                    <span className="admin__stat-number">{users.filter(u => u.status === 'invited').length}</span>
+                    <span className="admin__stat-number">{users.filter((u) => u.status === 'invited' || u.status === 'import_pending').length}</span>
                     <span className="admin__stat-label">Pending</span>
                 </div>
             </div>
 
             {/* Error */}
             {error && <div className="admin__error">{error}</div>}
+
+            {(selectedCount > 0 || bulkInviteMessage) && (
+                <div className="admin__bulk-bar">
+                    {selectedCount > 0 ? (
+                        <>
+                            <span className="admin__bulk-bar-text">{selectedCount} selected (import pending)</span>
+                            <button
+                                type="button"
+                                className="admin__bulk-bar-btn admin__bulk-bar-btn--primary"
+                                disabled={bulkInviteLoading}
+                                onClick={() => handleBulkInvite()}
+                            >
+                                {bulkInviteLoading ? 'Sending…' : 'Send invitation emails'}
+                            </button>
+                            <button
+                                type="button"
+                                className="admin__bulk-bar-btn"
+                                disabled={bulkInviteLoading}
+                                onClick={() => setSelectedIds({})}
+                            >
+                                Clear selection
+                            </button>
+                        </>
+                    ) : null}
+                    {bulkInviteMessage ? (
+                        <span className="admin__bulk-bar-msg">{bulkInviteMessage}</span>
+                    ) : null}
+                </div>
+            )}
 
             {/* Users Table */}
             <div className="admin__table-card">
@@ -320,6 +545,16 @@ export default function Admin() {
                         <table className="admin__table">
                             <thead>
                                 <tr>
+                                    <th className="admin__th-checkbox" scope="col">
+                                        <input
+                                            type="checkbox"
+                                            className="admin__row-checkbox"
+                                            checked={allPendingSelected}
+                                            disabled={importPendingUsers.length === 0}
+                                            title="Select all users awaiting invite email"
+                                            onChange={(e) => toggleSelectAllPending(e.target.checked)}
+                                        />
+                                    </th>
                                     <th>User</th>
                                     <th>Role</th>
                                     <th>Status</th>
@@ -345,6 +580,18 @@ export default function Admin() {
                                         .join(' ');
                                     return (
                                         <tr key={u.id} className={rowClasses}>
+                                            <td className="admin__td-checkbox">
+                                                {u.status === 'import_pending' ? (
+                                                    <input
+                                                        type="checkbox"
+                                                        className="admin__row-checkbox"
+                                                        checked={Boolean(selectedIds[u.id])}
+                                                        onChange={() => toggleSelectUser(u.id)}
+                                                        title="Include in bulk invitation email send"
+                                                        aria-label={`Select ${nameStr || u.email} for invite email`}
+                                                    />
+                                                ) : null}
+                                            </td>
                                             <td>
                                                 <div className="admin__user-cell">
                                                     <div className="admin__user-avatar">
@@ -386,7 +633,7 @@ export default function Admin() {
                                                     </span>
                                                 ) : (
                                                     <span className={`admin__status ${statusClass(u.status)}`}>
-                                                        {u.status}
+                                                        {formatStatusLabel(u.status)}
                                                     </span>
                                                 )}
                                             </td>
@@ -532,6 +779,137 @@ export default function Admin() {
                     </table>
                 </div>
             </div>
+
+            {/* ── Import users modal ── */}
+            {showImportModal && (
+                <div
+                    className="admin__modal-overlay"
+                    onClick={() => {
+                        setShowImportModal(false);
+                        setImportParsedRows([]);
+                        setImportFileLabel('');
+                        setImportParseError('');
+                        setImportResultSummary('');
+                    }}
+                >
+                    <div className="admin__modal admin__modal--wide" onClick={(e) => e.stopPropagation()}>
+                        <div className="admin__modal-header">
+                            <h2>Import users (CSV / Excel)</h2>
+                            <button
+                                type="button"
+                                className="admin__modal-close"
+                                onClick={() => {
+                                    setShowImportModal(false);
+                                    setImportParsedRows([]);
+                                    setImportFileLabel('');
+                                    setImportParseError('');
+                                    setImportResultSummary('');
+                                }}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="admin__modal-body">
+                            <p className="admin__modal-desc">
+                                Rows are saved to the roster immediately with status <strong>import pending</strong>. Then tick users in the
+                                table and use <strong>Send invitation emails</strong> to create Clerk invitations and dispatch mail.
+                                Required columns: <code>email</code>, <code>name</code>, <code>role</code>. Optional:{' '}
+                                <code>department</code>, <code>store_name</code>.
+                            </p>
+                            <div className="admin__import-actions">
+                                <button type="button" className="profile__btn profile__btn--ghost" onClick={downloadImportTemplate}>
+                                    Download CSV template
+                                </button>
+                                <label className="admin__import-file-label">
+                                    <input
+                                        type="file"
+                                        accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                        className="admin__import-file-input"
+                                        onChange={handleImportFile}
+                                    />
+                                    <span className="admin__invite-btn">Choose file</span>
+                                </label>
+                                {importFileLabel ? <span className="admin__import-file-name">{importFileLabel}</span> : null}
+                            </div>
+                            {importParseError ? <div className="admin__error admin__error--compact">{importParseError}</div> : null}
+                            {importParsedRows.length > 0 ? (
+                                <div className="admin__import-preview-wrap">
+                                    <p className="admin__import-preview-meta">
+                                        Preview ({importParsedRows.length} row{importParsedRows.length === 1 ? '' : 's'}, showing first{' '}
+                                        {Math.min(15, importParsedRows.length)})
+                                    </p>
+                                    <div className="admin__table-scroll admin__import-preview-scroll">
+                                        <table className="admin__table admin__table--compact">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>email</th>
+                                                    <th>name</th>
+                                                    <th>role</th>
+                                                    <th>department</th>
+                                                    <th>store_name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {importParsedRows.slice(0, 15).map((row, idx) => {
+                                                    const keys = Object.keys(row || {});
+                                                    const lc = {};
+                                                    keys.forEach((k) => {
+                                                        lc[String(k).toLowerCase()] = row[k];
+                                                    });
+                                                    const em = lc.email ?? row.email ?? '';
+                                                    const nm = lc.name ?? row.name ?? '';
+                                                    const rl = lc.role ?? row.role ?? '';
+                                                    const dp = lc.department ?? row.department ?? '';
+                                                    const st = lc.store_name ?? row.store_name ?? '';
+                                                    return (
+                                                        <tr key={idx}>
+                                                            <td>{idx + 1}</td>
+                                                            <td>{String(em)}</td>
+                                                            <td>{String(nm)}</td>
+                                                            <td>{String(rl)}</td>
+                                                            <td>{String(dp)}</td>
+                                                            <td>{String(st)}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ) : null}
+                            {importResultSummary ? (
+                                <div className="profile__message profile__message--success">{importResultSummary}</div>
+                            ) : null}
+                            <div className="admin__modal-actions">
+                                <button
+                                    type="button"
+                                    className="profile__btn profile__btn--ghost"
+                                    onClick={() => {
+                                        setShowImportModal(false);
+                                        setImportParsedRows([]);
+                                        setImportFileLabel('');
+                                        setImportParseError('');
+                                        setImportResultSummary('');
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="profile__btn profile__btn--primary"
+                                    disabled={!importParsedRows.length || importSubmitLoading}
+                                    onClick={() => handleImportConfirm()}
+                                >
+                                    {importSubmitLoading ? 'Importing…' : 'Import to roster'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── Invite Modal ── */}
             {showInviteModal && (
