@@ -244,8 +244,8 @@ export default function Admin() {
 
     const handleDeleteAccount = async (userId, userName) => {
         const ok = confirm(
-            `Permanently delete ${userName}?\n\n` +
-            `The account will be locked immediately and the row will be erased from the database after 30 days. You can still restore it before then.`
+            `Remove ${userName} from the roster?\n\n` +
+                `They disappear from this list immediately. The account is disabled and removed from the database after 30 days.`
         );
         if (!ok) return;
         try {
@@ -253,15 +253,6 @@ export default function Admin() {
             fetchUsers();
         } catch (err) {
             alert(err.message || 'Failed to delete user');
-        }
-    };
-
-    const handleRestore = async (userId) => {
-        try {
-            await apiFetch(`/api/users/${userId}/restore`, { method: 'PUT' });
-            fetchUsers();
-        } catch (err) {
-            alert(err.message || 'Failed to restore user');
         }
     };
 
@@ -273,17 +264,20 @@ export default function Admin() {
         setImportResultSummary('');
     };
 
+    /** Users not yet scheduled for deletion — deleted rows disappear from this page after delete. */
+    const listedUsers = useMemo(() => users.filter((u) => !u.deleted_at), [users]);
+
     const selectableUsers = useMemo(
-        () => users.filter((u) => u.id !== user?.id && !u.deleted_at),
-        [users, user?.id]
+        () => listedUsers.filter((u) => u.id !== user?.id),
+        [listedUsers, user?.id]
     );
     const selectedCount = Object.keys(selectedIds).length;
     const selectedPendingCount = useMemo(
         () =>
             Object.keys(selectedIds).filter((id) =>
-                users.some((u) => u.id === id && u.status === 'import_pending')
+                listedUsers.some((u) => u.id === id && u.status === 'import_pending')
             ).length,
-        [selectedIds, users]
+        [selectedIds, listedUsers]
     );
 
     const toggleSelectUser = (id) => {
@@ -465,7 +459,7 @@ export default function Admin() {
         const more = ids.length > 5 ? ` and ${ids.length - 5} more` : '';
         const ok = confirm(
             `Schedule ${ids.length} account(s) for deletion (purged after 30 days)?\n\n${preview}${more}\n\n` +
-                `Same as the row trash action: accounts lock immediately; you can restore before purge.`
+                `Same as the row trash action: accounts lock immediately and rows leave this list.`
         );
         if (!ok) return;
         setBulkDeleteLoading(true);
@@ -500,13 +494,6 @@ export default function Admin() {
         } finally {
             setBulkDeleteLoading(false);
         }
-    };
-
-    const daysUntilPurge = (deletedAt) => {
-        if (!deletedAt) return null;
-        const ms = new Date(deletedAt).getTime() + 30 * 24 * 60 * 60 * 1000 - Date.now();
-        const days = Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
-        return days;
     };
 
     const roleBadgeClass = (role) => ({
@@ -569,19 +556,19 @@ export default function Admin() {
             {/* Stats */}
             <div className="admin__stats">
                 <div className="admin__stat">
-                    <span className="admin__stat-number">{users.length}</span>
+                    <span className="admin__stat-number">{listedUsers.length}</span>
                     <span className="admin__stat-label">Total Users</span>
                 </div>
                 <div className="admin__stat">
-                    <span className="admin__stat-number">{users.filter(u => u.status === 'active').length}</span>
+                    <span className="admin__stat-number">{listedUsers.filter((u) => u.status === 'active').length}</span>
                     <span className="admin__stat-label">Active</span>
                 </div>
                 <div className="admin__stat">
-                    <span className="admin__stat-number">{users.filter(u => u.role === 'admin').length}</span>
+                    <span className="admin__stat-number">{listedUsers.filter((u) => u.role === 'admin').length}</span>
                     <span className="admin__stat-label">Admins</span>
                 </div>
                 <div className="admin__stat">
-                    <span className="admin__stat-number">{users.filter((u) => u.status === 'invited' || u.status === 'import_pending').length}</span>
+                    <span className="admin__stat-number">{listedUsers.filter((u) => u.status === 'invited' || u.status === 'import_pending').length}</span>
                     <span className="admin__stat-label">Pending</span>
                 </div>
             </div>
@@ -651,7 +638,7 @@ export default function Admin() {
                                             className="admin__row-checkbox"
                                             checked={allSelectableSelected}
                                             disabled={selectableUsers.length === 0}
-                                            title="Select every row you can act on (not your own account, not already scheduled for deletion)"
+                                            title="Select every row you can act on (excludes your own account)"
                                             onChange={(e) => toggleSelectAllSelectable(e.target.checked)}
                                         />
                                     </th>
@@ -664,24 +651,25 @@ export default function Admin() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.map((u) => {
+                                {listedUsers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7}>
+                                            <span className="admin__empty">No users on the roster.</span>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    listedUsers.map((u) => {
                                     const nameStr = String(u.name || '').trim();
                                     const userInitials = nameStr
                                         ? nameStr.split(/\s+/).map((n) => n[0]).join('').toUpperCase().slice(0, 2)
                                         : '–';
                                     const avatarSrc = typeof u.avatar_url === 'string' ? u.avatar_url.trim() : '';
-                                    const pendingDelete = Boolean(u.deleted_at);
-                                    const remainingDays = daysUntilPurge(u.deleted_at);
-                                    const rowClasses = ['admin__row--disabled', 'admin__row--deleted']
-                                        .filter((cls) =>
-                                            (cls === 'admin__row--disabled' && (u.status === 'disabled' || pendingDelete)) ||
-                                            (cls === 'admin__row--deleted' && pendingDelete)
-                                        )
-                                        .join(' ');
+                                    const rowClasses =
+                                        u.status === 'disabled' ? 'admin__row--disabled' : '';
                                     return (
                                         <tr key={u.id} className={rowClasses}>
                                             <td className="admin__td-checkbox">
-                                                {u.id !== user?.id && !u.deleted_at ? (
+                                                {u.id !== user?.id ? (
                                                     <input
                                                         type="checkbox"
                                                         className="admin__row-checkbox"
@@ -716,7 +704,7 @@ export default function Admin() {
                                                     className={`admin__role-select ${roleBadgeClass(u.role)}`}
                                                     value={u.role}
                                                     onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                                                    disabled={u.status === 'disabled' || pendingDelete}
+                                                    disabled={u.status === 'disabled'}
                                                 >
                                                     <option value="admin">Admin</option>
                                                     <option value="staff">Staff</option>
@@ -727,15 +715,9 @@ export default function Admin() {
                                                 </select>
                                             </td>
                                             <td>
-                                                {pendingDelete ? (
-                                                    <span className="admin__status admin__status--deleted" title={`Will be permanently removed in ${remainingDays} day${remainingDays === 1 ? '' : 's'}`}>
-                                                        Deletes in {remainingDays}d
-                                                    </span>
-                                                ) : (
-                                                    <span className={`admin__status ${statusClass(u.status)}`}>
-                                                        {formatStatusLabel(u.status)}
-                                                    </span>
-                                                )}
+                                                <span className={`admin__status ${statusClass(u.status)}`}>
+                                                    {formatStatusLabel(u.status)}
+                                                </span>
                                             </td>
                                             <td>
                                                 <div className="admin__dept-cell">
@@ -752,13 +734,7 @@ export default function Admin() {
                                             </td>
                                             <td>
                                                 <div className="admin__action-row">
-                                                    {pendingDelete ? (
-                                                        <button className="admin__action-btn admin__action-btn--activate" onClick={() => handleRestore(u.id)} title="Restore account">
-                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-                                                            </svg>
-                                                        </button>
-                                                    ) : u.status === 'disabled' ? (
+                                                    {u.status === 'disabled' ? (
                                                         <button className="admin__action-btn admin__action-btn--activate" onClick={() => handleReactivate(u.id)} title="Reactivate">
                                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                 <path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
@@ -772,22 +748,21 @@ export default function Admin() {
                                                             </svg>
                                                         </button>
                                                     )}
-                                                    {!pendingDelete && (
-                                                        <button className="admin__action-btn admin__action-btn--delete" onClick={() => handleDeleteAccount(u.id, u.name)} title="Delete account (auto-purges in 30 days)">
-                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <polyline points="3 6 5 6 21 6" />
-                                                                <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6" />
-                                                                <path d="M10 11v6" />
-                                                                <path d="M14 11v6" />
-                                                                <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
+                                                    <button className="admin__action-btn admin__action-btn--delete" onClick={() => handleDeleteAccount(u.id, u.name)} title="Delete account (removed from this list; purged from DB after 30 days)">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="3 6 5 6 21 6" />
+                                                            <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6" />
+                                                            <path d="M10 11v6" />
+                                                            <path d="M14 11v6" />
+                                                            <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
                                     );
-                                })}
+                                })
+                                )}
                             </tbody>
                         </table>
                     </div>
