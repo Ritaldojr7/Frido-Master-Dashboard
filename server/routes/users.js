@@ -398,6 +398,66 @@ router.post('/bulk-invite', requireRole(['admin']), async (req, res) => {
 });
 
 /**
+ * POST /api/users/bulk-delete — Schedule permanent deletion for many users (admin only).
+ * Same rules as DELETE /:id/permanent: cannot target self; skip already-pending deletion.
+ * Body: { userIds: string[] }
+ */
+router.post('/bulk-delete', requireRole(['admin']), async (req, res) => {
+    try {
+        const { userIds } = req.body;
+        if (!Array.isArray(userIds) || userIds.length === 0) {
+            return res.status(400).json({ error: 'userIds must be a non-empty array' });
+        }
+
+        const DELAY_MS = 150;
+        const results = [];
+
+        for (const id of userIds) {
+            if (id === req.user.id) {
+                results.push({ id, ok: false, error: 'cannot delete your own account' });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+
+            const target = await db.get('SELECT id, deleted_at FROM users WHERE id = ?', [id]);
+            if (!target) {
+                results.push({ id, ok: false, error: 'user not found' });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+            if (target.deleted_at) {
+                results.push({ id, ok: false, error: 'already scheduled for deletion' });
+                await new Promise((r) => setTimeout(r, DELAY_MS));
+                continue;
+            }
+
+            try {
+                const timestamp = now();
+                await db.run(
+                    `UPDATE users
+                     SET status = 'disabled',
+                         deleted_at = ?,
+                         updated_at = ?
+                     WHERE id = ?`,
+                    [timestamp, timestamp, id]
+                );
+                await db.run('UPDATE invite_tokens SET used = 1 WHERE user_id = ? AND used = 0', [id]);
+                results.push({ id, ok: true, deleted_at: timestamp });
+            } catch (dbErr) {
+                console.error('[bulk-delete] failed', id, dbErr);
+                results.push({ id, ok: false, error: dbErr.message || 'delete failed' });
+            }
+            await new Promise((r) => setTimeout(r, DELAY_MS));
+        }
+
+        res.json({ results });
+    } catch (err) {
+        console.error('Bulk delete error:', err);
+        res.status(500).json({ error: 'Bulk delete failed' });
+    }
+});
+
+/**
  * PUT /api/users/:id/role — Change a user's role (admin only)
  * Body: { role }
  */

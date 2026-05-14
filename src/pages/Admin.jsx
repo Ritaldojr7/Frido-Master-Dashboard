@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import {
@@ -39,6 +39,8 @@ export default function Admin() {
     const [selectedIds, setSelectedIds] = useState({});
     const [bulkInviteLoading, setBulkInviteLoading] = useState(false);
     const [bulkInviteMessage, setBulkInviteMessage] = useState('');
+    const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
+    const [bulkDeleteMessage, setBulkDeleteMessage] = useState('');
 
     // Notice form
     const [notices, setNotices] = useState([]);
@@ -271,8 +273,18 @@ export default function Admin() {
         setImportResultSummary('');
     };
 
-    const importPendingUsers = users.filter((u) => u.status === 'import_pending');
+    const selectableUsers = useMemo(
+        () => users.filter((u) => u.id !== user?.id && !u.deleted_at),
+        [users, user?.id]
+    );
     const selectedCount = Object.keys(selectedIds).length;
+    const selectedPendingCount = useMemo(
+        () =>
+            Object.keys(selectedIds).filter((id) =>
+                users.some((u) => u.id === id && u.status === 'import_pending')
+            ).length,
+        [selectedIds, users]
+    );
 
     const toggleSelectUser = (id) => {
         setSelectedIds((prev) => {
@@ -283,20 +295,20 @@ export default function Admin() {
         });
     };
 
-    const toggleSelectAllPending = (checked) => {
+    const toggleSelectAllSelectable = (checked) => {
         if (!checked) {
             setSelectedIds({});
             return;
         }
         const next = {};
-        importPendingUsers.forEach((u) => {
+        selectableUsers.forEach((u) => {
             next[u.id] = true;
         });
         setSelectedIds(next);
     };
 
-    const allPendingSelected =
-        importPendingUsers.length > 0 && importPendingUsers.every((u) => Boolean(selectedIds[u.id]));
+    const allSelectableSelected =
+        selectableUsers.length > 0 && selectableUsers.every((u) => Boolean(selectedIds[u.id]));
 
     const handleImportFile = async (e) => {
         const file = e.target.files?.[0];
@@ -399,14 +411,21 @@ export default function Admin() {
     };
 
     const handleBulkInvite = async () => {
-        const userIds = Object.keys(selectedIds);
-        if (!userIds.length || bulkInviteLoading) return;
+        const pendingIds = Object.keys(selectedIds).filter((id) =>
+            users.some((u) => u.id === id && u.status === 'import_pending')
+        );
+        if (!pendingIds.length) {
+            setBulkInviteMessage('No import-pending users in selection.');
+            setTimeout(() => setBulkInviteMessage(''), 5000);
+            return;
+        }
+        if (bulkInviteLoading) return;
         setBulkInviteLoading(true);
         setBulkInviteMessage('');
         try {
             const data = await apiFetch('/api/users/bulk-invite', {
                 method: 'POST',
-                body: JSON.stringify({ userIds }),
+                body: JSON.stringify({ userIds: pendingIds }),
             });
             const results = data.results || [];
             const okCount = results.filter((r) => r.ok).length;
@@ -414,7 +433,7 @@ export default function Admin() {
 
             const nextSel = { ...selectedIds };
             results.forEach((r, i) => {
-                const sentId = userIds[i];
+                const sentId = pendingIds[i];
                 if (r?.ok && sentId) delete nextSel[sentId];
             });
             setSelectedIds(nextSel);
@@ -430,6 +449,56 @@ export default function Admin() {
             setBulkInviteMessage(err.message || 'Bulk invite failed');
         } finally {
             setBulkInviteLoading(false);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        const ids = Object.keys(selectedIds);
+        if (!ids.length || bulkDeleteLoading) return;
+        const preview = ids
+            .map((id) => {
+                const u = users.find((x) => x.id === id);
+                return u ? String(u.name || u.email || id) : id;
+            })
+            .slice(0, 5)
+            .join(', ');
+        const more = ids.length > 5 ? ` and ${ids.length - 5} more` : '';
+        const ok = confirm(
+            `Schedule ${ids.length} account(s) for deletion (purged after 30 days)?\n\n${preview}${more}\n\n` +
+                `Same as the row trash action: accounts lock immediately; you can restore before purge.`
+        );
+        if (!ok) return;
+        setBulkDeleteLoading(true);
+        setBulkDeleteMessage('');
+        try {
+            const data = await apiFetch('/api/users/bulk-delete', {
+                method: 'POST',
+                body: JSON.stringify({ userIds: ids }),
+            });
+            const results = data.results || [];
+            const okCount = results.filter((r) => r.ok).length;
+
+            const nextSel = { ...selectedIds };
+            results.forEach((r) => {
+                if (r?.ok && r.id) delete nextSel[r.id];
+            });
+            setSelectedIds(nextSel);
+
+            const fails = results.filter((r) => !r.ok);
+            let msg = `Scheduled ${okCount} account(s) for deletion.`;
+            if (fails.length) {
+                msg += ` ${fails.length} skipped (${fails
+                    .slice(0, 3)
+                    .map((f) => f.error || 'error')
+                    .join('; ')}${fails.length > 3 ? '…' : ''}).`;
+            }
+            setBulkDeleteMessage(msg);
+            await fetchUsers();
+            setTimeout(() => setBulkDeleteMessage(''), 8000);
+        } catch (err) {
+            setBulkDeleteMessage(err.message || 'Bulk delete failed');
+        } finally {
+            setBulkDeleteLoading(false);
         }
     };
 
@@ -520,23 +589,38 @@ export default function Admin() {
             {/* Error */}
             {error && <div className="admin__error">{error}</div>}
 
-            {(selectedCount > 0 || bulkInviteMessage) && (
+            {(selectedCount > 0 || bulkInviteMessage || bulkDeleteMessage) && (
                 <div className="admin__bulk-bar">
                     {selectedCount > 0 ? (
                         <>
-                            <span className="admin__bulk-bar-text">{selectedCount} selected (import pending)</span>
+                            <span className="admin__bulk-bar-text">{selectedCount} selected</span>
                             <button
                                 type="button"
                                 className="admin__bulk-bar-btn admin__bulk-bar-btn--primary"
-                                disabled={bulkInviteLoading}
+                                disabled={
+                                    bulkInviteLoading || bulkDeleteLoading || selectedPendingCount === 0
+                                }
+                                title={
+                                    selectedPendingCount === 0
+                                        ? 'Select at least one user with status “Import pending”'
+                                        : undefined
+                                }
                                 onClick={() => handleBulkInvite()}
                             >
                                 {bulkInviteLoading ? 'Sending…' : 'Send invitation emails'}
                             </button>
                             <button
                                 type="button"
+                                className="admin__bulk-bar-btn admin__bulk-bar-btn--danger"
+                                disabled={bulkDeleteLoading || bulkInviteLoading}
+                                onClick={() => handleBulkDelete()}
+                            >
+                                {bulkDeleteLoading ? 'Deleting…' : 'Mass delete selected'}
+                            </button>
+                            <button
+                                type="button"
                                 className="admin__bulk-bar-btn"
-                                disabled={bulkInviteLoading}
+                                disabled={bulkInviteLoading || bulkDeleteLoading}
                                 onClick={() => setSelectedIds({})}
                             >
                                 Clear selection
@@ -545,6 +629,9 @@ export default function Admin() {
                     ) : null}
                     {bulkInviteMessage ? (
                         <span className="admin__bulk-bar-msg">{bulkInviteMessage}</span>
+                    ) : null}
+                    {bulkDeleteMessage ? (
+                        <span className="admin__bulk-bar-msg">{bulkDeleteMessage}</span>
                     ) : null}
                 </div>
             )}
@@ -562,10 +649,10 @@ export default function Admin() {
                                         <input
                                             type="checkbox"
                                             className="admin__row-checkbox"
-                                            checked={allPendingSelected}
-                                            disabled={importPendingUsers.length === 0}
-                                            title="Select all users awaiting invite email"
-                                            onChange={(e) => toggleSelectAllPending(e.target.checked)}
+                                            checked={allSelectableSelected}
+                                            disabled={selectableUsers.length === 0}
+                                            title="Select every row you can act on (not your own account, not already scheduled for deletion)"
+                                            onChange={(e) => toggleSelectAllSelectable(e.target.checked)}
                                         />
                                     </th>
                                     <th>User</th>
@@ -594,14 +681,14 @@ export default function Admin() {
                                     return (
                                         <tr key={u.id} className={rowClasses}>
                                             <td className="admin__td-checkbox">
-                                                {u.status === 'import_pending' ? (
+                                                {u.id !== user?.id && !u.deleted_at ? (
                                                     <input
                                                         type="checkbox"
                                                         className="admin__row-checkbox"
                                                         checked={Boolean(selectedIds[u.id])}
                                                         onChange={() => toggleSelectUser(u.id)}
-                                                        title="Include in bulk invitation email send"
-                                                        aria-label={`Select ${nameStr || u.email} for invite email`}
+                                                        title="Include in bulk invite or mass delete"
+                                                        aria-label={`Select ${nameStr || u.email} for bulk actions`}
                                                     />
                                                 ) : null}
                                             </td>
@@ -827,7 +914,7 @@ export default function Admin() {
                         <div className="admin__modal-body">
                             <p className="admin__modal-desc">
                                 Rows are saved to the roster immediately with status <strong>import pending</strong>. Then tick users in the
-                                table and use <strong>Send invitation emails</strong> to create Clerk invitations and dispatch mail.
+                                table and use <strong>Send invitation emails</strong> or <strong>Mass delete selected</strong> as needed.
                                 Required columns: <code>email</code>, <code>name</code>, <code>role</code>. Optional:{' '}
                                 <code>department</code>, <code>store_name</code>.
                             </p>

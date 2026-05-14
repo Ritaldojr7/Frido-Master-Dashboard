@@ -130,6 +130,17 @@
     filter: brightness(1.05);
 }
 
+.admin__bulk-bar-btn--danger {
+    background: rgba(244, 63, 94, 0.1);
+    border-color: rgba(244, 63, 94, 0.35);
+    color: var(--accent-rose);
+}
+
+.admin__bulk-bar-btn--danger:hover:not(:disabled) {
+    background: rgba(244, 63, 94, 0.18);
+    border-color: rgba(244, 63, 94, 0.48);
+}
+
 .admin__bulk-bar-msg {
     flex: 1;
     min-width: 200px;
