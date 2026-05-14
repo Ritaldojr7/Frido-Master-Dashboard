@@ -4,6 +4,11 @@ import {
     normalizeRole,
     VALID_ROLES,
 } from './security.js';
+import {
+    IMPORT_FIELD_KEYS,
+    normalizeImportRecordKeys,
+    pickImportField,
+} from '../../src/utils/adminImportNormalize.js';
 
 /**
  * Validate a single import row (CSV/XLSX → JSON). Used by API and tests.
@@ -12,31 +17,14 @@ import {
  * @param {number} index - 0-based row index for error reporting
  * @returns {{ ok: boolean, email: string, name: string, role: string, department: string, store_name: string, rowIndex: number, errors: string[] }}
  */
-export function validateImportRow(raw, index = 0) {
-    const pick = (keys) => {
-        for (const k of keys) {
-            if (raw[k] !== undefined && raw[k] !== null && String(raw[k]).trim() !== '') {
-                return raw[k];
-            }
-        }
-        const lower = {};
-        for (const [rk, rv] of Object.entries(raw)) {
-            lower[String(rk).trim().toLowerCase()] = rv;
-        }
-        for (const k of keys) {
-            const lk = k.toLowerCase();
-            if (lower[lk] !== undefined && lower[lk] !== null && String(lower[lk]).trim() !== '') {
-                return lower[lk];
-            }
-        }
-        return '';
-    };
+export function validateImportRow(rawInput, index = 0) {
+    const raw = normalizeImportRecordKeys(rawInput);
 
-    const emailRaw = pick(['email', 'Email', 'EMAIL', 'mail']);
-    const nameRaw = pick(['name', 'Name', 'NAME', 'full_name', 'Full Name']);
-    const roleRaw = pick(['role', 'Role', 'ROLE']);
-    const departmentRaw = pick(['department', 'Department', 'DEPARTMENT', 'dept']);
-    const storeRaw = pick(['store_name', 'store', 'Store', 'STORE']);
+    const emailRaw = pickImportField(raw, IMPORT_FIELD_KEYS.email);
+    const nameRaw = pickImportField(raw, IMPORT_FIELD_KEYS.name);
+    const roleRaw = pickImportField(raw, IMPORT_FIELD_KEYS.role);
+    const departmentRaw = pickImportField(raw, IMPORT_FIELD_KEYS.department);
+    const storeRaw = pickImportField(raw, IMPORT_FIELD_KEYS.store_name);
 
     const email = normalizeEmail(emailRaw);
     const name = String(nameRaw ?? '').trim();

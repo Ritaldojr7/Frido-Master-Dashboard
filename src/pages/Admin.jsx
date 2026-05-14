@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
+import {
+    stripLeadingBom,
+    detectCsvDelimiter,
+    normalizeImportHeaderKey,
+    normalizeImportedRows,
+    pickImportField,
+    IMPORT_FIELD_KEYS,
+} from '../utils/adminImportNormalize';
 import { apiFetch, useAuth } from '../context/AuthContext';
 import './Admin.css';
 
@@ -302,8 +310,15 @@ export default function Admin() {
 
         try {
             if (ext === 'csv') {
-                const text = await file.text();
-                const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+                const rawText = await file.text();
+                const text = stripLeadingBom(rawText);
+                const delimiter = detectCsvDelimiter(text);
+                const parsed = Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: 'greedy',
+                    delimiter,
+                    transformHeader: (h) => normalizeImportHeaderKey(h),
+                });
                 if (parsed.errors?.length > 0) {
                     const fatal = parsed.errors.find((err) => err.type === 'Quotes' || err.type === 'Delimiter');
                     if (fatal) {
@@ -312,7 +327,7 @@ export default function Admin() {
                         return;
                     }
                 }
-                const rows = (parsed.data || []).filter((row) =>
+                const rows = normalizeImportedRows(parsed.data || []).filter((row) =>
                     Object.values(row || {}).some((v) => v != null && String(v).trim() !== '')
                 );
                 setImportParsedRows(rows);
@@ -327,11 +342,9 @@ export default function Admin() {
                     return;
                 }
                 const json = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
-                const rows = Array.isArray(json)
-                    ? json.filter((row) =>
-                          Object.values(row || {}).some((v) => v != null && String(v).trim() !== '')
-                      )
-                    : [];
+                const rows = normalizeImportedRows(Array.isArray(json) ? json : []).filter((row) =>
+                    Object.values(row || {}).some((v) => v != null && String(v).trim() !== '')
+                );
                 setImportParsedRows(rows);
                 if (!rows.length) setImportParseError('No data rows found in workbook');
             } else {
@@ -853,28 +866,16 @@ export default function Admin() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {importParsedRows.slice(0, 15).map((row, idx) => {
-                                                    const keys = Object.keys(row || {});
-                                                    const lc = {};
-                                                    keys.forEach((k) => {
-                                                        lc[String(k).toLowerCase()] = row[k];
-                                                    });
-                                                    const em = lc.email ?? row.email ?? '';
-                                                    const nm = lc.name ?? row.name ?? '';
-                                                    const rl = lc.role ?? row.role ?? '';
-                                                    const dp = lc.department ?? row.department ?? '';
-                                                    const st = lc.store_name ?? row.store_name ?? '';
-                                                    return (
-                                                        <tr key={idx}>
-                                                            <td>{idx + 1}</td>
-                                                            <td>{String(em)}</td>
-                                                            <td>{String(nm)}</td>
-                                                            <td>{String(rl)}</td>
-                                                            <td>{String(dp)}</td>
-                                                            <td>{String(st)}</td>
-                                                        </tr>
-                                                    );
-                                                })}
+                                                {importParsedRows.slice(0, 15).map((row, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{idx + 1}</td>
+                                                        <td>{String(pickImportField(row, IMPORT_FIELD_KEYS.email))}</td>
+                                                        <td>{String(pickImportField(row, IMPORT_FIELD_KEYS.name))}</td>
+                                                        <td>{String(pickImportField(row, IMPORT_FIELD_KEYS.role))}</td>
+                                                        <td>{String(pickImportField(row, IMPORT_FIELD_KEYS.department))}</td>
+                                                        <td>{String(pickImportField(row, IMPORT_FIELD_KEYS.store_name))}</td>
+                                                    </tr>
+                                                ))}
                                             </tbody>
                                         </table>
                                     </div>
