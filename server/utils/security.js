@@ -6,11 +6,26 @@ export function normalizeEmail(email) {
     return String(email || '').toLowerCase().trim();
 }
 
+/**
+ * Map CSV / UI labels (e.g. "Team Lead", "Executive (ISD NM only)") to a VALID_ROLES slug, or null.
+ */
+export function resolveRoleToValidSlug(role) {
+    if (role == null) return null;
+    let r = String(role).trim().toLowerCase();
+    if (!r) return null;
+
+    r = r.split('(')[0].trim();
+    if (!r) return null;
+
+    r = r.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!r) return null;
+
+    const underscored = r.replace(/ /g, '_');
+    return VALID_ROLES.includes(underscored) ? underscored : null;
+}
+
 export function normalizeRole(role) {
-    const r = String(role ?? '')
-        .toLowerCase()
-        .trim();
-    return VALID_ROLES.includes(r) ? r : 'staff';
+    return resolveRoleToValidSlug(role) ?? 'staff';
 }
 
 export function createRawToken() {

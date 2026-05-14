@@ -24,6 +24,20 @@ describe('validateImportRow', () => {
         expect(r.errors).toHaveLength(0);
     });
 
+    it('accepts spreadsheet-style role labels Team Lead / Executive (...)', () => {
+        delete process.env.ALLOWED_EMAIL_DOMAINS;
+        const tl = validateImportRow({ email: 'tl@myfrido.com', name: 'TL', role: 'Team Lead' }, 0);
+        expect(tl.ok).toBe(true);
+        expect(tl.role).toBe('team_lead');
+        const ex = validateImportRow({
+            email: 'ex@myfrido.com',
+            name: 'Ex',
+            role: 'Executive (ISD NM Only)',
+        }, 1);
+        expect(ex.ok).toBe(true);
+        expect(ex.role).toBe('executive');
+    });
+
     it('maps common header aliases (case-insensitive keys)', () => {
         delete process.env.ALLOWED_EMAIL_DOMAINS;
         const r = validateImportRow({ Email: 'b@myfrido.com', Name: 'Bee', Role: 'staff', Department: 'HQ' }, 2);
