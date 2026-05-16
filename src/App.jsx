@@ -1,6 +1,7 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { DashboardDataProvider } from './context/DashboardDataContext';
 import AuthGate from './components/AuthGate/AuthGate';
 import RoleGuard from './components/RoleGuard/RoleGuard';
 import NoticeProvider from './components/NoticeProvider/NoticeProvider';
@@ -38,8 +39,9 @@ function App() {
             <AuthProvider>
                 <AuthGate>
                     <Router>
-                        <NoticeProvider>
-                            <Layout>
+                        <DashboardDataProvider>
+                            <NoticeProvider>
+                                <Layout>
                                 <Routes>
                                     <Route path="/" element={<HomeRedirect />} />
                                     <Route
@@ -112,8 +114,9 @@ function App() {
                                         }
                                     />
                                 </Routes>
-                            </Layout>
-                        </NoticeProvider>
+                                </Layout>
+                            </NoticeProvider>
+                        </DashboardDataProvider>
                     </Router>
                 </AuthGate>
             </AuthProvider>

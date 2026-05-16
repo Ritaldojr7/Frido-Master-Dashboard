@@ -1,12 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    businessAnalyticsCategories,
-    staffExperienceStoreData,
-    retailAdminData,
-    isdNmData,
-} from '../../config/dashboardData';
+import { businessAnalyticsCategories, retailAdminData } from '../../config/dashboardData';
 import { canSeeIsdResource, ISD_NM_ROLES, RETAIL_STAFF_ACCESS_ROLES } from '../../config/permissions';
+import { useDashboardData } from '../../context/DashboardDataContext';
 import './SearchBar.css';
 
 function addLinkWithVariants(links, link, category) {
@@ -25,11 +21,11 @@ function addLinkWithVariants(links, link, category) {
 }
 
 /** Search index: staff/admin dashboards, business analytics (admin), ISD NM for eligible roles */
-function getAppSearchLinks(isAdmin, userRole = 'staff') {
+function getAppSearchLinks(isAdmin, userRole = 'staff', staffRetailSections = [], isdNmSections = []) {
     const links = [];
 
     if (userRole && RETAIL_STAFF_ACCESS_ROLES.includes(userRole)) {
-        staffExperienceStoreData.sections.forEach((section) => {
+        staffRetailSections.forEach((section) => {
             section.links.forEach((link) => {
                 addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
             });
@@ -51,7 +47,7 @@ function getAppSearchLinks(isAdmin, userRole = 'staff') {
     }
 
     if (userRole && ISD_NM_ROLES.includes(userRole)) {
-        isdNmData.sections.forEach((section) => {
+        isdNmSections.forEach((section) => {
             section.links.forEach((link) => {
                 if (!canSeeIsdResource(userRole, link.isdAccess || 'executive')) return;
                 if (link.copyModalText) return;
@@ -72,10 +68,13 @@ export default function SearchBar({ isAdmin = true, userRole = 'staff' }) {
     const wrapperRef = useRef(null);
     const navigate = useNavigate();
     const allLinks = useRef([]);
+    const { staffRetail, isdNm } = useDashboardData();
 
     useEffect(() => {
-        allLinks.current = getAppSearchLinks(isAdmin, userRole);
-    }, [isAdmin, userRole]);
+        const staffSections = staffRetail?.sections ?? [];
+        const isdSections = isdNm?.sections ?? [];
+        allLinks.current = getAppSearchLinks(isAdmin, userRole, staffSections, isdSections);
+    }, [isAdmin, userRole, staffRetail, isdNm]);
 
     // Keyboard shortcut Ctrl+K
     useEffect(() => {

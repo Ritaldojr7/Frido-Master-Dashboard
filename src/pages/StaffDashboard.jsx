@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { staffExperienceStoreData } from '../config/dashboardData';
+import { useDashboardData } from '../context/DashboardDataContext';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
 import { apiFetch } from '../context/AuthContext';
 import './SubPage.css';
@@ -51,7 +51,8 @@ const contactBoxData = [
 ];
 
 export default function StaffDashboard() {
-    const data = staffExperienceStoreData;
+    const { staffRetail } = useDashboardData();
+    const data = staffRetail;
     const [notices, setNotices] = useState([]);
 
     useEffect(() => {

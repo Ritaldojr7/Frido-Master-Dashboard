@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { isdNmData } from '../config/dashboardData';
+import { useDashboardData } from '../context/DashboardDataContext';
 import { canSeeIsdResource } from '../config/permissions';
 import { useAuth, apiFetch } from '../context/AuthContext';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
@@ -41,6 +41,7 @@ const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
 };
 
 export default function IsdNmDashboard() {
+    const { isdNm: isdNmData } = useDashboardData();
     const { user } = useAuth();
     const role = user?.role ?? 'staff';
     const [notices, setNotices] = useState([]);

@@ -58,5 +58,33 @@ export function schemaStatements() {
             FOREIGN KEY (notice_id) REFERENCES notices(id) ON DELETE CASCADE,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )`,
+        `CREATE TABLE IF NOT EXISTS dashboard_defs (
+            id TEXT PRIMARY KEY,
+            slug TEXT UNIQUE NOT NULL,
+            title TEXT NOT NULL,
+            back_route TEXT NOT NULL DEFAULT '',
+            metadata TEXT NOT NULL DEFAULT '{}',
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS dashboard_sections (
+            id TEXT PRIMARY KEY,
+            dashboard_id TEXT NOT NULL,
+            stable_id TEXT NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            title TEXT NOT NULL,
+            icon TEXT NOT NULL DEFAULT '',
+            accent_color TEXT NOT NULL DEFAULT 'blue',
+            FOREIGN KEY (dashboard_id) REFERENCES dashboard_defs(id) ON DELETE CASCADE
+        )`,
+        `CREATE TABLE IF NOT EXISTS dashboard_links (
+            id TEXT PRIMARY KEY,
+            section_id TEXT NOT NULL,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            payload TEXT NOT NULL,
+            FOREIGN KEY (section_id) REFERENCES dashboard_sections(id) ON DELETE CASCADE
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_dashboard_sections_dashboard ON dashboard_sections(dashboard_id, sort_order)`,
+        `CREATE INDEX IF NOT EXISTS idx_dashboard_links_section ON dashboard_links(section_id, sort_order)`,
     ];
 }
