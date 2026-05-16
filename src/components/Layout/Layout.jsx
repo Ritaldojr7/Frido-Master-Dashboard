@@ -5,7 +5,7 @@ import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import SearchBar from '../SearchBar/SearchBar';
 import UserMenu from '../UserMenu/UserMenu';
 import { sidebarPermissions } from '../../config/permissions';
-import { staffExperienceStoreData } from '../../config/dashboardData';
+import { useDashboardData } from '../../context/DashboardDataContext';
 import './Layout.css';
 import fridoLogo from '../../assets/logo.png';
 import Footer from '../Footer/Footer';
@@ -37,12 +37,14 @@ export default function Layout({ children }) {
 
     const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
 
+    const { staffRetail } = useDashboardData();
+
     const staffStats = useMemo(() => {
-        const sections = staffExperienceStoreData.sections;
+        const sections = staffRetail.sections || [];
         const total = sections.reduce((s, sec) => s + sec.links.length, 0);
         const coming = sections.reduce((s, sec) => s + sec.links.filter(l => l.isComingSoon).length, 0);
         return { sections: sections.length, live: total - coming, coming, sectionNames: sections.map(s => s.title) };
-    }, []);
+    }, [staffRetail]);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 10);

@@ -14,6 +14,7 @@
     "build:staff": "vite build --mode staff",
     "deploy:staff": "npm run build:staff && npx gh-pages -d dist",
     "migrate:supabase": "node server/scripts/migrateSqliteToSupabase.js",
+    "seed:dashboard-links": "node server/scripts/seedDashboardLinks.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
