@@ -638,7 +638,7 @@ export const isdNmData = {
             links: [
                 {
                     title: 'Zoho Forms Login',
-                    url: 'https://forms.zoho.in/prathamfrido1/home/myforms',
+                    url: 'https://forms.zoho.in/prathamtmyf1/home#myforms',
                     variant: 'dark',
                     icon: 'login',
                     isdAccess: 'team_lead',
@@ -652,7 +652,7 @@ export const isdNmData = {
                 },
                 {
                     title: 'Limechat Login',
-                    url: 'https://app.limechat.ai/u/login?state=hKFo2SBfMlQwWMLMOdLamZXczRKN0dfVkfVTFUT3JQYW2dqFur3VuaX2lcnNhbC1sb2dpbiN0aWlZQUh0d3NUHkCVptdUxTS04zR0cCotMzZFSWdhaEtpc2NpZnkuUfoivzmCUmdoM3VKcKY3bUSnanRvQmk0dEVVMFVpS2HU',
+                    url: 'https://sso.limechat.ai/u/login?state=hKFo2SBfMlQwVktLMGdUamZXczRKN0xtVldVTEFUT3JQYWZ5dqFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIDluN0dXNUhKeVptdUxjTS04a0hoeGgtMzZFSWxhaEtpo2NpZNkgUFpiVzhCUmdoM3VKekY3bU5nanRvQmk0dEVMWko5ZHU',
                     variant: 'dark',
                     icon: 'login',
                     isdAccess: 'executive',
@@ -673,7 +673,7 @@ export const isdNmData = {
                 },
                 {
                     title: 'Popin Dashboard',
-                    url: 'https://dashboard.popin.io/login',
+                    url: 'https://dashboard.popin.to/login',
                     variant: 'dark',
                     icon: 'desktop',
                     isdAccess: 'team_lead',
@@ -760,14 +760,14 @@ export const isdNmData = {
                 },
                 {
                     title: 'ISD(NM) Product Discount Slab',
-                    url: 'https://docs.google.com/spreadsheets/d/1VQ8BLPuOGQ0CVtd28XOII1_2RCVPu9xKc_B-4lFwzza/edit?gid=805225182#gid=805225182',
+                    url: 'https://docs.google.com/spreadsheets/d/1VQ8BLPuOGQ0QVtd28XOlI1_2RCVPx9xKc_B-4tFwezs/edit?gid=805225182#gid=805225182',
                     variant: 'dark',
                     icon: 'table',
                     isdAccess: 'executive',
                 },
                 {
                     title: 'SIM Card Sheet',
-                    url: 'https://docs.google.com/spreadsheets/d/1dScJTvNOG14AqqVAtvjx3B6VP108dv64h6B8zqOw6Uw/edit?gid=0#gid=0',
+                    url: 'https://docs.google.com/spreadsheets/d/1d6cJTvNOG14AggVAtuix3B6VP108dv64h6B8zgOw6Uw/edit?gid=0#gid=0',
                     variant: 'dark',
                     icon: 'table',
                     isdAccess: 'executive',
@@ -783,21 +783,21 @@ export const isdNmData = {
                 },
                 {
                     title: 'ISD Discount approval Submissions',
-                    url: 'https://docs.google.com/spreadsheets/d/1CjTy-b2ZSOpqlxrB5szwPxoU4NuaYA3VQLUxPfALcuQ/edit?usp=sharing',
+                    url: 'https://docs.google.com/spreadsheets/d/1CjTv-b2ZSOpgbxB5szwPxoU-INuaYA3VOLUxPiALcuQ/edit?usp=sharing',
                     variant: 'dark',
                     icon: 'clipboard',
                     isdAccess: 'executive',
                 },
                 {
                     title: 'IST Coupon Buddy',
-                    url: 'https://docs.google.com/spreadsheets/d/1CeVnnxXPMvwDepMBS2O7gTi3VFYZJNRTfNL--dbHioI/edit?gid=0#gid=0',
+                    url: 'https://docs.google.com/spreadsheets/d/1CeVnrwXPMVeDepM9SXX7gTi3vfYZ3hIRTjNi-_dhhk8/edit?gid=0#gid=0',
                     variant: 'dark',
                     icon: 'table',
                     isdAccess: 'executive',
                 },
                 {
                     title: 'A2A Order Transfer',
-                    url: 'https://docs.google.com/spreadsheets/d/10QGlRCTd72xdkRDsxKN7TwB8dJ_2M3yr_hyzoZ13U/edit?usp=sharing',
+                    url: 'https://docs.google.com/spreadsheets/d/10QGlRCTd7ZodkFlDswKN7TwBtIdJ_2M3yv_hyvoZ13U/edit?usp=sharing',
                     variant: 'dark',
                     icon: 'table',
                     isdAccess: 'executive',
@@ -822,14 +822,14 @@ export const isdNmData = {
                 },
                 {
                     title: 'Dispute Resolution Submissions',
-                    url: 'https://docs.google.com/spreadsheets/d/1Xpil7x5BZXah6CtwSUCJWa8G_WhvofKehcDV8eR8/edit?usp=sharing',
+                    url: 'https://docs.google.com/spreadsheets/d/1Kxplj7kSBzXah8CtwSUCJWuiXj_WhycfjXehcDV8eR8/edit?usp=sharing',
                     variant: 'dark',
                     icon: 'clipboard',
                     isdAccess: 'team_lead',
                 },
                 {
                     title: 'Lost Revenue Tracker',
-                    url: 'https://docs.google.com/spreadsheets/d/14ILZqD9LZHBnRgfni5gLfVXhPBkmF1jh16g20YvI/edit?usp=sharing',
+                    url: 'https://docs.google.com/spreadsheets/d/14LL2qCKiLZH0bNRghnj5gLfVXhFBkmE1jh16q52i7yI/edit?usp=sharing',
                     variant: 'dark',
                     icon: 'table',
                     isdAccess: 'executive',
