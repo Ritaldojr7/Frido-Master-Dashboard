@@ -15,6 +15,7 @@
     "deploy:staff": "npm run build:staff && npx gh-pages -d dist",
     "migrate:supabase": "node server/scripts/migrateSqliteToSupabase.js",
     "seed:dashboard-links": "node server/scripts/seedDashboardLinks.js",
+    "seed:feedback-products": "node server/scripts/seedFeedbackProducts.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

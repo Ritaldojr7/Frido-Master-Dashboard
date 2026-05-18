@@ -86,5 +86,12 @@ export function schemaStatements() {
         )`,
         `CREATE INDEX IF NOT EXISTS idx_dashboard_sections_dashboard ON dashboard_sections(dashboard_id, sort_order)`,
         `CREATE INDEX IF NOT EXISTS idx_dashboard_links_section ON dashboard_links(section_id, sort_order)`,
+        `CREATE TABLE IF NOT EXISTS feedback_products (
+            stable_id INTEGER PRIMARY KEY,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            payload TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_feedback_products_sort ON feedback_products(sort_order)`,
     ];
 }

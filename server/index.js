@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import noticeRoutes from './routes/notices.js';
 import dashboardRoutes from './routes/dashboards.js';
+import feedbackProductsRoutes from './routes/feedbackProducts.js';
 import db from './db.js';
 
 if (!process.env.CLERK_SECRET_KEY && process.env.NODE_ENV === 'production') {
@@ -44,6 +45,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/dashboards', dashboardRoutes);
+app.use('/api/feedback/products', feedbackProductsRoutes);
 
 // ── Health check ────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
