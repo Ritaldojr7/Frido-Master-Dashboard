@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { feedbackData } from '../config/feedbackDatabase';
+import { feedbackData as feedbackDataStatic } from '../config/feedbackDatabase';
+import { apiFetch } from '../context/AuthContext';
 import './FeedbackDepartment.css';
 
 const FEEDBACK_KNOWN_IDS_KEY = 'frido_feedback_known_product_ids';
@@ -101,7 +102,34 @@ export default function FeedbackDepartment() {
     const [feedbackAnnouncements, setFeedbackAnnouncements] = useState([]);
     const [bellPanelOpen, setBellPanelOpen] = useState(false);
     const bellWrapRef = useRef(null);
+    /** Loaded from Postgres when seeded; otherwise bundled snapshot. */
+    const [feedbackRemote, setFeedbackRemote] = useState(null);
     const itemsPerPage = 10;
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const data = await apiFetch('/api/feedback/products');
+                const arr = data?.products;
+                if (
+                    !cancelled &&
+                    Array.isArray(arr) &&
+                    arr.length > 0 &&
+                    arr.every((p) => p && typeof p === 'object' && Number.isFinite(Number(p.id)))
+                ) {
+                    setFeedbackRemote(arr);
+                }
+            } catch {
+                /* fall back to feedbackDataStatic */
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const feedbackCatalog = feedbackRemote ?? feedbackDataStatic;
 
     const parseDateValue = (value) => {
         if (!value || typeof value !== 'string') return null;
@@ -138,14 +166,14 @@ export default function FeedbackDepartment() {
     // Remove unpublished / NA rows
     const publishedData = useMemo(
         () =>
-            feedbackData.filter((item) => {
+            feedbackCatalog.filter((item) => {
                 const isNADataType = !item.dataType || item.dataType.toLowerCase().trim() === 'na';
                 const releaseEntries = getReleaseEntries(item);
                 const isNAReleaseDate = releaseEntries.length === 0;
                 const isNAReport = releaseEntries.length === 0;
                 return !(isNADataType || isNAReleaseDate || isNAReport);
             }),
-        []
+        [feedbackCatalog]
     );
 
     const categoryOptions = useMemo(
@@ -204,7 +232,7 @@ export default function FeedbackDepartment() {
         const knownSet = new Set(known);
         const newIds = publishedIds.filter((id) => !knownSet.has(id));
         const announcements = newIds.map((id) => {
-            const row = feedbackData.find((r) => r.id === id);
+            const row = feedbackCatalog.find((r) => r.id === id);
             const label = feedbackShortProductName(row?.productName);
             return {
                 id,
@@ -212,7 +240,7 @@ export default function FeedbackDepartment() {
             };
         });
         setFeedbackAnnouncements(announcements);
-    }, [publishedData]);
+    }, [publishedData, feedbackCatalog]);
 
     const dismissFeedbackAnnouncements = useCallback(() => {
         const publishedIds = publishedData.map((item) => item.id).sort((a, b) => a - b);

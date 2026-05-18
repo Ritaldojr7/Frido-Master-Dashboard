@@ -16,3 +16,20 @@ Phase 1 link trees (`isd_nm`, `staff_experience_store`) live in Postgres via `da
 3. **Smoke test** — open Retail Staff / ISD NM while signed in; links should match DB after seed.
 
 There is nothing to toggle for rollback: clearing or not seeding the DB keeps the bundled static snapshots as the rendered source via `DashboardDataProvider`.
+
+---
+
+## Feedback department products (`feedback_products`)
+
+The Feedback Department page loads **`GET /api/feedback/products`** (admin + feedback roles). Rows are stored as JSON payloads in **`feedback_products`** (`stable_id`, `sort_order`, `payload`).
+
+1. Deploy backend so `feedback_products` is created on boot.
+2. Seed from the bundled catalog:
+
+   ```bash
+   DATABASE_URL="<supabase-uri>" npm run seed:feedback-products -- --force
+   ```
+
+   First run without `--force` skips if any rows exist; use `--force` after editing `feedbackDatabase.js` to refresh all rows.
+
+3. Static **`src/config/feedbackDatabase.js`** remains the fallback when the API returns nothing or fails.

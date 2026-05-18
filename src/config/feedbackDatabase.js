@@ -274,6 +274,20 @@ export const feedbackData = [
         releaseDate: '18/03/2026'
     },
     {
+        id: 37,
+        category: 'Footwear',
+        productName: "Frido Women's Cloud Comfort Shoes - Lace ups",
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/black_CS_01D_c91d48ac-73fa-4ba9-a49f-a4a6ca661581.jpg?v=1763557956&width=639',
+        reportLink:
+            'https://drive.google.com/file/d/1YqR-9wsbNxgvxkvUldx8_0rTu-hdaKqi/view?usp=drive_link',
+        dataType: 'Returned Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/e7eeeee11b7d43f9b62fbcf7b2344855',
+        intentDate: '',
+        releaseDate: '18/05/2026'
+    },
+    {
         id: 9,
         category: 'Orthotics',
         productName: 'Frido Orthotics Posture Corrector',
