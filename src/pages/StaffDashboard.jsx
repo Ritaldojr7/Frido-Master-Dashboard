@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '../context/DashboardDataContext';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
+import NoticeAttachmentList from '../components/NoticeAttachmentList/NoticeAttachmentList';
 import { apiFetch } from '../context/AuthContext';
 import './SubPage.css';
 
@@ -133,6 +134,7 @@ export default function StaffDashboard() {
                                 </div>
                                 <h3 className="subpage__notice-heading">{notice.title}</h3>
                                 <p className="subpage__notice-body">{notice.body}</p>
+                                <NoticeAttachmentList attachments={notice.attachments} />
                             </article>
                         ))}
                     </div>

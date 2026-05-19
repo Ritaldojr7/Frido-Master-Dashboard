@@ -197,10 +197,27 @@ function formatNoticeSentAt(iso) {
     }
 }
 
+function graphFileAttachment({ filename, mime, buffer }) {
+    return {
+        '@odata.type': '#microsoft.graph.fileAttachment',
+        name: filename,
+        contentType: mime,
+        contentBytes: buffer.toString('base64'),
+        isInline: false,
+    };
+}
+
 /**
  * Email copy of a staff notice (Microsoft Graph). Shown in-app when online; email reaches staff who are not logged in.
+ * @param {{ toEmail: string, toName: string, notice: object, embedPdfAttachments?: { file_name: string, buffer: Buffer }[], linkOnlyPdfLines?: { file_name: string, url: string }[] }} opts
  */
-export async function sendStaffNoticeEmail({ toEmail, toName, notice }) {
+export async function sendStaffNoticeEmail({
+    toEmail,
+    toName,
+    notice,
+    embedPdfAttachments = [],
+    linkOnlyPdfLines = [],
+}) {
     const {
         title,
         body: noticeBody,
@@ -236,6 +253,27 @@ export async function sendStaffNoticeEmail({ toEmail, toName, notice }) {
             ? `${primaryButton(escapeHtml(ctaLabel.trim()), ctaUrl.trim())}`
             : `${primaryButton('Open dashboard', APP_URL)}`;
 
+    const attachedNames = embedPdfAttachments.map((a) => a.file_name).filter(Boolean);
+    const attachedBlock =
+        attachedNames.length > 0
+            ? `<p style="margin:0 0 12px 0;color:#475569;font-size:14px;"><strong>PDF attached:</strong> ${attachedNames.map(escapeHtml).join(', ')}</p>`
+            : '';
+
+    const linkOnlyBlock =
+        linkOnlyPdfLines.length > 0
+            ? `<div style="margin:0 0 16px 0;padding:12px 14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;color:#334155;">
+                <p style="margin:0 0 8px 0;font-weight:600;">Additional PDFs (download link):</p>
+                <ul style="margin:0;padding-left:18px;">
+                    ${linkOnlyPdfLines
+                        .map(
+                            (line) =>
+                                `<li style="margin:4px 0;"><a href="${escapeHtml(line.url)}" style="color:#0f172a;">${escapeHtml(line.file_name)}</a></li>`
+                        )
+                        .join('')}
+                </ul>
+               </div>`
+            : '';
+
     const body = `
         <h1 style="margin:0 0 16px 0;font-size:22px;font-weight:700;color:#0f172a;">Hi ${safeName},</h1>
         <p style="margin:0 0 6px 0;color:#475569;font-size:14px;"><strong style="color:#334155;">From:</strong> ${safeSender}</p>
@@ -245,13 +283,22 @@ export async function sendStaffNoticeEmail({ toEmail, toName, notice }) {
         <h2 style="margin:8px 0 12px 0;font-size:18px;font-weight:700;color:#0f172a;">${safeTitle}</h2>
         <p style="margin:0 0 8px 0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;">Message</p>
         <div style="margin:0 0 20px 0;padding:16px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:15px;line-height:1.55;color:#334155;">${safeBody}</div>
+        ${attachedBlock}
+        ${linkOnlyBlock}
         ${ackLine}
         ${ctaBlock}
         <p style="margin:20px 0 0 0;color:#64748b;font-size:13px;">When you sign in, you will also see this notice in the dashboard.</p>
     `;
 
     const previewBits = [senderName, sentFormatted || null, title].filter(Boolean);
-    const { headerImgSrc, footerImgSrc, attachments } = resolveImageSources();
+    const { headerImgSrc, footerImgSrc, attachments: brandAttachments } = resolveImageSources();
+    const pdfAttachments = embedPdfAttachments.map((a) =>
+        graphFileAttachment({
+            filename: a.file_name,
+            mime: 'application/pdf',
+            buffer: a.buffer,
+        })
+    );
     const html = wrapHtml({
         previewText: previewBits.join(' · '),
         body,
@@ -259,5 +306,11 @@ export async function sendStaffNoticeEmail({ toEmail, toName, notice }) {
         footerImgSrc,
     });
 
-    return sendGraphMail({ toEmail, toName, subject, html, attachments });
+    return sendGraphMail({
+        toEmail,
+        toName,
+        subject,
+        html,
+        attachments: [...brandAttachments, ...pdfAttachments],
+    });
 }

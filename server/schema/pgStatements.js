@@ -93,5 +93,17 @@ export function schemaStatements() {
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`,
         `CREATE INDEX IF NOT EXISTS idx_feedback_products_sort ON feedback_products(sort_order)`,
+        `CREATE TABLE IF NOT EXISTS notice_attachments (
+            id TEXT PRIMARY KEY,
+            notice_id TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            storage_path TEXT NOT NULL,
+            mime_type TEXT NOT NULL DEFAULT 'application/pdf',
+            size_bytes INTEGER NOT NULL DEFAULT 0,
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (notice_id) REFERENCES notices(id) ON DELETE CASCADE
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_notice_attachments_notice ON notice_attachments(notice_id, sort_order)`,
     ];
 }

@@ -3,6 +3,7 @@ import { useDashboardData } from '../context/DashboardDataContext';
 import { canSeeIsdResource } from '../config/permissions';
 import { useAuth, apiFetch } from '../context/AuthContext';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
+import NoticeAttachmentList from '../components/NoticeAttachmentList/NoticeAttachmentList';
 import './SubPage.css';
 
 const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
@@ -107,6 +108,7 @@ export default function IsdNmDashboard() {
                                 </div>
                                 <h3 className="subpage__notice-heading">{notice.title}</h3>
                                 <p className="subpage__notice-body">{notice.body}</p>
+                                <NoticeAttachmentList attachments={notice.attachments} />
                             </article>
                         ))}
                     </div>

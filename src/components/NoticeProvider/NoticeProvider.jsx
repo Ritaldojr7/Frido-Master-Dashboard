@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiFetch, useAuth } from '../../context/AuthContext';
+import NoticeAttachmentList from '../NoticeAttachmentList/NoticeAttachmentList';
 import './NoticeProvider.css';
 
 function formatNoticeDateTime(value) {
@@ -88,6 +89,8 @@ export default function NoticeProvider({ children }) {
                         </div>
                         <h2 id="notice-popup-title" className="notice-popup__title">{currentNotice.title}</h2>
                         <p className="notice-popup__body">{currentNotice.body}</p>
+
+                        <NoticeAttachmentList attachments={currentNotice.attachments} />
 
                         {currentNotice.cta_url && (
                             <a className="notice-popup__cta" href={currentNotice.cta_url} target="_blank" rel="noopener noreferrer">

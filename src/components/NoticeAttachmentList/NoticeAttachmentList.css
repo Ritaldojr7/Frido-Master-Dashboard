@@ -1,0 +1,29 @@
+.notice-attachments {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.notice-attachments__link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent-blue, #2563eb);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.notice-attachments__link:hover:not(:disabled) {
+    color: var(--accent-blue-dark, #1d4ed8);
+}
+
+.notice-attachments__link:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
