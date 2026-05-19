@@ -20,6 +20,7 @@ dist-ssr
 server/data/*.db
 server/data/*.db-wal
 server/data/*.db-shm
+server/data/notice-attachments/
 
 # Editor directories and files
 .vscode/*

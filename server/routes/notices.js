@@ -2,105 +2,34 @@ import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import db, { now } from '../db.js';
 import { verifyToken, requireRole } from '../middleware/auth.js';
-import { sendStaffNoticeEmail } from '../services/email.js';
+import { noticePdfUpload } from '../middleware/noticeUpload.js';
+import {
+    NOTICE_AUDIENCE_RETAIL,
+    normalizedNoticeAudience,
+    sqlNoticesAudienceMatchesUser,
+    recipientRolePredicateForAudience,
+} from '../constants/notices.js';
+import {
+    attachAttachmentsToNotices,
+    deleteAllNoticeAttachments,
+    deleteAttachmentsExcept,
+    fetchAttachmentsByNoticeIds,
+    parseKeepAttachmentIds,
+    parseMultipartNoticeFields,
+    scheduleAudienceNoticeEmails,
+    serializeNotice,
+    uploadAndInsertPdfs,
+    validateAttachmentCount,
+    validateNoticePdfFiles,
+} from '../services/noticeService.js';
+import { readNoticePdfBuffer } from '../services/noticeAttachments.js';
+
+export { NOTICE_AUDIENCE_RETAIL, NOTICE_AUDIENCE_ISD_NM } from '../constants/notices.js';
+export { normalizedNoticeAudience } from '../constants/notices.js';
 
 const router = Router();
 
-export const NOTICE_AUDIENCE_RETAIL = 'retail_staff';
-export const NOTICE_AUDIENCE_ISD_NM = 'isd_nm';
-
-/** Normalise POST body audience; defaults to retail staff. */
-export function normalizedNoticeAudience(raw) {
-    const a = String(raw ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
-    if (a === 'isd_nm' || a === 'isdnm') return NOTICE_AUDIENCE_ISD_NM;
-    return NOTICE_AUDIENCE_RETAIL;
-}
-
-/** SQL snippet: notices visible to this dashboard role (`staff`/`viewer` vs `executive`/`team_lead`). */
-function sqlNoticesAudienceMatchesUser(role) {
-    const r = String(role || '');
-    if (r === 'staff' || r === 'viewer') {
-        return "(COALESCE(n.audience, 'retail_staff') = 'retail_staff')";
-    }
-    if (r === 'executive' || r === 'team_lead') {
-        return `(COALESCE(n.audience, 'retail_staff') = '${NOTICE_AUDIENCE_ISD_NM}')`;
-    }
-    return '(1 = 0)';
-}
-
-/** WHERE fragment for counting email recipients */
-function recipientRolePredicateForAudience(audience) {
-    return audience === NOTICE_AUDIENCE_ISD_NM
-        ? "role IN ('executive', 'team_lead')"
-        : "role IN ('staff', 'viewer')";
-}
-
-/**
- * Email active recipients for this notice audience a copy via Microsoft Graph. Runs async so POST /admin returns quickly.
- * Requires the same Microsoft Graph env vars as invitations (see graphEmail.js). Set NOTICES_EMAIL_DISABLED=1 to skip.
- */
-function scheduleAudienceNoticeEmails(noticeRow) {
-    if (process.env.NOTICES_EMAIL_DISABLED === 'true' || process.env.NOTICES_EMAIL_DISABLED === '1') {
-        return;
-    }
-    const isActive =
-        Number(noticeRow.active) === 1 || noticeRow.active === true;
-    if (!isActive) return;
-
-    const audience = normalizedNoticeAudience(noticeRow.audience);
-
-    void (async () => {
-        let recipients = [];
-        try {
-            const rolePred = recipientRolePredicateForAudience(audience);
-            recipients = await db.all(
-                `SELECT TRIM(email) AS email, TRIM(COALESCE(name, '')) AS name FROM users
-                 WHERE status = 'active'
-                   AND role != 'admin'
-                   AND deleted_at IS NULL
-                   AND (${rolePred})
-                   AND email IS NOT NULL
-                   AND LENGTH(TRIM(COALESCE(email, ''))) > 0`
-            );
-        } catch (err) {
-            console.error('[notices] Failed to load email recipients:', err.message);
-            return;
-        }
-
-        let ok = 0;
-        let failed = 0;
-        for (const row of recipients) {
-            const toEmail = row.email;
-            if (!toEmail) continue;
-            const toName = row.name || toEmail;
-            try {
-                await sendStaffNoticeEmail({ toEmail, toName, notice: noticeRow });
-                ok++;
-            } catch (e) {
-                failed++;
-                console.error(`[notices] Staff notice email failed for ${toEmail}:`, e?.message || e);
-            }
-        }
-        if (recipients.length) {
-            console.log(
-                `[notices] Email (${audience}) for "${noticeRow.title}" (${noticeRow.id}): ${ok} sent, ${failed} failed, ${recipients.length} recipients`
-            );
-        }
-    })().catch((e) => console.error('[notices] Staff notice email job failed:', e.message));
-}
-
 router.use(verifyToken);
-
-function serializeNotice(row) {
-    if (!row) return row;
-    const audience = normalizedNoticeAudience(row.audience);
-    return {
-        ...row,
-        audience,
-        requires_ack: Boolean(row.requires_ack),
-        active: Boolean(row.active),
-    };
-}
 
 async function markReceipt(noticeId, userId, fields) {
     const existing = await db.get(
@@ -136,6 +65,16 @@ async function markReceipt(noticeId, userId, fields) {
     );
 }
 
+async function userCanAccessNotice(user, noticeId) {
+    if (user.role === 'admin') return true;
+    const audiencePred = sqlNoticesAudienceMatchesUser(user.role);
+    const row = await db.get(
+        `SELECT n.id FROM notices n WHERE n.id = ? AND (${audiencePred})`,
+        [noticeId]
+    );
+    return Boolean(row);
+}
+
 router.get('/active', async (req, res) => {
     const current = now();
     const audienceWhere = sqlNoticesAudienceMatchesUser(req.user.role);
@@ -167,7 +106,8 @@ router.get('/active', async (req, res) => {
         }
     }
 
-    res.json({ notices: notices.map(serializeNotice) });
+    const withAttachments = await attachAttachmentsToNotices(notices);
+    res.json({ notices: withAttachments });
 });
 
 router.get('/feed', async (req, res) => {
@@ -187,7 +127,8 @@ router.get('/feed', async (req, res) => {
         [req.user.id]
     );
 
-    res.json({ notices: notices.map(serializeNotice) });
+    const withAttachments = await attachAttachmentsToNotices(notices);
+    res.json({ notices: withAttachments });
 });
 
 router.post('/:id/ack', async (req, res) => {
@@ -236,85 +177,176 @@ router.get('/admin', requireRole(['admin']), async (_req, res) => {
          ORDER BY n.created_at DESC`
     );
 
-    res.json({ notices: notices.map(serializeNotice) });
+    const withAttachments = await attachAttachmentsToNotices(notices);
+    res.json({ notices: withAttachments });
 });
 
-router.post('/admin', requireRole(['admin']), async (req, res) => {
-    const {
-        title,
-        body,
-        priority = 'normal',
-        requires_ack = true,
-        sent_by_name = '',
-        audience: audienceRaw = NOTICE_AUDIENCE_RETAIL,
-        cta_label = '',
-        cta_url = '',
-        starts_at = null,
-        ends_at = null,
-        active = true,
-    } = req.body;
+router.post('/admin', requireRole(['admin']), noticePdfUpload.array('pdfs', 5), async (req, res) => {
+    try {
+        const fields = parseMultipartNoticeFields(req.body);
+        if (!fields.title || !fields.body) {
+            return res.status(400).json({ error: 'Title and message are required' });
+        }
 
-    if (!title?.trim() || !body?.trim()) {
-        return res.status(400).json({ error: 'Title and message are required' });
+        const fileCheck = validateNoticePdfFiles(req.files || []);
+        if (!fileCheck.ok) {
+            return res.status(400).json({ error: fileCheck.error });
+        }
+
+        const validPriorities = ['normal', 'important', 'urgent'];
+        const creator = await db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id]);
+        const resolvedSenderName =
+            fields.sent_by_name ||
+            creator?.name?.trim() ||
+            creator?.email?.trim() ||
+            req.user.name?.trim() ||
+            req.user.email?.trim() ||
+            'Frido Admin';
+
+        const noticeId = uuid();
+        const createdAt = now();
+        const notice = {
+            id: noticeId,
+            title: fields.title,
+            body: fields.body,
+            priority: validPriorities.includes(fields.priority) ? fields.priority : 'normal',
+            requires_ack: fields.requires_ack ? 1 : 0,
+            sent_by_name: resolvedSenderName,
+            audience: fields.audience,
+            cta_label: fields.cta_label,
+            cta_url: fields.cta_url,
+            starts_at: fields.starts_at,
+            ends_at: fields.ends_at,
+            active: fields.active ? 1 : 0,
+            created_by: req.user.id,
+            created_at: createdAt,
+            updated_at: createdAt,
+        };
+
+        await db.run(
+            `INSERT INTO notices (
+                id, title, body, priority, requires_ack, sent_by_name, audience, cta_label, cta_url,
+                starts_at, ends_at, active, created_by, created_at, updated_at
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                notice.id,
+                notice.title,
+                notice.body,
+                notice.priority,
+                notice.requires_ack,
+                notice.sent_by_name,
+                notice.audience,
+                notice.cta_label,
+                notice.cta_url,
+                notice.starts_at,
+                notice.ends_at,
+                notice.active,
+                notice.created_by,
+                notice.created_at,
+                notice.updated_at,
+            ]
+        );
+
+        await uploadAndInsertPdfs(noticeId, fileCheck.files, 0);
+        const attachmentRows =
+            (await fetchAttachmentsByNoticeIds([noticeId])).get(noticeId) || [];
+        scheduleAudienceNoticeEmails(notice, attachmentRows);
+
+        res.status(201).json({ notice: serializeNotice(notice, attachmentRows) });
+    } catch (err) {
+        console.error('[notices] POST admin', err);
+        res.status(500).json({ error: err.message || 'Failed to publish notice' });
     }
+});
 
-    const audience = normalizedNoticeAudience(audienceRaw);
+router.put('/admin/:id', requireRole(['admin']), noticePdfUpload.array('pdfs', 5), async (req, res) => {
+    try {
+        const existing = await db.get('SELECT * FROM notices WHERE id = ?', [req.params.id]);
+        if (!existing) {
+            return res.status(404).json({ error: 'Notice not found' });
+        }
 
-    const validPriorities = ['normal', 'important', 'urgent'];
-    const creator = await db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id]);
-    const resolvedSenderName =
-        sent_by_name?.trim() ||
-        creator?.name?.trim() ||
-        creator?.email?.trim() ||
-        req.user.name?.trim() ||
-        req.user.email?.trim() ||
-        'Frido Admin';
+        const fields = parseMultipartNoticeFields(req.body);
+        if (!fields.title || !fields.body) {
+            return res.status(400).json({ error: 'Title and message are required' });
+        }
 
-    const notice = {
-        id: uuid(),
-        title: title.trim(),
-        body: body.trim(),
-        priority: validPriorities.includes(priority) ? priority : 'normal',
-        requires_ack: requires_ack ? 1 : 0,
-        sent_by_name: resolvedSenderName,
-        audience,
-        cta_label: cta_label?.trim() || '',
-        cta_url: cta_url?.trim() || '',
-        starts_at: starts_at || null,
-        ends_at: ends_at || null,
-        active: active ? 1 : 0,
-        created_by: req.user.id,
-        created_at: now(),
-        updated_at: now(),
-    };
+        const fileCheck = validateNoticePdfFiles(req.files || []);
+        if (!fileCheck.ok) {
+            return res.status(400).json({ error: fileCheck.error });
+        }
 
-    await db.run(
-        `INSERT INTO notices (
-            id, title, body, priority, requires_ack, sent_by_name, audience, cta_label, cta_url,
-            starts_at, ends_at, active, created_by, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            notice.id,
-            notice.title,
-            notice.body,
-            notice.priority,
-            notice.requires_ack,
-            notice.sent_by_name,
-            notice.audience,
-            notice.cta_label,
-            notice.cta_url,
-            notice.starts_at,
-            notice.ends_at,
-            notice.active,
-            notice.created_by,
-            notice.created_at,
-            notice.updated_at,
-        ]
-    );
+        const keepIds = parseKeepAttachmentIds(req.body);
+        const currentAttachments = await db.all(
+            `SELECT id FROM notice_attachments WHERE notice_id = ?`,
+            [req.params.id]
+        );
+        const validKeep = keepIds.filter((id) => currentAttachments.some((r) => r.id === id));
+        const countCheck = validateAttachmentCount(
+            currentAttachments.length,
+            fileCheck.files.length,
+            validKeep.length
+        );
+        if (!countCheck.ok) {
+            return res.status(400).json({ error: countCheck.error });
+        }
 
-    scheduleAudienceNoticeEmails(notice);
+        const validPriorities = ['normal', 'important', 'urgent'];
+        const creator = await db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id]);
+        const resolvedSenderName =
+            fields.sent_by_name ||
+            creator?.name?.trim() ||
+            creator?.email?.trim() ||
+            req.user.name?.trim() ||
+            req.user.email?.trim() ||
+            'Frido Admin';
 
-    res.status(201).json({ notice: serializeNotice(notice) });
+        const updatedAt = now();
+        await db.run(
+            `UPDATE notices SET
+                title = ?, body = ?, priority = ?, requires_ack = ?, sent_by_name = ?, audience = ?,
+                cta_label = ?, cta_url = ?, starts_at = ?, ends_at = ?, active = ?, updated_at = ?
+             WHERE id = ?`,
+            [
+                fields.title,
+                fields.body,
+                validPriorities.includes(fields.priority) ? fields.priority : 'normal',
+                fields.requires_ack ? 1 : 0,
+                resolvedSenderName,
+                fields.audience,
+                fields.cta_label,
+                fields.cta_url,
+                fields.starts_at,
+                fields.ends_at,
+                fields.active ? 1 : 0,
+                updatedAt,
+                req.params.id,
+            ]
+        );
+
+        await deleteAttachmentsExcept(req.params.id, validKeep);
+        const remaining = await db.all(
+            `SELECT id, sort_order FROM notice_attachments WHERE notice_id = ? ORDER BY sort_order`,
+            [req.params.id]
+        );
+        const nextSort =
+            remaining.length > 0
+                ? Math.max(...remaining.map((r) => Number(r.sort_order) || 0)) + 1
+                : 0;
+        await uploadAndInsertPdfs(req.params.id, fileCheck.files, nextSort);
+
+        await db.run('DELETE FROM notice_receipts WHERE notice_id = ?', [req.params.id]);
+
+        const notice = await db.get('SELECT * FROM notices WHERE id = ?', [req.params.id]);
+        const attachmentRows =
+            (await fetchAttachmentsByNoticeIds([req.params.id])).get(req.params.id) || [];
+        scheduleAudienceNoticeEmails(notice, attachmentRows);
+
+        res.json({ notice: serializeNotice(notice, attachmentRows) });
+    } catch (err) {
+        console.error('[notices] PUT admin', err);
+        res.status(500).json({ error: err.message || 'Failed to update notice' });
+    }
 });
 
 router.put('/admin/:id/status', requireRole(['admin']), async (req, res) => {
@@ -326,7 +358,9 @@ router.put('/admin/:id/status', requireRole(['admin']), async (req, res) => {
         return res.status(404).json({ error: 'Notice not found' });
     }
 
-    res.json({ notice: serializeNotice(notice) });
+    const attachmentRows =
+        (await fetchAttachmentsByNoticeIds([req.params.id])).get(req.params.id) || [];
+    res.json({ notice: serializeNotice(notice, attachmentRows) });
 });
 
 router.delete('/admin/:id', requireRole(['admin']), async (req, res) => {
@@ -335,27 +369,28 @@ router.delete('/admin/:id', requireRole(['admin']), async (req, res) => {
         return res.status(404).json({ error: 'Notice not found' });
     }
 
+    await deleteAllNoticeAttachments(req.params.id);
     await db.run('DELETE FROM notices WHERE id = ?', [req.params.id]);
     res.json({ message: 'Notice deleted successfully' });
 });
 
-// Compatibility endpoint for environments where DELETE routes are blocked/cached.
 router.post('/admin/:id/delete', requireRole(['admin']), async (req, res) => {
     const notice = await db.get('SELECT id FROM notices WHERE id = ?', [req.params.id]);
     if (!notice) {
         return res.status(404).json({ error: 'Notice not found' });
     }
 
+    await deleteAllNoticeAttachments(req.params.id);
     await db.run('DELETE FROM notices WHERE id = ?', [req.params.id]);
     res.json({ message: 'Notice deleted successfully' });
 });
 
-// Backward-compatible endpoints for older frontend/backend route conventions.
 router.delete('/:id', requireRole(['admin']), async (req, res) => {
     const notice = await db.get('SELECT id FROM notices WHERE id = ?', [req.params.id]);
     if (!notice) {
         return res.status(404).json({ error: 'Notice not found' });
     }
+    await deleteAllNoticeAttachments(req.params.id);
     await db.run('DELETE FROM notices WHERE id = ?', [req.params.id]);
     res.json({ message: 'Notice deleted successfully' });
 });
@@ -365,6 +400,7 @@ router.post('/:id/delete', requireRole(['admin']), async (req, res) => {
     if (!notice) {
         return res.status(404).json({ error: 'Notice not found' });
     }
+    await deleteAllNoticeAttachments(req.params.id);
     await db.run('DELETE FROM notices WHERE id = ?', [req.params.id]);
     res.json({ message: 'Notice deleted successfully' });
 });
@@ -387,7 +423,40 @@ router.get('/admin/:id/stats', requireRole(['admin']), async (req, res) => {
         [req.params.id]
     );
 
-    res.json({ notice: serializeNotice(notice), recipients });
+    const attachmentRows =
+        (await fetchAttachmentsByNoticeIds([req.params.id])).get(req.params.id) || [];
+    res.json({ notice: serializeNotice(notice, attachmentRows), recipients });
+});
+
+router.get('/:noticeId/attachments/:attachmentId', async (req, res) => {
+    const { noticeId, attachmentId } = req.params;
+    const allowed = await userCanAccessNotice(req.user, noticeId);
+    if (!allowed) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const row = await db.get(
+        `SELECT na.* FROM notice_attachments na
+         INNER JOIN notices n ON n.id = na.notice_id
+         WHERE na.id = ? AND na.notice_id = ?`,
+        [attachmentId, noticeId]
+    );
+    if (!row) {
+        return res.status(404).json({ error: 'Attachment not found' });
+    }
+
+    try {
+        const buffer = await readNoticePdfBuffer(row.storage_path);
+        res.setHeader('Content-Type', row.mime_type || 'application/pdf');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${encodeURIComponent(row.file_name || 'notice.pdf')}"`
+        );
+        res.send(buffer);
+    } catch (err) {
+        console.error('[notices] download', err.message);
+        res.status(404).json({ error: 'Attachment file not found' });
+    }
 });
 
 export default router;

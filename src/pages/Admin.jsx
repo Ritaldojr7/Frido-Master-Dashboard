@@ -55,6 +55,10 @@ export default function Admin() {
     const [noticeLoading, setNoticeLoading] = useState(false);
     const [noticeMessage, setNoticeMessage] = useState('');
     const [noticeAudience, setNoticeAudience] = useState('retail_staff');
+    const [editingNoticeId, setEditingNoticeId] = useState(null);
+    const [noticePdfFiles, setNoticePdfFiles] = useState([]);
+    const [noticeExistingAttachments, setNoticeExistingAttachments] = useState([]);
+    const [noticeRemoveAttachmentIds, setNoticeRemoveAttachmentIds] = useState([]);
     const fetchUsers = useCallback(async () => {
         try {
             const data = await apiFetch('/api/users');
@@ -134,34 +138,100 @@ export default function Admin() {
         }
     };
 
-    const handleCreateNotice = async (e) => {
+    const resetNoticeModal = () => {
+        setEditingNoticeId(null);
+        setNoticeTitle('');
+        setNoticeBody('');
+        setNoticePriority('normal');
+        setNoticeRequiresAck(true);
+        setNoticeAudience('retail_staff');
+        setNoticeSender(user?.name || '');
+        setNoticePdfFiles([]);
+        setNoticeExistingAttachments([]);
+        setNoticeRemoveAttachmentIds([]);
+        setNoticeMessage('');
+    };
+
+    const openNoticeModalForCreate = () => {
+        resetNoticeModal();
+        setShowNoticeModal(true);
+    };
+
+    const openNoticeModalForEdit = (notice) => {
+        setEditingNoticeId(notice.id);
+        setNoticeTitle(notice.title || '');
+        setNoticeBody(notice.body || '');
+        setNoticePriority(notice.priority || 'normal');
+        setNoticeRequiresAck(Boolean(notice.requires_ack));
+        setNoticeAudience(notice.audience || 'retail_staff');
+        setNoticeSender(notice.sender_name || notice.created_by_name || user?.name || '');
+        setNoticeExistingAttachments(notice.attachments || []);
+        setNoticeRemoveAttachmentIds([]);
+        setNoticePdfFiles([]);
+        setNoticeMessage('');
+        setShowNoticeModal(true);
+    };
+
+    const buildNoticeFormData = () => {
+        const fd = new FormData();
+        fd.append('title', noticeTitle);
+        fd.append('body', noticeBody);
+        fd.append('priority', noticePriority);
+        fd.append('requires_ack', noticeRequiresAck ? 'true' : 'false');
+        fd.append('sent_by_name', noticeSender);
+        fd.append('audience', noticeAudience);
+        fd.append('active', 'true');
+        if (editingNoticeId) {
+            const keepIds = noticeExistingAttachments
+                .map((a) => a.id)
+                .filter((id) => !noticeRemoveAttachmentIds.includes(id));
+            fd.append('keep_attachment_ids', JSON.stringify(keepIds));
+        }
+        for (const file of noticePdfFiles) {
+            fd.append('pdfs', file);
+        }
+        return fd;
+    };
+
+    const handleSubmitNotice = async (e) => {
         e.preventDefault();
         setNoticeLoading(true);
         setNoticeMessage('');
 
+        const keptCount =
+            noticeExistingAttachments.filter((a) => !noticeRemoveAttachmentIds.includes(a.id)).length +
+            noticePdfFiles.length;
+        if (keptCount > 5) {
+            setNoticeMessage('At most 5 PDF attachments per notice');
+            setNoticeLoading(false);
+            return;
+        }
+
+        if (editingNoticeId) {
+            const ok = confirm(
+                'Save changes? Everyone in this audience will receive a new email and see the notice popup again.'
+            );
+            if (!ok) {
+                setNoticeLoading(false);
+                return;
+            }
+        }
+
         try {
-            await apiFetch('/api/notices/admin', {
-                method: 'POST',
-                body: JSON.stringify({
-                    title: noticeTitle,
-                    body: noticeBody,
-                    priority: noticePriority,
-                    requires_ack: noticeRequiresAck,
-                    sent_by_name: noticeSender,
-                    audience: noticeAudience,
-                }),
-            });
-            setNoticeMessage('Notice published successfully!');
-            setNoticeTitle('');
-            setNoticeBody('');
-            setNoticePriority('normal');
-            setNoticeRequiresAck(true);
-            setNoticeAudience('retail_staff');
-            setNoticeSender(user?.name || '');
+            const url = editingNoticeId
+                ? `/api/notices/admin/${editingNoticeId}`
+                : '/api/notices/admin';
+            const method = editingNoticeId ? 'PUT' : 'POST';
+            await apiFetch(url, { method, body: buildNoticeFormData() });
+            setNoticeMessage(editingNoticeId ? 'Notice updated successfully!' : 'Notice published successfully!');
+            resetNoticeModal();
             fetchNotices();
-            setTimeout(() => { setShowNoticeModal(false); setNoticeMessage(''); }, 1200);
+            setTimeout(() => {
+                setShowNoticeModal(false);
+                setNoticeMessage('');
+            }, 1200);
         } catch (err) {
-            setNoticeMessage(err.message || 'Failed to publish notice');
+            setNoticeMessage(err.message || 'Failed to save notice');
         } finally {
             setNoticeLoading(false);
         }
@@ -810,7 +880,7 @@ export default function Admin() {
                     <h2>Staff notices</h2>
                     <p>Publish popups for retail staff or ISD NM (executives &amp; team leads). Email copies go to that audience.</p>
                 </div>
-                <button type="button" className="admin__invite-btn" onClick={() => setShowNoticeModal(true)}>
+                <button type="button" className="admin__invite-btn" onClick={openNoticeModalForCreate}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                         <path d="M13.73 21a2 2 0 01-3.46 0" />
@@ -867,6 +937,14 @@ export default function Admin() {
                                     </td>
                                     <td>
                                         <div className="admin__action-row">
+                                            <button
+                                                type="button"
+                                                className="admin__action-btn"
+                                                onClick={() => openNoticeModalForEdit(notice)}
+                                                title="Edit notice (re-sends email and popup)"
+                                            >
+                                                Edit
+                                            </button>
                                             <button
                                                 className="admin__action-btn admin__action-btn--notice-toggle"
                                                 onClick={() => handleNoticeStatus(notice.id, !notice.active)}
@@ -1102,19 +1180,38 @@ export default function Admin() {
 
             {/* ── Notice Modal ── */}
             {showNoticeModal && (
-                <div className="admin__modal-overlay" onClick={() => setShowNoticeModal(false)}>
+                <div
+                    className="admin__modal-overlay"
+                    onClick={() => {
+                        setShowNoticeModal(false);
+                        resetNoticeModal();
+                    }}
+                >
                     <div className="admin__modal" onClick={(e) => e.stopPropagation()}>
                         <div className="admin__modal-header">
-                            <h2>Send Staff Notice</h2>
-                            <button className="admin__modal-close" onClick={() => setShowNoticeModal(false)}>
+                            <h2>{editingNoticeId ? 'Edit notice' : 'Send Staff Notice'}</h2>
+                            <button
+                                type="button"
+                                className="admin__modal-close"
+                                onClick={() => {
+                                    setShowNoticeModal(false);
+                                    resetNoticeModal();
+                                }}
+                            >
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                                 </svg>
                             </button>
                         </div>
-                        <form onSubmit={handleCreateNotice} className="admin__modal-body">
+                        <form onSubmit={handleSubmitNotice} className="admin__modal-body">
                             <p className="admin__modal-desc">
                                 The selected audience sees this as a popup after login. A copy is emailed to active users in that audience (same Graph setup as invites). Retail staff = store staff &amp; viewers; ISD NM = executives &amp; team leads only.
+                                {editingNoticeId ? (
+                                    <>
+                                        {' '}
+                                        <strong>Saving will re-email everyone and show the popup again.</strong>
+                                    </>
+                                ) : null}
                             </p>
                             <div className="admin__modal-field">
                                 <label>Audience</label>
@@ -1152,15 +1249,79 @@ export default function Admin() {
                                 <input type="checkbox" checked={noticeRequiresAck} onChange={(e) => setNoticeRequiresAck(e.target.checked)} />
                                 <span>Require staff acknowledgement</span>
                             </label>
+                            {editingNoticeId && noticeExistingAttachments.length > 0 ? (
+                                <div className="admin__modal-field">
+                                    <label>Existing PDFs</label>
+                                    <ul className="admin__notice-pdf-list">
+                                        {noticeExistingAttachments.map((att) => (
+                                            <li key={att.id}>
+                                                <label className="admin__checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!noticeRemoveAttachmentIds.includes(att.id)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setNoticeRemoveAttachmentIds((prev) =>
+                                                                    prev.filter((id) => id !== att.id)
+                                                                );
+                                                            } else {
+                                                                setNoticeRemoveAttachmentIds((prev) => [
+                                                                    ...prev,
+                                                                    att.id,
+                                                                ]);
+                                                            }
+                                                        }}
+                                                    />
+                                                    <span>{att.file_name}</span>
+                                                </label>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <p className="admin__modal-hint">Uncheck to remove a PDF when you save.</p>
+                                </div>
+                            ) : null}
+                            <div className="admin__modal-field">
+                                <label>PDF attachments (optional, max 5 total, 3 MB each)</label>
+                                <input
+                                    type="file"
+                                    accept="application/pdf,.pdf"
+                                    multiple
+                                    onChange={(e) => {
+                                        const files = Array.from(e.target.files || []);
+                                        setNoticePdfFiles(files.slice(0, 5));
+                                        e.target.value = '';
+                                    }}
+                                />
+                                {noticePdfFiles.length > 0 ? (
+                                    <ul className="admin__notice-pdf-list">
+                                        {noticePdfFiles.map((f, i) => (
+                                            <li key={`${f.name}-${i}`}>{f.name}</li>
+                                        ))}
+                                    </ul>
+                                ) : null}
+                            </div>
                             {noticeMessage && (
                                 <div className={`profile__message ${noticeMessage.includes('success') ? 'profile__message--success' : 'profile__message--error'}`}>
                                     {noticeMessage}
                                 </div>
                             )}
                             <div className="admin__modal-actions">
-                                <button type="button" className="profile__btn profile__btn--ghost" onClick={() => setShowNoticeModal(false)}>Cancel</button>
+                                <button
+                                    type="button"
+                                    className="profile__btn profile__btn--ghost"
+                                    onClick={() => {
+                                        setShowNoticeModal(false);
+                                        resetNoticeModal();
+                                    }}
+                                >
+                                    Cancel
+                                </button>
                                 <button type="submit" className="profile__btn profile__btn--primary" disabled={noticeLoading}>
-                                    {noticeLoading ? 'Publishing...' : 'Publish Notice'}
+                                    {noticeLoading
+                                        ? 'Saving...'
+                                        : editingNoticeId
+                                          ? 'Save & notify audience'
+                                          : 'Publish Notice'}
                                 </button>
                             </div>
                         </form>

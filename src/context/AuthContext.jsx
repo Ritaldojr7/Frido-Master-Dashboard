@@ -35,8 +35,11 @@ async function apiFetch(path, options = {}) {
         }
     }
 
+    const isFormData =
+        typeof FormData !== 'undefined' && options.body instanceof FormData;
+
     const headers = {
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
     };
@@ -73,6 +76,44 @@ async function apiFetch(path, options = {}) {
     }
 
     return data;
+}
+
+/** Authenticated binary download (e.g. notice PDF attachments). */
+async function apiFetchBlob(path, options = {}) {
+    let token = null;
+    if (_getToken) {
+        try {
+            token = await _getToken();
+        } catch {
+            /* proceed without auth */
+        }
+    }
+
+    const headers = {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+    };
+
+    let res;
+    try {
+        res = await fetch(path, { ...options, headers, signal: options.signal });
+    } catch {
+        throw new Error('Unable to connect to the server. Please check your connection.');
+    }
+
+    if (!res.ok) {
+        const text = await res.text();
+        let message = `Download failed (${res.status})`;
+        try {
+            const data = text ? JSON.parse(text) : {};
+            message = data.error || data.message || message;
+        } catch {
+            if (text && text.length < 200) message = text;
+        }
+        throw new Error(message);
+    }
+
+    return res.blob();
 }
 
 /** Avoid infinite spinner if /api/users/me never resolves (proxy / cold start). */
@@ -247,5 +288,5 @@ export function useAuth() {
     return context;
 }
 
-// Export apiFetch for use outside React context
-export { apiFetch };
+// Export api helpers for use outside React context
+export { apiFetch, apiFetchBlob };
