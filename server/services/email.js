@@ -209,7 +209,7 @@ function graphFileAttachment({ filename, mime, buffer }) {
 
 /**
  * Email copy of a staff notice (Microsoft Graph). Shown in-app when online; email reaches staff who are not logged in.
- * @param {{ toEmail: string, toName: string, notice: object, embedPdfAttachments?: { file_name: string, buffer: Buffer }[], linkOnlyPdfLines?: { file_name: string, url: string }[] }} opts
+ * @param {{ toEmail: string, toName: string, notice: object, embedPdfAttachments?: { file_name: string, buffer: Buffer, mime_type?: string }[], linkOnlyPdfLines?: { file_name: string, url: string }[] }} opts
  */
 export async function sendStaffNoticeEmail({
     toEmail,
@@ -256,13 +256,13 @@ export async function sendStaffNoticeEmail({
     const attachedNames = embedPdfAttachments.map((a) => a.file_name).filter(Boolean);
     const attachedBlock =
         attachedNames.length > 0
-            ? `<p style="margin:0 0 12px 0;color:#475569;font-size:14px;"><strong>PDF attached:</strong> ${attachedNames.map(escapeHtml).join(', ')}</p>`
+            ? `<p style="margin:0 0 12px 0;color:#475569;font-size:14px;"><strong>Files attached:</strong> ${attachedNames.map(escapeHtml).join(', ')}</p>`
             : '';
 
     const linkOnlyBlock =
         linkOnlyPdfLines.length > 0
             ? `<div style="margin:0 0 16px 0;padding:12px 14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;color:#334155;">
-                <p style="margin:0 0 8px 0;font-weight:600;">Additional PDFs (download link):</p>
+                <p style="margin:0 0 8px 0;font-weight:600;">Additional files (download link):</p>
                 <ul style="margin:0;padding-left:18px;">
                     ${linkOnlyPdfLines
                         .map(
@@ -295,7 +295,7 @@ export async function sendStaffNoticeEmail({
     const pdfAttachments = embedPdfAttachments.map((a) =>
         graphFileAttachment({
             filename: a.file_name,
-            mime: 'application/pdf',
+            mime: a.mime_type || 'application/octet-stream',
             buffer: a.buffer,
         })
     );

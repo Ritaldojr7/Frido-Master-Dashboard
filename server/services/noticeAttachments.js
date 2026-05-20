@@ -1,5 +1,5 @@
 /**
- * Notice PDF storage — Supabase Storage when configured, else local disk under server/data.
+ * Notice attachment storage (PDF/PNG/JPEG) — Supabase Storage when configured, else local disk.
  */
 import fs from 'fs';
 import path from 'path';
@@ -9,8 +9,9 @@ import { v4 as uuid } from 'uuid';
 import {
     MAX_NOTICE_PDF_BYTES,
     MAX_NOTICE_PDF_COUNT,
-    NOTICE_PDF_MIME,
     DEFAULT_NOTICE_BUCKET,
+    extensionForNoticeMime,
+    resolveNoticeAttachmentMime,
 } from '../constants/noticeAttachments.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,15 +45,17 @@ function localPathFor(storagePath) {
 export function validateNoticePdfFiles(files) {
     if (!files?.length) return { ok: true, files: [] };
     if (files.length > MAX_NOTICE_PDF_COUNT) {
-        return { ok: false, error: `At most ${MAX_NOTICE_PDF_COUNT} PDF files allowed` };
+        return { ok: false, error: `At most ${MAX_NOTICE_PDF_COUNT} attachments allowed` };
     }
     for (const f of files) {
-        const mime = (f.mimetype || '').toLowerCase();
-        if (mime !== NOTICE_PDF_MIME && !f.originalname?.toLowerCase().endsWith('.pdf')) {
-            return { ok: false, error: 'Only PDF files are allowed' };
+        if (!resolveNoticeAttachmentMime(f)) {
+            return { ok: false, error: 'Only PDF, PNG, and JPEG files are allowed' };
         }
         if (f.size > MAX_NOTICE_PDF_BYTES) {
-            return { ok: false, error: `Each PDF must be ${MAX_NOTICE_PDF_BYTES / (1024 * 1024)} MB or smaller` };
+            return {
+                ok: false,
+                error: `Each file must be ${MAX_NOTICE_PDF_BYTES / (1024 * 1024)} MB or smaller`,
+            };
         }
     }
     return { ok: true, files };
@@ -68,7 +71,7 @@ export function validateAttachmentCount(existingCount, newCount, keepCount) {
     if (total > MAX_NOTICE_PDF_COUNT) {
         return {
             ok: false,
-            error: `At most ${MAX_NOTICE_PDF_COUNT} PDFs per notice (you have ${keepCount} kept + ${newCount} new)`,
+            error: `At most ${MAX_NOTICE_PDF_COUNT} attachments per notice (you have ${keepCount} kept + ${newCount} new)`,
         };
     }
     return { ok: true };
@@ -81,13 +84,15 @@ export function validateAttachmentCount(existingCount, newCount, keepCount) {
  */
 export async function uploadNoticePdf(noticeId, file, sortOrder = 0) {
     const attachmentId = uuid();
-    const storagePath = `notices/${noticeId}/${attachmentId}.pdf`;
+    const mimeType = resolveNoticeAttachmentMime(file) || 'application/octet-stream';
+    const ext = extensionForNoticeMime(mimeType);
+    const storagePath = `notices/${noticeId}/${attachmentId}${ext}`;
     const buffer = file.buffer;
 
     if (supabaseConfigured()) {
         const supabase = getSupabaseAdmin();
         const { error } = await supabase.storage.from(getBucket()).upload(storagePath, buffer, {
-            contentType: NOTICE_PDF_MIME,
+            contentType: mimeType,
             upsert: false,
         });
         if (error) {
@@ -102,9 +107,9 @@ export async function uploadNoticePdf(noticeId, file, sortOrder = 0) {
     return {
         id: attachmentId,
         notice_id: noticeId,
-        file_name: file.originalname || `${attachmentId}.pdf`,
+        file_name: file.originalname || `${attachmentId}${ext}`,
         storage_path: storagePath,
-        mime_type: NOTICE_PDF_MIME,
+        mime_type: mimeType,
         size_bytes: file.size,
         sort_order: sortOrder,
     };

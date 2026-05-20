@@ -1,5 +1,9 @@
 import multer from 'multer';
-import { MAX_NOTICE_PDF_BYTES, MAX_NOTICE_PDF_COUNT } from '../constants/noticeAttachments.js';
+import {
+    MAX_NOTICE_PDF_BYTES,
+    MAX_NOTICE_PDF_COUNT,
+    resolveNoticeAttachmentMime,
+} from '../constants/noticeAttachments.js';
 
 const storage = multer.memoryStorage();
 
@@ -10,12 +14,10 @@ export const noticePdfUpload = multer({
         fileSize: MAX_NOTICE_PDF_BYTES,
     },
     fileFilter(_req, file, cb) {
-        const mime = (file.mimetype || '').toLowerCase();
-        const name = (file.originalname || '').toLowerCase();
-        if (mime === 'application/pdf' || name.endsWith('.pdf')) {
+        if (resolveNoticeAttachmentMime(file)) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF files are allowed'));
+            cb(new Error('Only PDF, PNG, and JPEG files are allowed'));
         }
     },
 });

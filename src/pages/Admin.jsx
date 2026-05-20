@@ -202,7 +202,7 @@ export default function Admin() {
             noticeExistingAttachments.filter((a) => !noticeRemoveAttachmentIds.includes(a.id)).length +
             noticePdfFiles.length;
         if (keptCount > 5) {
-            setNoticeMessage('At most 5 PDF attachments per notice');
+            setNoticeMessage('At most 5 attachments per notice');
             setNoticeLoading(false);
             return;
         }
@@ -1251,7 +1251,7 @@ export default function Admin() {
                             </label>
                             {editingNoticeId && noticeExistingAttachments.length > 0 ? (
                                 <div className="admin__modal-field">
-                                    <label>Existing PDFs</label>
+                                    <label>Existing attachments</label>
                                     <ul className="admin__notice-pdf-list">
                                         {noticeExistingAttachments.map((att) => (
                                             <li key={att.id}>
@@ -1277,14 +1277,14 @@ export default function Admin() {
                                             </li>
                                         ))}
                                     </ul>
-                                    <p className="admin__modal-hint">Uncheck to remove a PDF when you save.</p>
+                                    <p className="admin__modal-hint">Uncheck to remove a file when you save.</p>
                                 </div>
                             ) : null}
                             <div className="admin__modal-field">
-                                <label>PDF attachments (optional, max 5 total, 3 MB each)</label>
+                                <label>Attachments (PDF, PNG, JPEG — optional, max 5 total, 3 MB each)</label>
                                 <input
                                     type="file"
-                                    accept="application/pdf,.pdf"
+                                    accept="application/pdf,.pdf,image/png,.png,image/jpeg,.jpg,.jpeg"
                                     multiple
                                     onChange={(e) => {
                                         const files = Array.from(e.target.files || []);
