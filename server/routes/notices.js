@@ -450,7 +450,7 @@ router.get('/:noticeId/attachments/:attachmentId', async (req, res) => {
         res.setHeader('Content-Type', row.mime_type || 'application/pdf');
         res.setHeader(
             'Content-Disposition',
-            `attachment; filename="${encodeURIComponent(row.file_name || 'notice.pdf')}"`
+            `attachment; filename="${encodeURIComponent(row.file_name || 'notice-attachment')}"`
         );
         res.send(buffer);
     } catch (err) {

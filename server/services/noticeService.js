@@ -162,7 +162,11 @@ export async function prepareNoticeEmailPayload(attachmentRows) {
     const embedPdfAttachments = [];
     for (const row of embed) {
         const buffer = await readNoticePdfBuffer(row.storage_path);
-        embedPdfAttachments.push({ file_name: row.file_name, buffer });
+        embedPdfAttachments.push({
+            file_name: row.file_name,
+            buffer,
+            mime_type: row.mime_type || 'application/octet-stream',
+        });
     }
     const linkOnlyPdfLines = [];
     for (const row of linkOnly) {

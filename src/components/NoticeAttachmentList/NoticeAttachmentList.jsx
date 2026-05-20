@@ -17,14 +17,14 @@ export default function NoticeAttachmentList({ attachments = [], className = '' 
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = att.file_name || 'notice.pdf';
+            a.download = att.file_name || 'notice-attachment';
             document.body.appendChild(a);
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
         } catch (err) {
             console.warn('Download failed:', err.message);
-            alert(err.message || 'Could not download PDF');
+            alert(err.message || 'Could not download file');
         } finally {
             setBusyId('');
         }
@@ -40,7 +40,7 @@ export default function NoticeAttachmentList({ attachments = [], className = '' 
                         disabled={busyId === att.id}
                         onClick={() => handleDownload(att)}
                     >
-                        {busyId === att.id ? 'Downloading…' : `Download PDF: ${att.file_name}`}
+                        {busyId === att.id ? 'Downloading…' : `Download: ${att.file_name}`}
                     </button>
                 </li>
             ))}
