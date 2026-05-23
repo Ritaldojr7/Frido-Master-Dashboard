@@ -516,6 +516,48 @@ export const feedbackData = [
         releaseDate: '04/05/2026'
     },
     {
+        id: 38,
+        category: 'Pillows',
+        productName: 'Frido Neck Contour Cervical Pillow',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/GreyCNP-1_2_1_-min_2338b28f-f71d-45bf-9ca9-722910d5a53b.jpg?v=1739949918&width=1296',
+        reportLink: 'https://drive.google.com/file/d/1OsgksVE8crdtroodiyoEPhOsysFhGiPW/view?usp=drive_link',
+        releaseHistory: [
+            {
+                date: '23/05/2026',
+                reportLink:
+                    'https://drive.google.com/file/d/1OsgksVE8crdtroodiyoEPhOsysFhGiPW/view?usp=drive_link',
+                loomLink: 'https://www.loom.com/share/9a9d08b2b9764bb2bf0c609a4c000334'
+            }
+        ],
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/9a9d08b2b9764bb2bf0c609a4c000334',
+        intentDate: '',
+        releaseDate: '23/05/2026'
+    },
+    {
+        id: 39,
+        category: 'Pillows',
+        productName: 'Frido Neck Contour Cervical Plus Pillow',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/CCplus-Listing-1.jpg?v=1722857612&width=1296',
+        reportLink: 'https://drive.google.com/file/d/1OsgksVE8crdtroodiyoEPhOsysFhGiPW/view?usp=drive_link',
+        releaseHistory: [
+            {
+                date: '23/05/2026',
+                reportLink:
+                    'https://drive.google.com/file/d/1OsgksVE8crdtroodiyoEPhOsysFhGiPW/view?usp=drive_link',
+                loomLink: 'https://www.loom.com/share/9a9d08b2b9764bb2bf0c609a4c000334'
+            }
+        ],
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/9a9d08b2b9764bb2bf0c609a4c000334',
+        intentDate: '',
+        releaseDate: '23/05/2026'
+    },
+    {
         id: 13,
         category: 'Cushions',
         productName: 'Frido Ultimate Wedge Plus Cushion',
