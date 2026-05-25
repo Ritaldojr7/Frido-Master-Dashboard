@@ -937,7 +937,7 @@ export const isdNmData = {
                 },
                 {
                     title: 'Product Briefs',
-                    url: 'https://docs.google.com/spreadsheets/d/1bPhxmRTiCEfNSf7BWsDmlwamJpjWlxsj_7VFM9y1lE4/edit?usp=sharing',
+                    url: 'https://docs.google.com/spreadsheets/d/1YFjzN1oxMf_KcCMePap-scgWZ4MPr6DvLmjxXVr7Kb0/edit?gid=0#gid=0',
                     variant: 'dark',
                     icon: 'document',
                     isdAccess: 'executive',
