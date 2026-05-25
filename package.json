@@ -26,11 +26,11 @@
     "@azure/communication-email": "^1.1.0",
     "@clerk/express": "^2.1.9",
     "@clerk/react": "^6.4.5",
+    "@supabase/supabase-js": "^2.49.1",
     "better-sqlite3": "^12.8.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",
-    "@supabase/supabase-js": "^2.49.1",
     "express": "^5.2.1",
     "multer": "^2.0.0",
     "papaparse": "^5.5.3",
@@ -56,6 +56,7 @@
     "globals": "^16.5.0",
     "jsdom": "^28.1.0",
     "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.0.18"
   }
 }
