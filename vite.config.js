@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -10,12 +11,61 @@ export default defineConfig(({ mode }) => {
   const isGitHubPages = process.env.GITHUB_PAGES === 'true' || env.GITHUB_PAGES === 'true';
   const repoName = process.env.REPO_NAME || env.REPO_NAME || 'Frido-Master-Dashboard';
   const isStaffApp = process.env.VITE_APP_TYPE === 'STAFF' || env.VITE_APP_TYPE === 'STAFF';
+  const appBase = isGitHubPages
+    ? (isStaffApp ? `/${repoName}/staff/` : `/${repoName}/`)
+    : '/';
+  const startUrl = appBase;
+  const appName = isStaffApp ? 'Frido Staff Dashboard' : 'Frido Master Dashboard';
 
   return {
-    base: isGitHubPages 
-      ? (isStaffApp ? `/${repoName}/staff/` : `/${repoName}/`)
-      : '/',
-    plugins: [react()],
+    base: appBase,
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['frido-favicon.png'],
+        manifest: {
+          name: appName,
+          short_name: isStaffApp ? 'Frido Staff' : 'Frido',
+          description: 'Frido dashboard for operations, analytics, and team workflows.',
+          theme_color: '#0a0e1a',
+          background_color: '#0e1116',
+          display: 'standalone',
+          start_url: startUrl,
+          scope: appBase,
+          icons: [
+            {
+              src: 'frido-favicon.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: 'frido-favicon.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any',
+            },
+          ],
+        },
+        workbox: {
+          navigateFallback: `${appBase}index.html`,
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: {
+                  maxEntries: 20,
+                  maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ],
     server: {
       port: 3000,
       open: true,

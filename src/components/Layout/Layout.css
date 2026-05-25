@@ -300,6 +300,11 @@
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
+.header__left {
+    display: none;
+    align-items: center;
+}
+
 .header--scrolled {
     border-bottom-color: var(--border-primary);
     box-shadow: var(--shadow-sm);
@@ -310,11 +315,38 @@
     align-items: center;
     gap: var(--space-md);
     margin-left: auto;
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
 }
 
 .header__search {
     width: 340px;
     min-width: 300px;
+    max-width: 100%;
+}
+
+.header__menu-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-primary);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.header__menu-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.header__menu-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border-hover);
 }
 
 /* ── Main Content ── */
@@ -329,10 +361,27 @@
     margin: 0 auto;
 }
 
+.sidebar__backdrop {
+    position: fixed;
+    inset: 0;
+    border: 0;
+    background: rgba(10, 15, 25, 0.45);
+    z-index: calc(var(--z-sidebar) - 1);
+}
+
 
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
+    .header__left {
+        display: flex;
+    }
+
+    .header__search {
+        min-width: 0;
+        width: min(100%, 420px);
+    }
+
     .sidebar__collapsed {
         display: none;
     }
@@ -343,14 +392,24 @@
 
     .sidebar {
         width: 0;
+        pointer-events: none;
     }
 
-    .sidebar--expanded {
+    .sidebar--mobile-open {
         width: 260px;
+        pointer-events: auto;
     }
 
     .sidebar__expanded {
+        transform: translateX(-100%);
+        opacity: 1;
+        pointer-events: auto;
         border-radius: 0;
+        transition: transform var(--transition-base);
+    }
+
+    .sidebar--mobile-open .sidebar__expanded {
+        transform: translateX(0);
     }
 
     .main-wrapper {
@@ -365,13 +424,15 @@
 @media (max-width: 600px) {
     .header {
         padding: 0 var(--space-md);
+        gap: var(--space-sm);
     }
 
     .header__search {
-        max-width: none;
+        min-width: 0;
+        width: min(100%, 420px);
     }
 
     .sidebar__expanded {
-        width: 280px;
+        width: min(280px, 82vw);
     }
 }

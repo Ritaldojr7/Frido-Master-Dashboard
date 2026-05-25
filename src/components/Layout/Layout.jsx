@@ -31,6 +31,8 @@ const adminNavItem = {
 
 export default function Layout({ children }) {
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
+    const [isCompactNav, setIsCompactNav] = useState(() => window.innerWidth <= 1024);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { user, hasRole } = useAuth();
     const location = useLocation();
@@ -52,6 +54,31 @@ export default function Layout({ children }) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    useEffect(() => {
+        const update = (compact) => {
+            setIsCompactNav(compact);
+            if (compact) setSidebarExpanded(false);
+            if (!compact) setMobileNavOpen(false);
+        };
+
+        if (typeof window.matchMedia === 'function') {
+            const media = window.matchMedia('(max-width: 1024px)');
+            const sync = () => update(media.matches);
+            sync();
+            media.addEventListener('change', sync);
+            return () => media.removeEventListener('change', sync);
+        }
+
+        const onResize = () => update(window.innerWidth <= 1024);
+        onResize();
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    useEffect(() => {
+        setMobileNavOpen(false);
+    }, [location.pathname]);
+
     // Filter nav items by user role
     const visibleNavItems = navItems.filter(item => {
         const allowed = sidebarPermissions[item.path];
@@ -67,9 +94,9 @@ export default function Layout({ children }) {
         <div className="layout">
             {/* Sidebar */}
             <aside
-                className={`sidebar ${sidebarExpanded ? 'sidebar--expanded' : ''}`}
-                onMouseEnter={() => setSidebarExpanded(true)}
-                onMouseLeave={() => setSidebarExpanded(false)}
+                className={`sidebar ${sidebarExpanded ? 'sidebar--expanded' : ''} ${isCompactNav ? 'sidebar--compact' : ''} ${mobileNavOpen ? 'sidebar--mobile-open' : ''}`}
+                onMouseEnter={() => !isCompactNav && setSidebarExpanded(true)}
+                onMouseLeave={() => !isCompactNav && setSidebarExpanded(false)}
             >
                 {/* Collapsed state - just logo text */}
                 <div className="sidebar__collapsed">
@@ -90,6 +117,9 @@ export default function Layout({ children }) {
                                 className={({ isActive }) =>
                                     `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
                                 }
+                                onClick={() => {
+                                    if (isCompactNav) setMobileNavOpen(false);
+                                }}
                                 end={item.path === '/' || item.path === '/retail-staff'}
                             >
                                 <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -108,6 +138,9 @@ export default function Layout({ children }) {
                                     className={({ isActive }) =>
                                         `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
                                     }
+                                    onClick={() => {
+                                        if (isCompactNav) setMobileNavOpen(false);
+                                    }}
                                 >
                                     <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                         <path d={adminNavItem.icon} />
@@ -170,11 +203,42 @@ export default function Layout({ children }) {
                 {/* Accent line */}
                 <div className="sidebar__accent-line"></div>
             </aside>
+            {isCompactNav && mobileNavOpen ? (
+                <button
+                    type="button"
+                    className="sidebar__backdrop"
+                    aria-label="Close menu"
+                    onClick={() => setMobileNavOpen(false)}
+                />
+            ) : null}
 
             {/* Main Content */}
             <div className="main-wrapper">
                 {/* Header */}
                 <header className={`header glass ${scrolled ? 'header--scrolled' : ''}`}>
+                    <div className="header__left">
+                        {isCompactNav ? (
+                            <button
+                                type="button"
+                                className="header__menu-btn"
+                                aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+                                aria-expanded={mobileNavOpen}
+                                onClick={() => setMobileNavOpen((open) => !open)}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                                    {mobileNavOpen ? (
+                                        <path d="M6 6l12 12M18 6L6 18" />
+                                    ) : (
+                                        <>
+                                            <path d="M4 7h16" />
+                                            <path d="M4 12h16" />
+                                            <path d="M4 17h16" />
+                                        </>
+                                    )}
+                                </svg>
+                            </button>
+                        ) : null}
+                    </div>
                     <div className="header__right">
                         <div className="header__search">
                             <SearchBar isAdmin={hasRole('admin')} userRole={user?.role} />
