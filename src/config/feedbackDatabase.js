@@ -516,6 +516,19 @@ export const feedbackData = [
         releaseDate: '04/05/2026'
     },
     {
+        id: 40,
+        category: 'Pillows',
+        productName: 'Frido Latex Pillow',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/LP-00.jpg?v=1775217521&width=1296',
+        reportLink: 'https://drive.google.com/file/d/1O9deD0U_7kkjC-zi_Cq-mjtVJtgoJ59h/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/be97daedb5594bbe8d89098971081770',
+        intentDate: '',
+        releaseDate: '01/06/2026'
+    },
+    {
         id: 38,
         category: 'Pillows',
         productName: 'Frido Neck Contour Cervical Pillow',
