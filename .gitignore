@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.tools/
 
 # Environment variables
 .env
@@ -21,6 +22,7 @@ server/data/*.db
 server/data/*.db-wal
 server/data/*.db-shm
 server/data/notice-attachments/
+server/data/hr-policy-documents/
 
 # Editor directories and files
 .vscode/*

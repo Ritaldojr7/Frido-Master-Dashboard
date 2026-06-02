@@ -973,7 +973,7 @@ export const isdNmData = {
             links: [
                 {
                     title: 'Leave and Holiday Policy',
-                    url: '/isd-nm/policy-leave-and-holiday-2026.pdf',
+                    url: '/api/hr-policies/leave-and-holiday-2026',
                     variant: 'dark',
                     icon: 'document',
                     isdAccess: 'executive',
@@ -987,7 +987,7 @@ export const isdNmData = {
                 },
                 {
                     title: 'Marriage Gifting policy',
-                    url: '/isd-nm/marriage-gifting-policy.pdf',
+                    url: '/api/hr-policies/marriage-gifting-policy',
                     variant: 'dark',
                     icon: 'document',
                     isdAccess: 'executive',
