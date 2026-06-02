@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import './AuthGate.css';
 import fridoLogo from '../../assets/login_logo.png';
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+
 export default function AuthGate({ children }) {
     const { isLoading } = useAuth();
     const [mounted, setMounted] = useState(false);
@@ -15,6 +17,10 @@ export default function AuthGate({ children }) {
         const timer = setTimeout(() => setMounted(true), 50);
         return () => clearTimeout(timer);
     }, []);
+
+    if (DEMO_MODE) {
+        return children;
+    }
 
     // Loading state while Clerk initializes
     if (isLoading) {

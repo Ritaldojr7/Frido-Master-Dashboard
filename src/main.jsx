@@ -7,10 +7,13 @@ import MissingClerkPublishableKey from './MissingClerkPublishableKey.jsx'
 import { registerServiceWorker } from './pwa/registerServiceWorker.js'
 
 const clerkPublishableKey = String(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? '').trim()
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 
 const rootEl = document.getElementById('root')
 const root = createRoot(rootEl)
 registerServiceWorker()
+
+const app = <App />
 
 if (!clerkPublishableKey && import.meta.env.PROD) {
     root.render(
@@ -24,9 +27,13 @@ if (!clerkPublishableKey && import.meta.env.PROD) {
     }
     root.render(
         <StrictMode>
-            <ClerkProvider afterSignOutUrl="/" publishableKey={clerkPublishableKey}>
-                <App />
-            </ClerkProvider>
+            {DEMO_MODE ? (
+                app
+            ) : (
+                <ClerkProvider afterSignOutUrl="/" publishableKey={clerkPublishableKey}>
+                    {app}
+                </ClerkProvider>
+            )}
         </StrictMode>,
     )
 }
