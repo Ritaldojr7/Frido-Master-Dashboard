@@ -119,24 +119,28 @@ async function apiFetchBlob(path, options = {}) {
 /** Avoid infinite spinner if /api/users/me never resolves (proxy / cold start). */
 const BACKEND_ME_TIMEOUT_MS = 25_000;
 
+function DemoAuthProvider({ children }) {
+    const logout = useCallback(() => {}, []);
+    const updateProfile = useCallback(async (updates) => ({ ...DEMO_USER, ...updates }), []);
+    const hasRole = useCallback(() => true, []);
+    const value = useMemo(
+        () => ({
+            user: DEMO_USER,
+            isAuthenticated: true,
+            isLoading: false,
+            logout,
+            updateProfile,
+            hasRole,
+            apiFetch,
+        }),
+        [logout, updateProfile, hasRole]
+    );
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
 export function AuthProvider({ children }) {
     if (DEMO_MODE) {
-        const logout = useCallback(() => {}, []);
-        const updateProfile = useCallback(async (updates) => ({ ...DEMO_USER, ...updates }), []);
-        const hasRole = useCallback((...roles) => roles.length === 0 || true, []);
-        const value = useMemo(
-            () => ({
-                user: DEMO_USER,
-                isAuthenticated: true,
-                isLoading: false,
-                logout,
-                updateProfile,
-                hasRole,
-                apiFetch,
-            }),
-            [logout, updateProfile, hasRole]
-        );
-        return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+        return <DemoAuthProvider>{children}</DemoAuthProvider>;
     }
 
     return <ClerkAuthProvider>{children}</ClerkAuthProvider>;
