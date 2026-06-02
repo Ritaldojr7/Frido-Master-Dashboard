@@ -16,6 +16,7 @@
     "migrate:supabase": "node server/scripts/migrateSqliteToSupabase.js",
     "seed:dashboard-links": "node server/scripts/seedDashboardLinks.js",
     "seed:feedback-products": "node server/scripts/seedFeedbackProducts.js",
+    "upload:hr-policy-pdfs": "node server/scripts/uploadHrPolicyPdfs.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

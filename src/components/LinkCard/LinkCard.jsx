@@ -2,7 +2,7 @@ import { useContext, useState, useId, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { iconPathList } from '../../config/dashboardData';
-import { AuthContext } from '../../context/AuthContext';
+import { AuthContext, apiFetchBlob } from '../../context/AuthContext';
 import './LinkCard.css';
 
 function downloadImageAsJpeg(src, filename) {
@@ -98,6 +98,7 @@ export default function LinkCard({
     const [copyModalOpen, setCopyModalOpen] = useState(false);
     const [imageModalOpen, setImageModalOpen] = useState(false);
     const [imageDownloading, setImageDownloading] = useState(false);
+    const [pdfOpening, setPdfOpening] = useState(false);
     const [copied, setCopied] = useState(false);
     const copyModalTitleId = useId();
     const imageModalTitleId = useId();
@@ -106,10 +107,29 @@ export default function LinkCard({
     const showTooltip = Boolean(tooltip) && !isAdminUser;
     const hasCopyModal = Boolean(copyModalText);
     const hasImageModal = Boolean(imageModalSrc);
+    const isAuthProtectedPdf = Boolean(url?.startsWith('/api/hr-policies/'));
 
     const handleClick = (e) => {
         if (isComingSoon) {
             e.preventDefault();
+            return;
+        }
+        if (isAuthProtectedPdf) {
+            e.preventDefault();
+            if (pdfOpening) return;
+            setPdfOpening(true);
+            (async () => {
+                try {
+                    const blob = await apiFetchBlob(url);
+                    const blobUrl = URL.createObjectURL(blob);
+                    window.open(blobUrl, '_blank', 'noopener,noreferrer');
+                    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+                } catch (err) {
+                    alert(err.message || 'Could not open policy document');
+                } finally {
+                    setPdfOpening(false);
+                }
+            })();
             return;
         }
         if (hasCopyModal) {
@@ -186,7 +206,7 @@ export default function LinkCard({
     const comingSoonClass = isComingSoon ? 'link-card--coming-soon' : '';
 
     const href =
-        hasCopyModal || hasImageModal || isComingSoon || hasSubOptions
+        hasCopyModal || hasImageModal || isComingSoon || hasSubOptions || isAuthProtectedPdf
             ? '#'
             : isInternal
               ? route || '#'
@@ -293,6 +313,7 @@ export default function LinkCard({
                 target={
                     !hasCopyModal &&
                     !hasImageModal &&
+                    !isAuthProtectedPdf &&
                     !isInternal &&
                     !hasSubOptions &&
                     !isComingSoon &&
@@ -301,7 +322,7 @@ export default function LinkCard({
                         ? '_blank'
                         : undefined
                 }
-                rel={!isInternal && !hasSubOptions && !isComingSoon && !hasCopyModal && !hasImageModal ? 'noopener noreferrer' : undefined}
+                rel={!isInternal && !hasSubOptions && !isComingSoon && !hasCopyModal && !hasImageModal && !isAuthProtectedPdf ? 'noopener noreferrer' : undefined}
                 className={`link-card ${colorClass} ${expanded ? 'link-card--expanded' : ''} ${comingSoonClass}`}
             >
                 <div className="link-card__content">
