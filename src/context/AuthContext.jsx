@@ -11,11 +11,11 @@ export const AuthContext = createContext();
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 const DEMO_USER = {
-    id: 'demo-admin',
-    email: 'admin@myfrido.com',
-    name: 'Admin',
-    role: 'admin',
-    department: 'Technology',
+    id: 'demo-staff',
+    email: 'staff@myfrido.com',
+    name: 'Staff',
+    role: 'staff',
+    department: 'Retail',
     avatar_url: '',
     status: 'active',
 };
@@ -120,6 +120,29 @@ async function apiFetchBlob(path, options = {}) {
 const BACKEND_ME_TIMEOUT_MS = 25_000;
 
 export function AuthProvider({ children }) {
+    if (DEMO_MODE) {
+        const logout = useCallback(() => {}, []);
+        const updateProfile = useCallback(async (updates) => ({ ...DEMO_USER, ...updates }), []);
+        const hasRole = useCallback((...roles) => roles.length === 0 || true, []);
+        const value = useMemo(
+            () => ({
+                user: DEMO_USER,
+                isAuthenticated: true,
+                isLoading: false,
+                logout,
+                updateProfile,
+                hasRole,
+                apiFetch,
+            }),
+            [logout, updateProfile, hasRole]
+        );
+        return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    }
+
+    return <ClerkAuthProvider>{children}</ClerkAuthProvider>;
+}
+
+function ClerkAuthProvider({ children }) {
     // ── Clerk hooks ──────────────────────────────────────────
     const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
     const { isSignedIn, getToken, isLoaded: isAuthLoaded } = useClerkAuth();

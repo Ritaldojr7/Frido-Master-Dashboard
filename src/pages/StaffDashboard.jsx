@@ -51,6 +51,72 @@ const contactBoxData = [
     { name: 'Saiyed Abdal', pocFor: 'Highest Escalations', email: 'saiyed.a@myfrido.com', phone: '+917987962503' },
 ];
 
+const retailStructureData = [
+    { name: 'Vikal Gupta', pocFor: 'Retail VP', email: 'Vikal.g@myfrido.com', phone: '' },
+    { name: 'Anirudha', pocFor: 'Customer Experience', email: '', phone: '' },
+    {
+        name: 'Anirudha',
+        pocFor: 'Training & Development',
+        email: 'aniruddha.b@myfrido.com',
+        phone: '+919527907966',
+    },
+    {
+        name: 'Rishab',
+        pocFor: 'Retail Inside Sales',
+        email: 'Rishab.d@myfrido.com',
+        phone: '+919353558851',
+    },
+    {
+        name: 'Shernyl',
+        pocFor: 'Retail Customer Support',
+        email: 'Shernyl.r@myfrido.com',
+        phone: '+919029929930',
+    },
+];
+
+function ContactTable({ rows, namePrefix }) {
+    return (
+        <div className="subpage__contacts-table-wrapper">
+            <table className="subpage__contacts-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>POC For</th>
+                        <th>Email</th>
+                        <th>Mobile Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((contact, idx) => (
+                        <tr key={`${contact.pocFor}-${idx}`}>
+                            <td className="subpage__contact-name">
+                                {namePrefix ? `${namePrefix(idx)}: ${contact.name}` : contact.name}
+                            </td>
+                            <td>
+                                <span className="subpage__contact-badge">{contact.pocFor}</span>
+                            </td>
+                            <td>
+                                {contact.email ? (
+                                    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                                ) : (
+                                    '—'
+                                )}
+                            </td>
+                            <td>
+                                {contact.phone ? (
+                                    <a href={`tel:${contact.phone}`}>{contact.phone}</a>
+                                ) : (
+                                    '—'
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
 export default function StaffDashboard() {
     const { staffRetail } = useDashboardData();
     const data = staffRetail;
@@ -142,29 +208,13 @@ export default function StaffDashboard() {
             </div>
 
             <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-                <h2 className="subpage__contacts-title">Point of Contact</h2>
-                <div className="subpage__contacts-table-wrapper">
-                    <table className="subpage__contacts-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>POC For</th>
-                                <th>Email</th>
-                                <th>Mobile Number</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {contactBoxData.map((contact, idx) => (
-                                <tr key={idx}>
-                                    <td className="subpage__contact-name">Level {idx + 1}: {contact.name}</td>
-                                    <td><span className="subpage__contact-badge">{contact.pocFor}</span></td>
-                                    <td><a href={`mailto:${contact.email}`}>{contact.email}</a></td>
-                                    <td><a href={`tel:${contact.phone}`}>{contact.phone}</a></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <h2 className="subpage__contacts-title">Escalation Matrix</h2>
+                <ContactTable rows={contactBoxData} namePrefix={(idx) => `Level ${idx + 1}`} />
+            </div>
+
+            <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                <h2 className="subpage__contacts-title">Retail Structure - Leaders &amp; POCs</h2>
+                <ContactTable rows={retailStructureData} />
             </div>
 
         </div>
