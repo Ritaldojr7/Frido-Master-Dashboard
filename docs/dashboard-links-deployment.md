@@ -33,3 +33,17 @@ The Feedback Department page loads **`GET /api/feedback/products`** (admin + fee
    First run without `--force` skips if any rows exist; use `--force` after editing `feedbackDatabase.js` to refresh all rows.
 
 3. Static **`src/config/feedbackDatabase.js`** remains the fallback when the API returns nothing or fails.
+
+---
+
+## One-shot Supabase seed (service role, no `DATABASE_URL`)
+
+When `.env` has `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` but not `DATABASE_URL`, seed dashboards, feedback products, and HR policy PDFs in one command:
+
+```bash
+npm run seed:supabase-all -- --force
+```
+
+Omit `--force` on first run; use `--force` after editing `dashboardData.js` or `feedbackDatabase.js`. Pass `--skip-pdfs` to skip Storage uploads.
+
+**Runtime tables** (`notices`, `notice_attachments`, `notice_receipts`, `invite_tokens`) are populated by app usage, not this script.
