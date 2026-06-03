@@ -53,7 +53,7 @@ const contactBoxData = [
 
 const retailStructureData = [
     { name: 'Vikal Gupta', pocFor: 'Retail VP', email: 'Vikal.g@myfrido.com', phone: '' },
-    { name: 'Anirudha', pocFor: 'Customer Experience', email: '', phone: '' },
+    { name: 'Anirudha', pocFor: 'Customer Experience', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
     {
         name: 'Anirudha',
         pocFor: 'Training & Development',
