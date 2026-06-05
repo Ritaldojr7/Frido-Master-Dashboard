@@ -529,6 +529,19 @@ export const feedbackData = [
         releaseDate: '01/06/2026'
     },
     {
+        id: 41,
+        category: 'Orthotics',
+        productName: 'Frido Orthotics Heel Protector',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/biege_png_2.jpg?v=1774266947&width=648',
+        reportLink: 'https://drive.google.com/file/d/1cZ7YVrOV-ZPbb8dckM3jaT3FDlPDHv9-/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/27091d33e34b410bab1d4f43555c6557',
+        intentDate: '',
+        releaseDate: '05/06/2026'
+    },
+    {
         id: 38,
         category: 'Pillows',
         productName: 'Frido Neck Contour Cervical Pillow',
