@@ -51,6 +51,7 @@ const PRODUCT_RATINGS = {
     'Frido Neck Contour Cervical Pillow': 7.8,
     'Frido Neck Contour Cervical Plus Pillow': 7.8,
     'Frido Latex Pillow': 7.8,
+    'Frido Orthotics Heel Protector': 7.7,
     'Frido Barefoot Sock Shoe Pro': 7.6,
     "Frido Women's Cloud Comfort Sandal - Toeless": 7.2,
     'Frido Maternity Pillow Bundle Plus': 7.0,
