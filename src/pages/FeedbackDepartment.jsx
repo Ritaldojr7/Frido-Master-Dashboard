@@ -198,13 +198,29 @@ export default function FeedbackDepartment() {
 
     const leaderboardData = useMemo(() => {
         const ratedProducts = publishedData
-            .map((item) => ({
-                id: item.id,
-                category: item.category,
-                productName: item.productName,
-                rating: PRODUCT_RATINGS[item.productName]
-            }))
-            .filter((item) => typeof item.rating === 'number');
+            .map((item) => {
+                const rating = PRODUCT_RATINGS[item.productName];
+                if (typeof rating !== 'number') return null;
+
+                const entries = getReleaseEntries(item)
+                    .slice()
+                    .sort((a, b) => (parseDateValue(b.date) ?? 0) - (parseDateValue(a.date) ?? 0));
+                const defaultDate = entries[0]?.date ?? item.releaseDate;
+                const selectedDate = selectedDatesByProduct[item.id] ?? defaultDate;
+                const selectedEntry = entries.find((entry) => entry.date === selectedDate) ?? entries[0];
+
+                return {
+                    id: item.id,
+                    category: item.category,
+                    productName: item.productName,
+                    rating,
+                    releaseEntries: entries,
+                    displayReleaseDate: selectedEntry?.date ?? item.releaseDate,
+                    displayReportLink: selectedEntry?.reportLink ?? item.reportLink,
+                    displayLoomLink: selectedEntry?.loomLink ?? item.loomLink,
+                };
+            })
+            .filter(Boolean);
 
         const categoryFiltered =
             selectedLeaderboardCategory === 'All'
@@ -212,7 +228,7 @@ export default function FeedbackDepartment() {
                 : ratedProducts.filter((item) => item.category === selectedLeaderboardCategory);
 
         return categoryFiltered.sort((a, b) => b.rating - a.rating);
-    }, [publishedData, selectedLeaderboardCategory]);
+    }, [publishedData, selectedLeaderboardCategory, selectedDatesByProduct]);
 
     useEffect(() => {
         const publishedIds = publishedData.map((item) => item.id).sort((a, b) => a - b);
@@ -349,11 +365,53 @@ export default function FeedbackDepartment() {
                         {leaderboardData.map((product, index) => (
                             <div key={product.id} className="leaderboard-item">
                                 <div className="leaderboard-rank">#{index + 1}</div>
-                                <div className="leaderboard-info">
-                                    <div className="leaderboard-product">{product.productName}</div>
-                                    <div className="leaderboard-category">{product.category}</div>
+                                <div className="leaderboard-body">
+                                    <div className="leaderboard-header-row">
+                                        <div className="leaderboard-info">
+                                            <div className="leaderboard-product">{product.productName}</div>
+                                            <div className="leaderboard-category">{product.category}</div>
+                                        </div>
+                                        <div className="leaderboard-score">{product.rating.toFixed(1)}</div>
+                                    </div>
+                                    <div className="leaderboard-actions">
+                                        {product.displayReportLink ? (
+                                            <a
+                                                href={product.displayReportLink}
+                                                className="action-btn action-btn--report leaderboard-action-btn"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                View Report
+                                            </a>
+                                        ) : null}
+                                        {product.displayLoomLink ? (
+                                            <a
+                                                href={product.displayLoomLink}
+                                                className="action-btn action-btn--loom leaderboard-action-btn"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                View Loom Video
+                                            </a>
+                                        ) : null}
+                                        {(product.releaseEntries?.length ?? 0) > 1 ? (
+                                            <select
+                                                className="filter-select filter-select--leaderboard"
+                                                value={product.displayReleaseDate || ''}
+                                                onChange={(e) => handleProductDateFilter(product.id, e.target.value)}
+                                                aria-label={`Release date for ${product.productName}`}
+                                            >
+                                                {product.releaseEntries.map((entry) => (
+                                                    <option key={`${product.id}-${entry.date}`} value={entry.date}>
+                                                        {entry.date}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : product.displayReleaseDate ? (
+                                            <span className="leaderboard-date">{product.displayReleaseDate}</span>
+                                        ) : null}
+                                    </div>
                                 </div>
-                                <div className="leaderboard-score">{product.rating.toFixed(1)}</div>
                             </div>
                         ))}
                     </div>

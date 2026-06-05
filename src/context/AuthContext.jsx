@@ -14,7 +14,7 @@ const DEMO_USER = {
     id: 'demo-staff',
     email: 'staff@myfrido.com',
     name: 'Staff',
-    role: 'staff',
+    role: import.meta.env.VITE_DEMO_ROLE || 'staff',
     department: 'Retail',
     avatar_url: '',
     status: 'active',
