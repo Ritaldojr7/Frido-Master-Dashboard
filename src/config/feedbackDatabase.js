@@ -542,6 +542,19 @@ export const feedbackData = [
         releaseDate: '05/06/2026'
     },
     {
+        id: 42,
+        category: 'Mobility',
+        productName: 'Frido Anti-Slip Bath Mat',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0918/8838/6366/files/01_8_1.png?v=1770879467&width=648',
+        reportLink: 'https://drive.google.com/file/d/19AoixWYGxr_TkFlObSHufGKg1ehEhYzX/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/3bcbee59bf6341fb80b5648fec1d352c',
+        intentDate: '',
+        releaseDate: '08/06/2026'
+    },
+    {
         id: 38,
         category: 'Pillows',
         productName: 'Frido Neck Contour Cervical Pillow',
