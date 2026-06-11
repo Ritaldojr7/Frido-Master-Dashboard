@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import SearchBar from '../SearchBar/SearchBar';
 import UserMenu from '../UserMenu/UserMenu';
-import { sidebarPermissions } from '../../config/permissions';
+import { hasAccess } from '../../config/permissions';
 import { useDashboardData } from '../../context/DashboardDataContext';
 import './Layout.css';
 import fridoLogo from '../../assets/logo.png';
@@ -21,7 +21,12 @@ const navItems = [
         icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z',
     },
     { path: '/business-analytics', label: 'Business Analytics', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-    { path: '/feedback-department', label: 'Feedback Department', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' }
+    { path: '/feedback-department', label: 'Feedback Department', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
+    {
+        path: '/order-dispute',
+        label: 'Order Dispute',
+        icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    },
 ];
 
 // Admin-only nav item
@@ -80,12 +85,9 @@ export default function Layout({ children }) {
     }, [location.pathname]);
 
     // Filter nav items by user role
-    const visibleNavItems = navItems.filter(item => {
-        const allowed = sidebarPermissions[item.path];
-        if (!allowed) return true;
-        // Safety check: if user is not yet loaded, hide restricted items instead of crashing
+    const visibleNavItems = navItems.filter((item) => {
         if (!user) return false;
-        return allowed.includes(user.role);
+        return hasAccess(user, item.path);
     });
 
     const showAdminNav = hasRole('admin');
@@ -241,7 +243,7 @@ export default function Layout({ children }) {
                     </div>
                     <div className="header__right">
                         <div className="header__search">
-                            <SearchBar isAdmin={hasRole('admin')} userRole={user?.role} />
+                            <SearchBar isAdmin={hasRole('admin')} userRoles={user?.roles ?? [user?.role]} />
                         </div>
                         <UserMenu />
                     </div>

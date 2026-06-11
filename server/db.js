@@ -380,13 +380,14 @@ async function seedDefaultAdmin() {
 
         // Sync to DB (upsert so Clerk id + admin role match locally)
         await db.run(
-            `INSERT INTO users (id, email, name, password_hash, role, department, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `INSERT INTO users (id, email, name, password_hash, role, roles, department, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT (email) DO UPDATE SET
              id = excluded.id,
              role = 'admin',
+             roles = '["admin"]',
              updated_at = excluded.updated_at`,
-            [clerkUserId, email, 'Admin', '', 'admin', 'Technology', 'active', now(), now()]
+            [clerkUserId, email, 'Admin', '', 'admin', '["admin"]', 'Technology', 'active', now(), now()]
         );
         console.log(`✓ Seeded default admin row for ${email}`);
     } catch (err) {
@@ -425,8 +426,24 @@ async function ensurePostgresOptionalColumns() {
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TEXT');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TEXT');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS store_name TEXT');
+    await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS roles TEXT NOT NULL DEFAULT '[]'");
     await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
     await pool.query("ALTER TABLE notices ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'retail_staff'");
+}
+
+/** Backfill users.roles from legacy users.role — existing users keep the same access. */
+async function backfillUsersRolesColumn() {
+    const rows = await db.all(
+        `SELECT id, role, roles FROM users WHERE roles IS NULL OR TRIM(roles) = '' OR roles = '[]'`
+    );
+    for (const row of rows) {
+        const primary = row.role || 'staff';
+        const rolesJson = JSON.stringify([primary]);
+        await db.run('UPDATE users SET roles = ? WHERE id = ?', [rolesJson, row.id]);
+    }
+    if (rows.length > 0) {
+        console.log(`✓ Backfilled users.roles for ${rows.length} user(s) from legacy role column`);
+    }
 }
 
 /** Widen `users.role` CHECK so `feedback` invites persist on existing Postgres databases. */
@@ -454,12 +471,14 @@ if (isPostgres) {
     await ensureColumn('users', 'deleted_at', 'TEXT');
     await ensureColumn('users', 'last_login', 'TEXT');
     await ensureColumn('users', 'store_name', "TEXT DEFAULT ''");
+    await ensureColumn('users', 'roles', "TEXT NOT NULL DEFAULT '[]'");
     await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
     await ensureColumn('notices', 'audience', 'TEXT NOT NULL DEFAULT \'retail_staff\'');
     migrateSqliteUsersRoleFeedbackCheck();
     migrateSqliteUsersRoleWidenIsdNm();
     migrateSqliteUsersStatusImportPending();
 }
+await backfillUsersRolesColumn();
 await seedDefaultAdmin();
 await purgeExpiredDeletedUsers();
 

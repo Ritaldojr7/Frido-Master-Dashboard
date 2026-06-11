@@ -39,7 +39,7 @@ describe('requireRole', () => {
         expect(res._status).toBe(403);
         expect(res._json.error).toBe('Insufficient permissions');
         expect(res._json.required).toEqual(['admin']);
-        expect(res._json.current).toBe('staff');
+        expect(res._json.current).toEqual(['staff']);
     });
 
     it('returns 401 when req.user is missing', () => {

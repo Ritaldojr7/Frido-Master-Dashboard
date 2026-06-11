@@ -13,12 +13,15 @@ import StaffDashboard from './pages/StaffDashboard';
 import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
+import OrderDispute from './pages/OrderDispute';
 import {
-    RETAIL_STAFF_ACCESS_ROLES,
     ADMIN_ONLY,
     FEEDBACK_DEPARTMENT_ROLES,
-    PROFILE_ROLES,
     ISD_NM_ROLES,
+    ORDER_DISPUTE_ROLES,
+    PROFILE_ROLES,
+    RETAIL_STAFF_ACCESS_ROLES,
+    defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
 
@@ -27,10 +30,7 @@ const Router = DEMO_MODE ? HashRouter : BrowserRouter;
 
 function HomeRedirect() {
     const { user } = useAuth();
-    if (user?.role === 'admin') return <Navigate to="/admin" replace />;
-    if (user?.role === 'feedback') return <Navigate to="/feedback-department" replace />;
-    if (user?.role === 'executive' || user?.role === 'team_lead') return <Navigate to="/isd-nm" replace />;
-    return <Navigate to="/retail-staff" replace />;
+    return <Navigate to={defaultHomePath(user)} replace />;
 }
 
 function App() {
@@ -93,6 +93,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={FEEDBACK_DEPARTMENT_ROLES}>
                                                 <FeedbackDepartment />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/order-dispute"
+                                        element={
+                                            <RoleGuard roles={ORDER_DISPUTE_ROLES}>
+                                                <OrderDispute />
                                             </RoleGuard>
                                         }
                                     />

@@ -13,6 +13,13 @@ import {
     normalizeRole,
     VALID_ROLES,
 } from '../utils/security.js';
+import {
+    formatUserRow,
+    normalizeRolesArray,
+    parseRolesFromRequest,
+    primaryRoleFromRoles,
+    rolesToDbColumns,
+} from '../utils/roles.js';
 import { validateImportRow } from '../utils/userImport.js';
 
 const router = Router();
@@ -21,10 +28,17 @@ const router = Router();
  * Merge role into Clerk publicMetadata. Invite rows often use placeholder UUID ids;
  * Clerk only recognizes real ids (`user_…`), so fall back to lookup by email.
  */
-async function syncClerkPublicRole({ dbUserId, email }, role) {
+async function syncClerkPublicRoles({ dbUserId, email }, rolesInput) {
+    const roles = normalizeRolesArray(rolesInput);
+    const primary = primaryRoleFromRoles(roles);
     const mergeMd = async (clerkUserId, prevMd) => {
         await clerkClient.users.updateUserMetadata(clerkUserId, {
-            publicMetadata: { ...(prevMd || {}), role },
+            publicMetadata: {
+                ...(prevMd || {}),
+                role: primary,
+                roles,
+                primary_role: primary,
+            },
         });
     };
 
@@ -64,7 +78,7 @@ router.use(verifyToken);
  */
 router.get('/me', async (req, res) => {
     const user = await db.get(
-        'SELECT id, email, name, role, department, store_name, avatar_url, status, last_login, created_at FROM users WHERE id = ?',
+        'SELECT id, email, name, role, roles, department, store_name, avatar_url, status, last_login, created_at FROM users WHERE id = ?',
         [req.user.id]
     );
 
@@ -72,7 +86,7 @@ router.get('/me', async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    res.json({ user: formatUserRow(user) });
 });
 
 /**
@@ -130,11 +144,11 @@ router.put('/me', async (req, res) => {
     await db.run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
 
     const user = await db.get(
-        'SELECT id, email, name, role, department, store_name, avatar_url, status, last_login, created_at FROM users WHERE id = ?',
+        'SELECT id, email, name, role, roles, department, store_name, avatar_url, status, last_login, created_at FROM users WHERE id = ?',
         [req.user.id]
     );
 
-    res.json({ user });
+    res.json({ user: formatUserRow(user) });
 });
 
 // ── Admin: User Management ──────────────────────────────
@@ -144,12 +158,12 @@ router.put('/me', async (req, res) => {
  */
 router.get('/', requireRole(['admin']), async (_req, res) => {
     const users = await db.all(
-        `SELECT id, email, name, role, department, store_name, avatar_url, status, last_login, created_at, deleted_at
+        `SELECT id, email, name, role, roles, department, store_name, avatar_url, status, last_login, created_at, deleted_at
          FROM users
          ORDER BY (deleted_at IS NOT NULL), created_at DESC`
     );
 
-    res.json({ users });
+    res.json({ users: users.map((u) => formatUserRow(u)) });
 });
 
 /**
@@ -169,7 +183,9 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
             return res.status(403).json({ error: 'Only approved company email domains can be invited.' });
         }
 
-        const userRole = normalizeRole(role);
+        const inviteRoles = parseRolesFromRequest({ role }) ?? normalizeRolesArray(['staff']);
+        const roleCols = rolesToDbColumns(inviteRoles);
+        const userRole = roleCols.role;
 
         const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
 
@@ -203,9 +219,21 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
 
         const id = existingClerkUser ? existingClerkUser.id : uuid();
         await db.run(
-            `INSERT INTO users (id, email, name, password_hash, role, department, store_name, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, normalizedEmail, name.trim(), '', userRole, department, storeName, 'invited', now(), now()]
+            `INSERT INTO users (id, email, name, password_hash, role, roles, department, store_name, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                id,
+                normalizedEmail,
+                name.trim(),
+                '',
+                roleCols.role,
+                roleCols.roles,
+                department,
+                storeName,
+                'invited',
+                now(),
+                now(),
+            ]
         );
 
         const { emailWarning } = await deliverInviteEmail({
@@ -218,12 +246,12 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
         });
 
         const user = await db.get(
-            'SELECT id, email, name, role, department, store_name, status, created_at FROM users WHERE id = ?',
+            'SELECT id, email, name, role, roles, department, store_name, status, created_at FROM users WHERE id = ?',
             [id]
         );
 
         res.status(201).json({
-            user,
+            user: formatUserRow(user),
             message: emailWarning ? 'Invitation created' : 'Invitation sent successfully',
             warning: emailWarning,
             inviteLink: emailWarning ? inviteLink : undefined,
@@ -270,11 +298,24 @@ router.post('/import', requireRole(['admin']), async (req, res) => {
             }
 
             const id = uuid();
+            const roleCols = rolesToDbColumns(v.roles ?? v.role);
             try {
                 await db.run(
-                    `INSERT INTO users (id, email, name, password_hash, role, department, store_name, status, created_at, updated_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [id, v.email, v.name, '', v.role, v.department, v.store_name, 'import_pending', now(), now()]
+                    `INSERT INTO users (id, email, name, password_hash, role, roles, department, store_name, status, created_at, updated_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        id,
+                        v.email,
+                        v.name,
+                        '',
+                        roleCols.role,
+                        roleCols.roles,
+                        v.department,
+                        v.store_name,
+                        'import_pending',
+                        now(),
+                        now(),
+                    ]
                 );
                 created.push({ rowIndex: v.rowIndex, id, email: v.email });
             } catch (e) {
@@ -458,18 +499,27 @@ router.post('/bulk-delete', requireRole(['admin']), async (req, res) => {
 });
 
 /**
- * PUT /api/users/:id/role — Change a user's role (admin only)
- * Body: { role }
+ * PUT /api/users/:id/role — Change a user's role(s) (admin only)
+ * Body: { role } or { roles: string[] } or { roles: "staff, feedback" }
  */
 router.put('/:id/role', requireRole(['admin']), async (req, res) => {
     const { id } = req.params;
-    const { role } = req.body;
+    const parsedRoles = parseRolesFromRequest(req.body);
 
-    if (!VALID_ROLES.includes(role)) {
-        return res.status(400).json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}` });
+    if (!parsedRoles || parsedRoles.length === 0) {
+        return res.status(400).json({ error: `Invalid role(s). Must be one of: ${VALID_ROLES.join(', ')}` });
     }
 
-    // Prevent self-demotion
+    for (const r of parsedRoles) {
+        if (!VALID_ROLES.includes(r)) {
+            return res.status(400).json({ error: `Invalid role "${r}". Must be one of: ${VALID_ROLES.join(', ')}` });
+        }
+    }
+
+    if (parsedRoles.includes('admin') && parsedRoles.length > 1) {
+        return res.status(400).json({ error: 'Admin cannot be combined with other roles' });
+    }
+
     if (id === req.user.id) {
         return res.status(400).json({ error: 'You cannot change your own role' });
     }
@@ -479,20 +529,26 @@ router.put('/:id/role', requireRole(['admin']), async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
     }
 
-    await db.run('UPDATE users SET role = ?, updated_at = ? WHERE id = ?', [role, now(), id]);
+    const roleCols = rolesToDbColumns(parsedRoles);
+    await db.run('UPDATE users SET role = ?, roles = ?, updated_at = ? WHERE id = ?', [
+        roleCols.role,
+        roleCols.roles,
+        now(),
+        id,
+    ]);
 
     try {
-        await syncClerkPublicRole(target, role);
+        await syncClerkPublicRoles(target, parsedRoles);
     } catch (err) {
         console.error('Failed to sync role update to Clerk:', err);
     }
 
     const user = await db.get(
-        'SELECT id, email, name, role, department, store_name, status, last_login, created_at FROM users WHERE id = ?',
+        'SELECT id, email, name, role, roles, department, store_name, status, last_login, created_at FROM users WHERE id = ?',
         [id]
     );
 
-    res.json({ user });
+    res.json({ user: formatUserRow(user) });
 });
 
 /**

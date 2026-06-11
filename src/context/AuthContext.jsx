@@ -10,11 +10,13 @@ export const AuthContext = createContext();
  */
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
+const DEMO_ROLE = import.meta.env.VITE_DEMO_ROLE || 'staff';
 const DEMO_USER = {
     id: 'demo-staff',
     email: 'staff@myfrido.com',
     name: 'Staff',
-    role: import.meta.env.VITE_DEMO_ROLE || 'staff',
+    role: DEMO_ROLE,
+    roles: [DEMO_ROLE],
     department: 'Retail',
     avatar_url: '',
     status: 'active',
@@ -244,11 +246,34 @@ function ClerkAuthProvider({ children }) {
             name = firstPart.charAt(0).toUpperCase() + firstPart.slice(1);
         }
 
+        const rolesFromDb = (() => {
+            if (backendUser?.roles) {
+                try {
+                    const parsed =
+                        typeof backendUser.roles === 'string'
+                            ? JSON.parse(backendUser.roles)
+                            : backendUser.roles;
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                } catch {
+                    /* fall through */
+                }
+            }
+            const fromClerk = clerkUser.publicMetadata?.roles;
+            if (Array.isArray(fromClerk) && fromClerk.length > 0) return fromClerk;
+            const legacy = backendUser?.role ?? clerkUser.publicMetadata?.role ?? 'staff';
+            return [legacy];
+        })();
+
+        const primaryRole = rolesFromDb.includes('admin')
+            ? 'admin'
+            : backendUser?.role ?? clerkUser.publicMetadata?.primary_role ?? clerkUser.publicMetadata?.role ?? rolesFromDb[0] ?? 'staff';
+
         return {
             id: clerkUser.id,
             email,
             name,
-            role: backendUser?.role ?? clerkUser.publicMetadata?.role ?? 'staff',
+            role: primaryRole,
+            roles: rolesFromDb,
             department: backendUser?.department || clerkUser.publicMetadata?.department || '',
             store_name: backendUser?.store_name || clerkUser.publicMetadata?.store_name || '',
             avatar_url: clerkUser.imageUrl || '',
@@ -286,8 +311,24 @@ function ClerkAuthProvider({ children }) {
         (...roles) => {
             if (DEMO_MODE) return true;
             if (!clerkUser) return false;
-            const userRole = backendUser?.role ?? clerkUser.publicMetadata?.role ?? 'staff';
-            return roles.includes(userRole);
+            const assigned = (() => {
+                if (backendUser?.roles) {
+                    try {
+                        const parsed =
+                            typeof backendUser.roles === 'string'
+                                ? JSON.parse(backendUser.roles)
+                                : backendUser.roles;
+                        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                    } catch {
+                        /* fall through */
+                    }
+                }
+                const fromClerk = clerkUser.publicMetadata?.roles;
+                if (Array.isArray(fromClerk) && fromClerk.length > 0) return fromClerk;
+                return [backendUser?.role ?? clerkUser.publicMetadata?.role ?? 'staff'];
+            })();
+            if (assigned.includes('admin')) return true;
+            return roles.some((r) => assigned.includes(r));
         },
         [clerkUser, backendUser]
     );

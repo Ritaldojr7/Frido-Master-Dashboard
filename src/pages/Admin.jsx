@@ -13,6 +13,7 @@ import { apiFetch, useAuth } from '../context/AuthContext';
 import './Admin.css';
 
 const USERS_PAGE_SIZE = 10;
+const ASSIGNABLE_ROLES = ['staff', 'viewer', 'feedback', 'executive', 'team_lead'];
 
 export default function Admin() {
     const { user } = useAuth();
@@ -286,16 +287,18 @@ export default function Admin() {
         }
     };
 
-    const handleRoleChange = async (userId, newRole) => {
+    const handleRolesChange = async (userId, roles) => {
         try {
             await apiFetch(`/api/users/${userId}/role`, {
                 method: 'PUT',
-                body: JSON.stringify({ role: newRole }),
+                body: JSON.stringify({ roles }),
             });
             fetchUsers();
-            alert(`Role updated to ${newRole.toUpperCase()}. The user will need to logout and log back in for the changes to take full effect.`);
+            alert(
+                `Roles updated to ${roles.join(', ')}. The user may need to log out and back in for navigation to refresh.`
+            );
         } catch (err) {
-            alert(err.message || 'Failed to update role');
+            alert(err.message || 'Failed to update roles');
         }
     };
 
@@ -791,19 +794,39 @@ export default function Admin() {
                                                 </div>
                                             </td>
                                             <td>
-                                                <select
-                                                    className={`admin__role-select ${roleBadgeClass(u.role)}`}
-                                                    value={u.role}
-                                                    onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                                                    disabled={u.status === 'disabled'}
-                                                >
-                                                    <option value="admin">Admin</option>
-                                                    <option value="staff">Staff</option>
-                                                    <option value="viewer">Viewer</option>
-                                                    <option value="feedback">Feedback</option>
-                                                    <option value="executive">Executive (ISD NM only)</option>
-                                                    <option value="team_lead">Team Lead (ISD NM only)</option>
-                                                </select>
+                                                {(u.roles ?? [u.role]).includes('admin') ? (
+                                                    <select
+                                                        className={`admin__role-select ${roleBadgeClass('admin')}`}
+                                                        value="admin"
+                                                        onChange={(e) => handleRolesChange(u.id, [e.target.value])}
+                                                        disabled={u.status === 'disabled'}
+                                                    >
+                                                        <option value="admin">Admin</option>
+                                                    </select>
+                                                ) : (
+                                                    <div className="admin__roles-checkboxes">
+                                                        {ASSIGNABLE_ROLES.map((role) => {
+                                                            const current = u.roles ?? [u.role];
+                                                            return (
+                                                                <label key={role} className="admin__role-chip">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={current.includes(role)}
+                                                                        disabled={u.status === 'disabled'}
+                                                                        onChange={(e) => {
+                                                                            const next = e.target.checked
+                                                                                ? [...new Set([...current, role])]
+                                                                                : current.filter((r) => r !== role);
+                                                                            if (next.length === 0) return;
+                                                                            handleRolesChange(u.id, next);
+                                                                        }}
+                                                                    />
+                                                                    <span>{role}</span>
+                                                                </label>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </td>
                                             <td>
                                                 <span className={`admin__status ${statusClass(u.status)}`}>
@@ -1009,7 +1032,8 @@ export default function Admin() {
                             <p className="admin__modal-desc">
                                 Rows are saved to the roster immediately with status <strong>import pending</strong>. Then tick users in the
                                 table and use <strong>Send invitation emails</strong> or <strong>Mass delete selected</strong> as needed.
-                                Required columns: <code>email</code>, <code>name</code>, <code>role</code>. Optional:{' '}
+                                Required columns: <code>email</code>, <code>name</code>, <code>role</code> (comma-separated
+                                for multiple, e.g. <code>staff, feedback</code>). Optional:{' '}
                                 <code>department</code>, <code>store_name</code>.
                             </p>
                             <div className="admin__import-actions">

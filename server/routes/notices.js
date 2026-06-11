@@ -66,8 +66,8 @@ async function markReceipt(noticeId, userId, fields) {
 }
 
 async function userCanAccessNotice(user, noticeId) {
-    if (user.role === 'admin') return true;
-    const audiencePred = sqlNoticesAudienceMatchesUser(user.role);
+    if (user.roles?.includes?.('admin') || user.role === 'admin') return true;
+    const audiencePred = sqlNoticesAudienceMatchesUser(user);
     const row = await db.get(
         `SELECT n.id FROM notices n WHERE n.id = ? AND (${audiencePred})`,
         [noticeId]
@@ -77,7 +77,7 @@ async function userCanAccessNotice(user, noticeId) {
 
 router.get('/active', async (req, res) => {
     const current = now();
-    const audienceWhere = sqlNoticesAudienceMatchesUser(req.user.role);
+    const audienceWhere = sqlNoticesAudienceMatchesUser(req.user);
     const notices = await db.all(
         `SELECT
             n.*,
@@ -111,7 +111,7 @@ router.get('/active', async (req, res) => {
 });
 
 router.get('/feed', async (req, res) => {
-    const audienceWhere = sqlNoticesAudienceMatchesUser(req.user.role);
+    const audienceWhere = sqlNoticesAudienceMatchesUser(req.user);
     const notices = await db.all(
         `SELECT
             n.*,
@@ -132,7 +132,7 @@ router.get('/feed', async (req, res) => {
 });
 
 router.post('/:id/ack', async (req, res) => {
-    const audiencePred = sqlNoticesAudienceMatchesUser(req.user.role);
+    const audiencePred = sqlNoticesAudienceMatchesUser(req.user);
     const notice = await db.get(
         `SELECT n.id FROM notices n WHERE n.id = ? AND n.active = 1 AND (${audiencePred})`,
         [req.params.id]
@@ -148,7 +148,7 @@ router.post('/:id/ack', async (req, res) => {
 });
 
 router.post('/:id/dismiss', async (req, res) => {
-    const audiencePred = sqlNoticesAudienceMatchesUser(req.user.role);
+    const audiencePred = sqlNoticesAudienceMatchesUser(req.user);
     const notice = await db.get(
         `SELECT n.id FROM notices n WHERE n.id = ? AND n.active = 1 AND (${audiencePred})`,
         [req.params.id]
