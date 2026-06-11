@@ -104,10 +104,10 @@ async function seedDashboard(supabase, slug, data, force) {
     console.log(`✓ Seeded dashboard_defs slug="${slug}" with ${sectionOrder} sections`);
 }
 
-async function seedFeedbackProducts(supabase, force) {
+async function seedFeedbackProducts(supabase, force, sync) {
     const n = await countTable(supabase, 'feedback_products');
-    if (n > 0 && !force) {
-        console.log(`Skipping feedback_products — ${n} row(s) exist (pass --force to replace)`);
+    if (n > 0 && !force && !sync) {
+        console.log(`Skipping feedback_products — ${n} row(s) exist (pass --force to replace or --sync to upsert)`);
         return;
     }
     if (n > 0 && force) {
@@ -121,15 +121,19 @@ async function seedFeedbackProducts(supabase, force) {
     for (const row of feedbackData) {
         const stableId = Number(row.id);
         if (!Number.isFinite(stableId)) continue;
-        const { error } = await supabase.from('feedback_products').insert({
+        const record = {
             stable_id: stableId,
             sort_order: sortOrder++,
             payload: { ...row, id: stableId },
             updated_at: iso,
-        });
-        if (error) throw new Error(`feedback_products insert id=${stableId}: ${error.message}`);
+        };
+        const { error } =
+            force || n === 0
+                ? await supabase.from('feedback_products').insert(record)
+                : await supabase.from('feedback_products').upsert(record, { onConflict: 'stable_id' });
+        if (error) throw new Error(`feedback_products upsert id=${stableId}: ${error.message}`);
     }
-    console.log(`✓ Seeded feedback_products: ${sortOrder} products`);
+    console.log(`✓ ${sync ? 'Synced' : 'Seeded'} feedback_products: ${sortOrder} products`);
 }
 
 async function uploadHrPdfs() {
@@ -159,6 +163,7 @@ async function uploadHrPdfs() {
 
 async function main() {
     const force = process.argv.includes('--force');
+    const sync = process.argv.includes('--sync');
     const skipPdfs = process.argv.includes('--skip-pdfs');
 
     const supabase = getSupabase();
@@ -176,7 +181,7 @@ async function main() {
         await seedDashboard(supabase, slug, data, force);
     }
 
-    await seedFeedbackProducts(supabase, force);
+    await seedFeedbackProducts(supabase, force, sync);
 
     if (!skipPdfs) {
         await uploadHrPdfs();

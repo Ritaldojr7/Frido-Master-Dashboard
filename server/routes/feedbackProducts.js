@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { verifyToken, requireRole } from '../middleware/auth.js';
+import { buildFeedbackCatalog } from '../utils/feedbackCatalog.js';
 
 const router = Router();
 
@@ -10,7 +11,7 @@ router.get('/', verifyToken, requireRole(['admin', 'feedback']), async (_req, re
         const rows = await db.all(
             `SELECT stable_id, payload FROM feedback_products ORDER BY sort_order ASC, stable_id ASC`
         );
-        const products = [];
+        const dbProducts = [];
         for (const row of rows || []) {
             try {
                 const obj =
@@ -18,12 +19,12 @@ router.get('/', verifyToken, requireRole(['admin', 'feedback']), async (_req, re
                 if (!obj || typeof obj !== 'object') continue;
                 const id = Number(obj.id ?? row.stable_id);
                 if (!Number.isFinite(id)) continue;
-                products.push({ ...obj, id });
+                dbProducts.push({ ...obj, id });
             } catch {
                 /* skip malformed row */
             }
         }
-        res.json({ products });
+        res.json({ products: buildFeedbackCatalog(dbProducts) });
     } catch (err) {
         console.error('[feedback-products]', err);
         res.status(500).json({ error: 'Failed to load feedback products' });
