@@ -10,9 +10,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Cancel superseded PR builds only — never abort in-progress main deploys (duplicate merge
+# webhooks can otherwise cancel Build before Deploy to Render runs).
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   quality:
