@@ -59,6 +59,8 @@ const PRODUCT_RATINGS = {
     "Frido Women's Cloud Comfort Shoes - Lace ups": 7.0,
     'Frido Puneri Chappal - Women': 6.9,
     "Frido Women's Arch Comfort Sandals": 6.9,
+    "Frido Active Casual Sneakers - Men's": 6.6,
+    "Frido Active Casual Sneakers - Women's": 6.6,
     'Frido Orthotics Posture Corrector': 6.3,
     'Frido Puneri Chappal - Men': 6.0,
     'Frido Unisex Orthotics V-Strap Sandals': 5.8,
