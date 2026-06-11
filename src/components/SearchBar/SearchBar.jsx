@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { businessAnalyticsCategories, retailAdminData } from '../../config/dashboardData';
-import { canSeeIsdResource, ISD_NM_ROLES, RETAIL_STAFF_ACCESS_ROLES } from '../../config/permissions';
+import {
+    canSeeIsdResource,
+    hasAnyRole,
+    ISD_NM_ROLES,
+    RETAIL_STAFF_ACCESS_ROLES,
+} from '../../config/permissions';
 import { useDashboardData } from '../../context/DashboardDataContext';
 import './SearchBar.css';
 
@@ -21,10 +26,11 @@ function addLinkWithVariants(links, link, category) {
 }
 
 /** Search index: staff/admin dashboards, business analytics (admin), ISD NM for eligible roles */
-function getAppSearchLinks(isAdmin, userRole = 'staff', staffRetailSections = [], isdNmSections = []) {
+function getAppSearchLinks(isAdmin, userRoles = ['staff'], staffRetailSections = [], isdNmSections = []) {
     const links = [];
+    const user = { roles: userRoles };
 
-    if (userRole && RETAIL_STAFF_ACCESS_ROLES.includes(userRole)) {
+    if (hasAnyRole(user, RETAIL_STAFF_ACCESS_ROLES)) {
         staffRetailSections.forEach((section) => {
             section.links.forEach((link) => {
                 addLinkWithVariants(links, link, `Retail - Staff → ${section.title}`);
@@ -46,10 +52,10 @@ function getAppSearchLinks(isAdmin, userRole = 'staff', staffRetailSections = []
         });
     }
 
-    if (userRole && ISD_NM_ROLES.includes(userRole)) {
+    if (hasAnyRole(user, ISD_NM_ROLES)) {
         isdNmSections.forEach((section) => {
             section.links.forEach((link) => {
-                if (!canSeeIsdResource(userRole, link.isdAccess || 'executive')) return;
+                if (!canSeeIsdResource(user, link.isdAccess || 'executive')) return;
                 if (link.copyModalText) return;
                 if (link.imageModalSrc) return;
                 addLinkWithVariants(links, link, `ISD NM → ${section.title}`);
@@ -60,7 +66,7 @@ function getAppSearchLinks(isAdmin, userRole = 'staff', staffRetailSections = []
     return links;
 }
 
-export default function SearchBar({ isAdmin = true, userRole = 'staff' }) {
+export default function SearchBar({ isAdmin = true, userRoles = ['staff'] }) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [results, setResults] = useState([]);
@@ -73,8 +79,8 @@ export default function SearchBar({ isAdmin = true, userRole = 'staff' }) {
     useEffect(() => {
         const staffSections = staffRetail?.sections ?? [];
         const isdSections = isdNm?.sections ?? [];
-        allLinks.current = getAppSearchLinks(isAdmin, userRole, staffSections, isdSections);
-    }, [isAdmin, userRole, staffRetail, isdNm]);
+        allLinks.current = getAppSearchLinks(isAdmin, userRoles, staffSections, isdSections);
+    }, [isAdmin, userRoles, staffRetail, isdNm]);
 
     // Keyboard shortcut Ctrl+K
     useEffect(() => {

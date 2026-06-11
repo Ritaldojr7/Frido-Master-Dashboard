@@ -44,7 +44,6 @@ const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
 export default function IsdNmDashboard() {
     const { isdNm: isdNmData } = useDashboardData();
     const { user } = useAuth();
-    const role = user?.role ?? 'staff';
     const [notices, setNotices] = useState([]);
 
     useEffect(() => {
@@ -118,7 +117,7 @@ export default function IsdNmDashboard() {
             <div className="subpage__sections">
                 {isdNmData.sections.map((section, idx) => {
                     const links = section.links
-                        .filter((l) => canSeeIsdResource(role, l.isdAccess || 'executive'))
+                        .filter((l) => canSeeIsdResource(user, l.isdAccess || 'executive'))
                         .map(({ isdAccess: _tier, ...link }) => link);
                     if (links.length === 0) return null;
                     return (

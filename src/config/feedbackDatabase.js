@@ -676,4 +676,30 @@ export const feedbackData = [
         intentDate: '',
         releaseDate: '12/05/2026',
     },
+    {
+        id: 43,
+        category: 'Footwear',
+        productName: "Frido Active Casual Sneakers - Men's",
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/Frido_Active_Casual_Sneakers-Blue002_02d44ccd-33ab-47e0-9a71-8ad533b4b26d.png?v=1778677982&width=1080',
+        reportLink: 'https://drive.google.com/file/d/1fDPjPoglErhtSyzTr7WDq7To-npLUpVU/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/a99aa11ecc854619b0e918a435dd8a32',
+        intentDate: '',
+        releaseDate: '11/06/2026',
+    },
+    {
+        id: 44,
+        category: 'Footwear',
+        productName: "Frido Active Casual Sneakers - Women's",
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/Frido_Active_Casual_Sneakers-Olive_Green_779bb6f1-873a-4af2-bd4d-68c681685b5e.png?v=1778678010&width=1080',
+        reportLink: 'https://drive.google.com/file/d/1fDPjPoglErhtSyzTr7WDq7To-npLUpVU/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/a99aa11ecc854619b0e918a435dd8a32',
+        intentDate: '',
+        releaseDate: '11/06/2026',
+    },
 ];

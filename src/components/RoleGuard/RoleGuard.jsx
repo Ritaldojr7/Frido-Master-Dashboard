@@ -3,13 +3,14 @@
  * Shows an "Access Denied" page if the user's role doesn't match.
  */
 import { useAuth } from '../../context/AuthContext';
+import { hasAnyRole } from '../../config/permissions';
 
 export default function RoleGuard({ roles, children }) {
     const { user } = useAuth();
 
     if (!user) return null;
 
-    if (roles && !roles.includes(user.role)) {
+    if (roles && !hasAnyRole(user, roles)) {
         return (
             <div style={{
                 display: 'flex',
@@ -52,7 +53,7 @@ export default function RoleGuard({ roles, children }) {
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase',
                 }}>
-                    Your role: {user.role}
+                    Your roles: {(user.roles ?? [user.role]).join(', ')}
                 </p>
             </div>
         );

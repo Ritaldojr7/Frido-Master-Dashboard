@@ -1,0 +1,113 @@
+.order-dispute {
+    padding: var(--space-md) 0;
+}
+
+.order-dispute__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+
+.order-dispute__title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 6px;
+}
+
+.order-dispute__subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.order-dispute__refresh {
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-primary);
+    background: var(--brand-yellow, #ffd200);
+    color: var(--brand-ink, #0b0f14);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.order-dispute__notice,
+.order-dispute__error {
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+}
+
+.order-dispute__notice {
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+}
+
+.order-dispute__error {
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+    color: var(--accent-rose);
+}
+
+.order-dispute__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: var(--space-md);
+}
+
+.order-dispute__tab {
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-primary);
+    background: var(--bg-tertiary);
+    cursor: pointer;
+}
+
+.order-dispute__tab--active {
+    background: var(--brand-yellow, #ffd200);
+    border-color: var(--brand-yellow-strong, #e6bd00);
+    font-weight: 700;
+}
+
+.order-dispute__meta {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin: 0 0 var(--space-sm);
+}
+
+.order-dispute__table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+}
+
+.order-dispute__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.order-dispute__table th,
+.order-dispute__table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-primary);
+    text-align: left;
+    vertical-align: top;
+}
+
+.order-dispute__table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+}
+
+.order-dispute__loading,
+.order-dispute__empty {
+    margin: 0;
+    color: var(--text-secondary);
+    padding: var(--space-lg);
+}

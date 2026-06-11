@@ -2,9 +2,9 @@ import {
     isAllowedCompanyEmail,
     normalizeEmail,
     normalizeRole,
-    resolveRoleToValidSlug,
     VALID_ROLES,
 } from './security.js';
+import { normalizeRolesArray, parseRolesFromImportString } from './roles.js';
 import {
     IMPORT_FIELD_KEYS,
     normalizeImportRecordKeys,
@@ -29,7 +29,6 @@ export function validateImportRow(rawInput, index = 0) {
 
     const email = normalizeEmail(emailRaw);
     const name = String(nameRaw ?? '').trim();
-    let role = normalizeRole(roleRaw);
     const department = departmentRaw != null ? String(departmentRaw).trim() : '';
     const store_name = storeRaw != null ? String(storeRaw).trim() : '';
 
@@ -37,14 +36,26 @@ export function validateImportRow(rawInput, index = 0) {
 
     if (!email) errors.push('email is required');
     if (!name) errors.push('name is required');
+
+    let roles = null;
     if (!roleRaw || String(roleRaw).trim() === '') {
         errors.push('role is required');
     } else {
-        if (!resolveRoleToValidSlug(roleRaw)) {
+        roles = parseRolesFromImportString(roleRaw);
+        if (!roles) {
             errors.push(`invalid role "${roleRaw}" (allowed: ${VALID_ROLES.join(', ')})`);
+        } else if (roles.includes('admin') && roles.length > 1) {
+            errors.push('admin cannot be combined with other roles in import');
+        } else {
+            for (const r of roles) {
+                if (!VALID_ROLES.includes(r)) {
+                    errors.push(`invalid role "${r}" (allowed: ${VALID_ROLES.join(', ')})`);
+                }
+            }
         }
-        role = normalizeRole(roleRaw);
     }
+
+    const role = roles ? normalizeRole(roles[0]) : normalizeRole(roleRaw);
     if (email && !isAllowedCompanyEmail(email)) {
         errors.push('email domain is not approved for invites');
     }
@@ -54,6 +65,7 @@ export function validateImportRow(rawInput, index = 0) {
         email,
         name,
         role,
+        roles: roles ? normalizeRolesArray(roles) : role ? normalizeRolesArray([role]) : [],
         department,
         store_name,
         rowIndex: index,

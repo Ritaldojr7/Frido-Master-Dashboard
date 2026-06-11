@@ -6,6 +6,7 @@
 import { createClerkClient, verifyToken as clerkVerifyToken } from '@clerk/express';
 import db, { now } from '../db.js';
 import { normalizeEmail, normalizeRole } from '../utils/security.js';
+import { getUserRoles, parseRolesFromStorage, primaryRoleFromRoles } from '../utils/roles.js';
 
 const clerkClient = createClerkClient({
     secretKey: process.env.CLERK_SECRET_KEY,
@@ -30,7 +31,7 @@ export async function verifyToken(req, res, next) {
         });
         
         const userId = payload.sub;
-        let userRow = await db.get('SELECT id, role, email, name FROM users WHERE id = ?', [userId]);
+        let userRow = await db.get('SELECT id, role, roles, email, name FROM users WHERE id = ?', [userId]);
 
         if (!userRow) {
             // User not yet synced to SQLite under this Clerk ID.
@@ -46,7 +47,7 @@ export async function verifyToken(req, res, next) {
                     userRow = { id: userId, role: 'staff', email: '', name: 'User' };
                 } else {
                     const existingByEmail = await db.get(
-                        'SELECT id, role, email, name FROM users WHERE email = ?',
+                        'SELECT id, role, roles, email, name FROM users WHERE email = ?',
                         [email]
                     );
 
@@ -57,16 +58,17 @@ export async function verifyToken(req, res, next) {
                             [userId, now(), now(), email]
                         );
                         userRow = await db.get(
-                            'SELECT id, role, email, name FROM users WHERE id = ?',
+                            'SELECT id, role, roles, email, name FROM users WHERE id = ?',
                             [userId]
                         );
                     } else {
+                        const rolesJson = JSON.stringify([roleFromClerk]);
                         await db.run(
-                            `INSERT INTO users (id, email, name, password_hash, role, status, updated_at)
-                             VALUES (?, ?, ?, ?, ?, 'active', ?)`,
-                            [userId, email, name, '', roleFromClerk, now()]
+                            `INSERT INTO users (id, email, name, password_hash, role, roles, status, updated_at)
+                             VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
+                            [userId, email, name, '', roleFromClerk, rolesJson, now()]
                         );
-                        userRow = { id: userId, role: roleFromClerk, email, name };
+                        userRow = { id: userId, role: roleFromClerk, roles: rolesJson, email, name };
                     }
                 }
             } catch (clerkErr) {
@@ -78,10 +80,11 @@ export async function verifyToken(req, res, next) {
             await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
         }
 
-        // Build a user-like object from the DB record
+        const roles = parseRolesFromStorage(userRow.roles, userRow.role);
         req.user = {
             id: userRow.id,
-            role: userRow.role,
+            role: primaryRoleFromRoles(roles),
+            roles,
             email: userRow.email,
             name: userRow.name || 'User',
         };
@@ -107,11 +110,12 @@ export function requireRole(roles) {
             return res.status(401).json({ error: 'Authentication required' });
         }
 
-        if (!roles.includes(req.user.role)) {
+        const userRoles = getUserRoles(req.user);
+        if (!userRoles.includes('admin') && !roles.some((r) => userRoles.includes(r))) {
             return res.status(403).json({
                 error: 'Insufficient permissions',
                 required: roles,
-                current: req.user.role,
+                current: userRoles,
             });
         }
 
