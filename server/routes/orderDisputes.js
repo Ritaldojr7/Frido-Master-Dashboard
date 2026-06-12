@@ -1,46 +1,90 @@
 /**
- * Order Dispute data from Google Sheets (read-only).
+ * Order Dispute — data served from Supabase snapshots (synced from Google Sheets).
  */
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.js';
-import { fetchOrderDisputeSheets, googleSheetsConfigured } from '../services/googleSheets.js';
+import {
+    getOrderDisputeSyncStatus,
+    loadOrderDisputeFromDb,
+    syncOrderDisputeFromSheets,
+    isSyncAuthorized,
+} from '../services/orderDisputeSync.js';
 
 const router = Router();
 
-const CACHE_TTL_MS = Number(process.env.ORDER_DISPUTE_CACHE_MS ?? 60_000);
-let cache = null;
-let cacheAt = 0;
+/** External cron — secret token only (no Clerk session). Must be registered before verifyToken. */
+router.post('/sync/cron', async (req, res) => {
+    const secret = String(process.env.ORDER_DISPUTE_SYNC_SECRET ?? '').trim();
+    if (!secret) {
+        return res.status(503).json({ error: 'ORDER_DISPUTE_SYNC_SECRET is not set' });
+    }
+    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
+    const token = bearer || String(req.query.token ?? '').trim();
+    if (token !== secret) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    try {
+        const result = await syncOrderDisputeFromSheets();
+        if (result.skipped && result.reason === 'not_configured') {
+            return res.status(503).json({ error: 'Google Sheets not configured' });
+        }
+        if (result.skipped && result.reason === 'sync_in_progress') {
+            return res.status(409).json({ error: 'Sync already in progress' });
+        }
+        res.json(result);
+    } catch (err) {
+        console.error('[order-disputes/sync/cron]', err);
+        res.status(500).json({ error: err.message || 'Sync failed' });
+    }
+});
 
 router.use(verifyToken);
 router.use(requireRole(['admin', 'staff', 'viewer', 'executive', 'team_lead']));
 
-router.get('/status', (_req, res) => {
-    res.json({
-        configured: googleSheetsConfigured(),
-        cacheTtlMs: CACHE_TTL_MS,
-    });
+router.get('/status', async (_req, res) => {
+    try {
+        const status = await getOrderDisputeSyncStatus();
+        res.json(status);
+    } catch (err) {
+        console.error('[order-disputes/status]', err);
+        res.status(500).json({ error: 'Failed to load sync status' });
+    }
 });
 
 router.get('/', async (_req, res) => {
     try {
-        const now = Date.now();
-        if (cache && now - cacheAt < CACHE_TTL_MS) {
-            return res.json({ ...cache, cached: true });
-        }
-
-        const payload = await fetchOrderDisputeSheets();
-        cache = payload;
-        cacheAt = now;
-        res.json({ ...payload, cached: false });
+        const payload = await loadOrderDisputeFromDb();
+        res.json({
+            ...payload,
+            fetchedAt: payload.syncedAt,
+        });
     } catch (err) {
-        if (err.code === 'SHEETS_NOT_CONFIGURED') {
+        console.error('[order-disputes]', err);
+        res.status(500).json({ error: err.message || 'Failed to load order dispute data' });
+    }
+});
+
+router.post('/sync', async (req, res) => {
+    if (!isSyncAuthorized(req)) {
+        return res.status(403).json({ error: 'Admin role or sync secret required' });
+    }
+
+    try {
+        const result = await syncOrderDisputeFromSheets();
+        if (result.skipped && result.reason === 'not_configured') {
             return res.status(503).json({
-                error: 'Order Dispute Google Sheets integration is not configured on the server.',
+                error: 'Google Sheets credentials are not configured on the server.',
                 hint: 'Set GOOGLE_SERVICE_ACCOUNT_JSON and share the sheet with the service account email.',
             });
         }
-        console.error('[order-disputes]', err);
-        res.status(500).json({ error: err.message || 'Failed to load order dispute data' });
+        if (result.skipped && result.reason === 'sync_in_progress') {
+            return res.status(409).json({ error: 'Sync already in progress' });
+        }
+        res.json(result);
+    } catch (err) {
+        console.error('[order-disputes/sync]', err);
+        res.status(500).json({ error: err.message || 'Sync failed' });
     }
 });
 

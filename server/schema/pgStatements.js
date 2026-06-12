@@ -105,5 +105,28 @@ export function schemaStatements() {
             FOREIGN KEY (notice_id) REFERENCES notices(id) ON DELETE CASCADE
         )`,
         `CREATE INDEX IF NOT EXISTS idx_notice_attachments_notice ON notice_attachments(notice_id, sort_order)`,
+        `CREATE TABLE IF NOT EXISTS order_dispute_tabs (
+            gid INTEGER PRIMARY KEY,
+            title TEXT NOT NULL DEFAULT '',
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS order_dispute_tab_snapshots (
+            tab_gid INTEGER PRIMARY KEY,
+            headers TEXT NOT NULL DEFAULT '[]',
+            rows TEXT NOT NULL DEFAULT '[]',
+            row_count INTEGER NOT NULL DEFAULT 0,
+            synced_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (tab_gid) REFERENCES order_dispute_tabs(gid) ON DELETE CASCADE
+        )`,
+        `CREATE TABLE IF NOT EXISTS order_dispute_sync_runs (
+            id TEXT PRIMARY KEY,
+            started_at TEXT NOT NULL,
+            finished_at TEXT,
+            status TEXT NOT NULL CHECK(status IN ('success', 'error')),
+            error_message TEXT DEFAULT '',
+            tabs_synced INTEGER NOT NULL DEFAULT 0
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_order_dispute_sync_runs_started ON order_dispute_sync_runs(started_at DESC)`,
     ];
 }

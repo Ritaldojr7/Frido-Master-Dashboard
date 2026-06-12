@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboards.js';
 import feedbackProductsRoutes from './routes/feedbackProducts.js';
 import hrPoliciesRoutes from './routes/hrPolicies.js';
 import orderDisputesRoutes from './routes/orderDisputes.js';
+import { startOrderDisputeSyncScheduler } from './services/orderDisputeSync.js';
 import db from './db.js';
 
 if (!process.env.CLERK_SECRET_KEY && process.env.NODE_ENV === 'production') {
@@ -114,4 +115,5 @@ app.listen(PORT, () => {
     console.log(`\n⚡ Frido API Server running on http://localhost:${PORT}`);
     console.log(`   Health: http://localhost:${PORT}/api/health`);
     console.log(`   DB ping (if DB_PING_SECRET set): http://localhost:${PORT}/api/health/db\n`);
+    startOrderDisputeSyncScheduler();
 });

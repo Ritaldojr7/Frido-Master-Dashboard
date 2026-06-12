@@ -47,3 +47,44 @@ npm run seed:supabase-all -- --force
 Omit `--force` on first run; use `--force` after editing `dashboardData.js` or `feedbackDatabase.js`. Pass `--skip-pdfs` to skip Storage uploads.
 
 **Runtime tables** (`notices`, `notice_attachments`, `notice_receipts`, `invite_tokens`) are populated by app usage, not this script.
+
+---
+
+## Order Dispute (Google Sheet → Supabase → Dashboard)
+
+The Order Dispute page loads **`GET /api/order-disputes`** from Postgres snapshots. A background job on the API server pulls both Google Sheet tabs via the **Sheets API** and writes to:
+
+- `order_dispute_tabs` — tab metadata (gid, title, sort order)
+- `order_dispute_tab_snapshots` — latest headers + rows per tab (JSON)
+- `order_dispute_sync_runs` — sync audit log
+
+Tables are created on server boot via [`server/schema/pgStatements.js`](../server/schema/pgStatements.js).
+
+### Data flow
+
+1. **Sync** (every 60s by default): `fetchOrderDisputeSheets()` → upsert snapshots in Supabase
+2. **Dashboard read**: `GET /api/order-disputes` reads DB only (no Google call per user request)
+
+### Render environment variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GOOGLE_SERVICE_ACCOUNT_JSON` | Yes | Full service account key JSON (one line) |
+| `ORDER_DISPUTE_SPREADSHEET_ID` | No | Defaults to the shared dispute spreadsheet id |
+| `ORDER_DISPUTE_SHEET_GID_1` | No | First tab gid (default `1178023285`) |
+| `ORDER_DISPUTE_SHEET_GID_2` | Yes (2 tabs) | Second tab gid from sheet URL `#gid=…` |
+| `ORDER_DISPUTE_SYNC_MS` | No | Sync interval in ms (default `60000`) |
+| `ORDER_DISPUTE_SYNC_SECRET` | No | Bearer/query token for `POST /api/order-disputes/sync/cron` |
+
+### Google Cloud setup
+
+1. Enable **Google Sheets API** on the GCP project.
+2. Create a service account and download the JSON key.
+3. Share the spreadsheet with the service account `client_email` as **Viewer** (uncheck “Notify people”).
+
+### Manual / cron sync
+
+- **Admin (Clerk session):** `POST /api/order-disputes/sync`
+- **External cron:** `POST /api/order-disputes/sync/cron` with header `Authorization: Bearer <ORDER_DISPUTE_SYNC_SECRET>`
+
+After deploy, open `/order-dispute` — two tab buttons should appear once the first sync completes (within one sync interval).

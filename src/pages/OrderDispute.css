@@ -44,6 +44,19 @@
     color: var(--text-secondary);
 }
 
+.order-dispute__warn {
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+}
+
+.order-dispute__warn p {
+    margin: 0;
+}
+
 .order-dispute__error {
     background: rgba(244, 63, 94, 0.08);
     border: 1px solid rgba(244, 63, 94, 0.25);
