@@ -394,7 +394,8 @@ export const staffExperienceStoreData = {
             accentColor: 'amber',
             links: [
                 { title: 'Raise a Customer Success Ticket', url: 'https://myfrido.slack.com/archives/C0A59S3BYB1', variant: 'dark', tooltip: 'POC : Shernyl | Note: This link will redirect you to the slack channel where you can use the workflow to submit the form' },
-                { title: 'Raise a GST Bill', url: 'https://form.asana.com/?k=aRlrsFCkrJRDTUdLHizQ1g&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' }
+                { title: 'Raise a GST Bill', url: 'https://form.asana.com/?k=aRlrsFCkrJRDTUdLHizQ1g&d=1207389811595677', variant: 'dark', tooltip: 'POC : Shernyl' },
+                { title: 'Instore product exchange/Return sheet', url: 'https://docs.google.com/spreadsheets/d/1rWxMcoPRHeYZHagtlnEaOg43u0qwOjpdPtPDfuYBSE8/edit?gid=0#gid=0', variant: 'dark' },
             ],
         },
         {
@@ -505,6 +506,7 @@ export const retailAdminData = {
                 { title: 'Customer Success Ticket Asana Project', url: 'https://app.asana.com/1/1207389811595677/project/1213316876312751/list', variant: 'dark' },
                 { title: 'GST Bill Asana Project', url: 'https://app.asana.com/1/1207389811595677/project/1213316878589495/list', variant: 'dark' },
                 { title: 'Maintenance Tracking Project-Asana', url: 'https://app.asana.com/1/1207389811595677/project/1213894531209883/list/1213894776502119', variant: 'dark' },
+                { title: 'Instore product exchange/Return sheet', url: 'https://docs.google.com/spreadsheets/d/1rWxMcoPRHeYZHagtlnEaOg43u0qwOjpdPtPDfuYBSE8/edit?gid=0#gid=0', variant: 'dark' },
             ],
         },
         {
