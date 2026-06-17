@@ -467,6 +467,20 @@ export const staffExperienceStoreData = {
         },
 
         {
+            id: 'products-brochure',
+            title: 'Products Brochure',
+            icon: 'document',
+            accentColor: 'emerald',
+            links: [
+                {
+                    title: 'All Products Brochure 2026',
+                    url: '/retail-staff/all-products-brochure-2026.pdf',
+                    variant: 'dark',
+                },
+            ],
+        },
+
+        {
             id: 'fes-cx-journey-guidelines',
             title: 'FES CX Journey Guidelines',
             icon: 'document',
