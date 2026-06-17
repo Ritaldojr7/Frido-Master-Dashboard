@@ -343,13 +343,25 @@ export const feedbackData = [
         id: 31,
         category: 'Orthotics',
         productName: 'Frido Lumbo Sacral Belt',
-        productImage: 'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/lisitng_image_black_caa83a1e-b158-4448-a204-8d4a2e531eaf.png?v=1769253639&width=639',
-        reportLink: 'https://drive.google.com/file/d/1C39wtrV6NjGGWllY5xzbrSLLnGL6o0ya/view?usp=drive_link',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/lisitng_image_black_caa83a1e-b158-4448-a204-8d4a2e531eaf.png?v=1769253639&width=1296',
+        reportLink: 'https://drive.google.com/file/d/1zcRrhybYEBJndqtNZWDRrHaTeJYdpwoF/view?usp=sharing',
+        releaseHistory: [
+            {
+                date: '15/06/2026',
+                reportLink: 'https://drive.google.com/file/d/1zcRrhybYEBJndqtNZWDRrHaTeJYdpwoF/view?usp=sharing',
+                loomLink: 'https://www.loom.com/share/ebef1d9f69d24364b5ca99272264d545',
+            },
+            {
+                date: '26/08/2025',
+                reportLink: 'https://drive.google.com/file/d/1C39wtrV6NjGGWllY5xzbrSLLnGL6o0ya/view?usp=drive_link',
+            },
+        ],
         dataType: 'Delivered Data',
-        iterations: 1,
-        loomLink: '',
+        iterations: 2,
+        loomLink: 'https://www.loom.com/share/ebef1d9f69d24364b5ca99272264d545',
         intentDate: '',
-        releaseDate: '26/08/2025'
+        releaseDate: '15/06/2026',
     },
     {
         id: 22,

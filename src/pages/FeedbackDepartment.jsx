@@ -54,7 +54,7 @@ const PRODUCT_RATINGS = {
     'Frido Orthotics Heel Protector': 7.7,
     'Frido Barefoot Sock Shoe Pro': 7.6,
     "Frido Women's Cloud Comfort Sandal - Toeless": 7.2,
-    'Frido Lumbo Sacral Belt': 7.2,
+    'Frido Lumbo Sacral Belt': 6.5,
     'Frido Maternity Pillow Bundle Plus': 7.0,
     "Frido Women's Cloud Comfort Shoes - Lace ups": 7.0,
     'Frido Puneri Chappal - Women': 6.9,
