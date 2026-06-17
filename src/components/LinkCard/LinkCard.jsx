@@ -108,6 +108,7 @@ export default function LinkCard({
     const hasCopyModal = Boolean(copyModalText);
     const hasImageModal = Boolean(imageModalSrc);
     const isAuthProtectedPdf = Boolean(url?.startsWith('/api/hr-policies/'));
+    const isPublicPdf = Boolean(url?.endsWith('.pdf'));
 
     const handleClick = (e) => {
         if (isComingSoon) {
@@ -130,6 +131,11 @@ export default function LinkCard({
                     setPdfOpening(false);
                 }
             })();
+            return;
+        }
+        if (isPublicPdf) {
+            e.preventDefault();
+            window.open(url, '_blank', 'noopener,noreferrer');
             return;
         }
         if (hasCopyModal) {

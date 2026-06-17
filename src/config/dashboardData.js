@@ -476,6 +476,7 @@ export const staffExperienceStoreData = {
                     title: 'All Products Brochure 2026',
                     url: '/retail-staff/all-products-brochure-2026.pdf',
                     variant: 'dark',
+                    isPdf: true,
                 },
             ],
         },
