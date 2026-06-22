@@ -38,6 +38,9 @@ export const FEEDBACK_DEPARTMENT_ROLES = [ROLES.ADMIN, ROLES.FEEDBACK];
 /** Order Dispute (Google Sheets) — adjust when rollout is defined. */
 export const ORDER_DISPUTE_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.TEAM_LEAD, ROLES.EXECUTIVE];
 
+/** AI Calling (Feedback) — same access as Feedback Department for now. */
+export const AI_CALLING_FEEDBACK_ROLES = FEEDBACK_DEPARTMENT_ROLES;
+
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES, ROLES.FEEDBACK];
 
@@ -79,6 +82,7 @@ export const routePermissions = {
     '/retail-admin': ADMIN_ONLY,
     '/business-analytics': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
+    '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
     '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,
@@ -92,6 +96,7 @@ export const sidebarPermissions = {
     '/retail-admin': ADMIN_ONLY,
     '/business-analytics': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
+    '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
     '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,

@@ -1,0 +1,31 @@
+.ai-calling-feedback {
+    padding: var(--space-md) 0;
+}
+
+.ai-calling-feedback__header {
+    margin-bottom: var(--space-xl);
+}
+
+.ai-calling-feedback__title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 6px;
+}
+
+.ai-calling-feedback__subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.ai-calling-feedback__empty {
+    padding: var(--space-xl);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.ai-calling-feedback__empty p {
+    margin: 0;
+    color: var(--text-secondary);
+}

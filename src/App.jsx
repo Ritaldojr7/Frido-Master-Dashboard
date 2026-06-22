@@ -14,8 +14,10 @@ import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
 import OrderDispute from './pages/OrderDispute';
+import AiCallingFeedback from './pages/AiCallingFeedback';
 import {
     ADMIN_ONLY,
+    AI_CALLING_FEEDBACK_ROLES,
     FEEDBACK_DEPARTMENT_ROLES,
     ISD_NM_ROLES,
     ORDER_DISPUTE_ROLES,
@@ -93,6 +95,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={FEEDBACK_DEPARTMENT_ROLES}>
                                                 <FeedbackDepartment />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/ai-calling-feedback"
+                                        element={
+                                            <RoleGuard roles={AI_CALLING_FEEDBACK_ROLES}>
+                                                <AiCallingFeedback />
                                             </RoleGuard>
                                         }
                                     />
