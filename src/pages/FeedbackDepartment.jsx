@@ -36,6 +36,7 @@ const PRODUCT_RATINGS = {
     'Frido Kinesiology Tape': 8.2,
     'Frido Cloud Comfort Shoes - Lace Ups': 8.2,
     'Frido Sleep Eye Mask': 8.2,
+    'Frido Cold & Hot Therapy Cap': 8.1,
     "Frido Men's Cloud Comfort Sandal": 8.1,
     'Frido Maternity Pillow': 8.1,
     'Frido Orthotics Knee Support Wrap': 8.0,

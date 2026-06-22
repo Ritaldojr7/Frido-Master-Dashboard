@@ -714,4 +714,17 @@ export const feedbackData = [
         intentDate: '',
         releaseDate: '11/06/2026',
     },
+    {
+        id: 45,
+        category: 'Personal Care',
+        productName: 'Frido Cold & Hot Therapy Cap',
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/MRC-05_7.png?v=1774428972&width=648',
+        reportLink: 'https://drive.google.com/file/d/1NyKFtXZRDxhjjxZyyqrhkkLvxz1gJdp2/view?usp=drive_link',
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/9c5baf6873a745669ba91b7e40dad7c1',
+        intentDate: '',
+        releaseDate: '20/06/2026',
+    },
 ];
