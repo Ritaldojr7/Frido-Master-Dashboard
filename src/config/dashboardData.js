@@ -790,6 +790,13 @@ export const isdNmData = {
                     isdAccess: 'executive',
                 },
                 {
+                    title: 'ISD SIM Tracker',
+                    url: 'https://docs.google.com/spreadsheets/d/1RzfvGjSb8TQpHAhUY5nCWFcBhK_Z4OniPp6ySV6hhdk/edit?gid=644693214#gid=644693214',
+                    variant: 'dark',
+                    icon: 'table',
+                    isdAccess: 'executive',
+                },
+                {
                     title: 'Agent coupon codes',
                     url: '#',
                     variant: 'dark',
