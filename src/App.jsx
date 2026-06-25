@@ -18,6 +18,7 @@ import AiCallingFeedback from './pages/AiCallingFeedback';
 import {
     ADMIN_ONLY,
     AI_CALLING_FEEDBACK_ROLES,
+    BUSINESS_ANALYTICS_ROLES,
     FEEDBACK_DEPARTMENT_ROLES,
     ISD_NM_ROLES,
     ORDER_DISPUTE_ROLES,
@@ -73,7 +74,7 @@ function App() {
                                     <Route
                                         path="/business-analytics"
                                         element={
-                                            <RoleGuard roles={ADMIN_ONLY}>
+                                            <RoleGuard roles={BUSINESS_ANALYTICS_ROLES}>
                                                 <Dashboard
                                                     categories={businessAnalyticsCategories}
                                                     title="Business Analytics Dashboard"

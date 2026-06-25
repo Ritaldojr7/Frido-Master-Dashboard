@@ -7,6 +7,7 @@ import {
     ROLES,
     ALL_ROLES,
     ADMIN_ONLY,
+    BUSINESS_ANALYTICS_ROLES,
     STAFF_ONLY,
     FEEDBACK_DEPARTMENT_ROLES,
     PROFILE_ROLES,
@@ -90,7 +91,7 @@ describe('routePermissions', () => {
     });
 
     it('locks business analytics to admins', () => {
-        expect(routePermissions['/business-analytics']).toEqual(ADMIN_ONLY);
+        expect(routePermissions['/business-analytics']).toEqual(BUSINESS_ANALYTICS_ROLES);
     });
 
     it('allows ISD NM to executives, team leads, and admins', () => {
@@ -147,6 +148,7 @@ describe('hasAccess', () => {
         expect(hasAccess('admin', '/retail-staff')).toBe(true);
         expect(hasAccess('admin', '/profile')).toBe(true);
         expect(hasAccess('admin', '/business-analytics')).toBe(true);
+        expect(hasAccess('data_analyst', '/business-analytics')).toBe(true);
         expect(hasAccess('admin', '/feedback-department')).toBe(true);
         expect(hasAccess('admin', '/isd-nm')).toBe(true);
     });
@@ -225,5 +227,9 @@ describe('defaultHomePath', () => {
     it('routes retail staff and viewers to Retail Staff', () => {
         expect(defaultHomePath({ role: 'staff', roles: ['staff'] })).toBe('/retail-staff');
         expect(defaultHomePath({ role: 'viewer', roles: ['viewer'] })).toBe('/retail-staff');
+    });
+
+    it('routes data analysts to Business Analytics', () => {
+        expect(defaultHomePath({ role: 'data_analyst', roles: ['data_analyst'] })).toBe('/business-analytics');
     });
 });

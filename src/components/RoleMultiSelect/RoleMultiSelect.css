@@ -1,0 +1,101 @@
+.role-multi-select {
+    position: relative;
+    min-width: 160px;
+    max-width: 200px;
+}
+
+.role-multi-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-height: 34px;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.role-multi-select__trigger:hover:not(:disabled) {
+    border-color: var(--border-hover);
+}
+
+.role-multi-select__trigger--open,
+.role-multi-select__trigger:focus-visible {
+    border-color: var(--brand-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 210, 0, 0.15);
+    outline: none;
+}
+
+.role-multi-select__trigger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.role-multi-select__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.role-multi-select__chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+    transition: transform var(--transition-fast);
+}
+
+.role-multi-select__trigger--open .role-multi-select__chevron {
+    transform: rotate(180deg);
+}
+
+.role-multi-select__menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: var(--z-dropdown);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-primary);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-lg);
+    max-height: 280px;
+    overflow-y: auto;
+    animation: scaleIn var(--transition-fast) ease-out;
+}
+
+.role-multi-select__option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.role-multi-select__option:hover {
+    background: var(--bg-tertiary);
+}
+
+.role-multi-select__option input {
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--brand-yellow);
+}
