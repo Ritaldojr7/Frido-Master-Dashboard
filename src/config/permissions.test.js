@@ -16,6 +16,7 @@ import {
     sidebarPermissions,
     hasAccess,
     canSeeIsdResource,
+    defaultHomePath,
 } from './permissions';
 
 // ── Role constants ───────────────────────────────────────
@@ -184,5 +185,45 @@ describe('hasAccess', () => {
         expect(hasAccess('feedback', '/retail-staff')).toBe(false);
         expect(hasAccess('feedback', '/admin')).toBe(false);
         expect(hasAccess('feedback', '/isd-nm')).toBe(false);
+    });
+});
+
+describe('defaultHomePath', () => {
+    it('routes saiyed.a@myfrido.com to Business Analytics', () => {
+        expect(
+            defaultHomePath({ email: 'saiyed.a@myfrido.com', role: 'admin', roles: ['admin'] })
+        ).toBe('/business-analytics');
+    });
+
+    it('routes pratham.t@myfrido.com to ISD NM', () => {
+        expect(
+            defaultHomePath({ email: 'pratham.t@myfrido.com', role: 'executive', roles: ['executive'] })
+        ).toBe('/isd-nm');
+    });
+
+    it('routes rhythm.j@myfrido.com to Feedback', () => {
+        expect(
+            defaultHomePath({ email: 'rhythm.j@myfrido.com', role: 'feedback', roles: ['feedback'] })
+        ).toBe('/feedback-department');
+    });
+
+    it('routes other admins to Admin', () => {
+        expect(defaultHomePath({ email: 'admin@myfrido.com', role: 'admin', roles: ['admin'] })).toBe(
+            '/admin'
+        );
+    });
+
+    it('routes executives and team leads to ISD NM', () => {
+        expect(defaultHomePath({ role: 'executive', roles: ['executive'] })).toBe('/isd-nm');
+        expect(defaultHomePath({ role: 'team_lead', roles: ['team_lead'] })).toBe('/isd-nm');
+    });
+
+    it('routes feedback users to Feedback Department', () => {
+        expect(defaultHomePath({ role: 'feedback', roles: ['feedback'] })).toBe('/feedback-department');
+    });
+
+    it('routes retail staff and viewers to Retail Staff', () => {
+        expect(defaultHomePath({ role: 'staff', roles: ['staff'] })).toBe('/retail-staff');
+        expect(defaultHomePath({ role: 'viewer', roles: ['viewer'] })).toBe('/retail-staff');
     });
 });

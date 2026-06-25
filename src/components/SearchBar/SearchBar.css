@@ -112,3 +112,18 @@
         display: none;
     }
 }
+
+[data-theme="dark"] .search-bar__dropdown {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .search-bar__result:hover {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .search-bar__shortcut {
+    background: var(--bg-tertiary);
+    border-color: var(--border-primary);
+    color: var(--text-tertiary);
+}

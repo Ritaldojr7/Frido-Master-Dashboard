@@ -129,3 +129,13 @@
     background: #1f2937;
     border-color: #1f2937;
 }
+
+[data-theme="dark"] .notice-popup__overlay {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="dark"] .notice-popup {
+    background: var(--bg-card);
+    border-color: var(--border-primary);
+    box-shadow: var(--shadow-xl);
+}

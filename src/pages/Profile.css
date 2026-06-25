@@ -439,3 +439,12 @@
         font-size: 18px;
     }
 }
+
+[data-theme="dark"] .profile__avatar-upload {
+    border-color: var(--bg-card);
+    background: #1A1F2A;
+}
+
+[data-theme="dark"] .profile__avatar-upload:hover:not(:disabled) {
+    background: #252E42;
+}

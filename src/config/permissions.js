@@ -127,11 +127,24 @@ export function hasAccess(userOrRole, path) {
     return hasAnyRole(userOrRole, allowed);
 }
 
+/** Per-user landing page overrides (email → path). Checked before role-based defaults. */
+const HOME_PATH_BY_EMAIL = {
+    'saiyed.a@myfrido.com': '/business-analytics',
+    'pratham.t@myfrido.com': '/isd-nm',
+    'rhythm.j@myfrido.com': '/feedback-department',
+};
+
 /** Primary home route from role priority (multi-role users). */
 export function defaultHomePath(userOrRole) {
+    if (userOrRole && typeof userOrRole === 'object' && userOrRole.email) {
+        const emailOverride = HOME_PATH_BY_EMAIL[String(userOrRole.email).trim().toLowerCase()];
+        if (emailOverride) return emailOverride;
+    }
+
     const roles = getUserRoles(userOrRole);
     if (roles.includes(ROLES.ADMIN)) return '/admin';
-    if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
     if (roles.includes(ROLES.EXECUTIVE) || roles.includes(ROLES.TEAM_LEAD)) return '/isd-nm';
+    if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
+    if (roles.includes(ROLES.STAFF) || roles.includes(ROLES.VIEWER)) return '/retail-staff';
     return '/retail-staff';
 }

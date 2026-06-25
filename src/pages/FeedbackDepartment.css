@@ -538,3 +538,17 @@
         grid-template-columns: 1fr;
     }
 }
+
+[data-theme="dark"] .product-thumbnail {
+    background: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .status-badge--emerald {
+    background: rgba(16, 185, 129, 0.18);
+    color: var(--accent-emerald-light);
+}
+
+[data-theme="dark"] .status-badge--amber {
+    background: rgba(255, 210, 0, 0.14);
+    color: var(--brand-yellow);
+}

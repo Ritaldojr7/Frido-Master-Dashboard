@@ -1032,17 +1032,15 @@ export const isdNmData = {
 export const businessAnalyticsCategories = [
     {
         id: 'shopify-analytics',
-        title: 'Shopify Dashboard',
+        title: 'Analytics Dashboard',
         icon: 'store',
         accentColor: 'emerald',
         description: 'E-commerce performance and store analytics',
         links: [
             {
-                title: 'Shopify Dashboard',
+                title: 'Frido Analytics',
+                url: 'https://analytics-dashboard-frontend-x2da.onrender.com/',
                 variant: 'dark',
-                subOptions: [
-                    { title: 'Shopify Dashboard', url: 'https://analytics-dashboard-frontend-x2da.onrender.com/' }
-                ]
             }
         ],
     },

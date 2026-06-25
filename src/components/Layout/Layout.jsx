@@ -202,9 +202,6 @@ export default function Layout({ children }) {
                         </div>
                     )}
 
-                    <div className="sidebar__footer">
-                        <ThemeToggle />
-                    </div>
                 </div>
 
                 {/* Accent line */}
@@ -247,8 +244,11 @@ export default function Layout({ children }) {
                         ) : null}
                     </div>
                     <div className="header__right">
-                        <div className="header__search">
-                            <SearchBar isAdmin={hasRole('admin')} userRoles={user?.roles ?? [user?.role]} />
+                        <div className="header__search-group">
+                            <ThemeToggle />
+                            <div className="header__search">
+                                <SearchBar isAdmin={hasRole('admin')} userRoles={user?.roles ?? [user?.role]} />
+                            </div>
                         </div>
                         <UserMenu />
                     </div>

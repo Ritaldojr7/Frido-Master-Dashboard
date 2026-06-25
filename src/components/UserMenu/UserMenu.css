@@ -160,6 +160,21 @@
     color: var(--accent-blue-light);
 }
 
+[data-theme="dark"] .user-menu__role--admin {
+    background: rgba(255, 210, 0, 0.15);
+    color: var(--brand-yellow);
+}
+
+[data-theme="dark"] .user-menu__role--manager {
+    background: rgba(59, 130, 246, 0.18);
+    color: var(--accent-blue-light);
+}
+
+[data-theme="dark"] .user-menu__role--viewer {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald-light);
+}
+
 /* ── Divider ── */
 .user-menu__divider {
     height: 1px;
