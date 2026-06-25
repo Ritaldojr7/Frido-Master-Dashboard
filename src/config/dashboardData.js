@@ -1041,6 +1041,11 @@ export const businessAnalyticsCategories = [
                 title: 'Frido Analytics',
                 url: 'https://analytics-dashboard-frontend-x2da.onrender.com/',
                 variant: 'dark',
+            },
+            {
+                title: 'ISD Executive Performance Dashboard',
+                url: 'https://frido-executive-dashboard.pages.dev/',
+                variant: 'dark',
             }
         ],
     },
