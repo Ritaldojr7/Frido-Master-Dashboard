@@ -10,10 +10,10 @@ import {
     IMPORT_FIELD_KEYS,
 } from '../utils/adminImportNormalize';
 import { apiFetch, useAuth } from '../context/AuthContext';
+import RoleMultiSelect from '../components/RoleMultiSelect/RoleMultiSelect';
 import './Admin.css';
 
 const USERS_PAGE_SIZE = 10;
-const ASSIGNABLE_ROLES = ['staff', 'viewer', 'feedback', 'executive', 'team_lead'];
 
 export default function Admin() {
     const { user } = useAuth();
@@ -590,16 +590,6 @@ export default function Admin() {
         }
     };
 
-    const roleBadgeClass = (role) => ({
-        admin: 'admin__badge--amber',
-        manager: 'admin__badge--purple',
-        staff: 'admin__badge--blue',
-        viewer: 'admin__badge--blue',
-        feedback: 'admin__badge--emerald',
-        executive: 'admin__badge--purple',
-        team_lead: 'admin__badge--purple',
-    }[role] || '');
-
     const statusClass = (status) => ({
         active: 'admin__status--active',
         invited: 'admin__status--invited',
@@ -794,39 +784,11 @@ export default function Admin() {
                                                 </div>
                                             </td>
                                             <td>
-                                                {(u.roles ?? [u.role]).includes('admin') ? (
-                                                    <select
-                                                        className={`admin__role-select ${roleBadgeClass('admin')}`}
-                                                        value="admin"
-                                                        onChange={(e) => handleRolesChange(u.id, [e.target.value])}
-                                                        disabled={u.status === 'disabled'}
-                                                    >
-                                                        <option value="admin">Admin</option>
-                                                    </select>
-                                                ) : (
-                                                    <div className="admin__roles-checkboxes">
-                                                        {ASSIGNABLE_ROLES.map((role) => {
-                                                            const current = u.roles ?? [u.role];
-                                                            return (
-                                                                <label key={role} className="admin__role-chip">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={current.includes(role)}
-                                                                        disabled={u.status === 'disabled'}
-                                                                        onChange={(e) => {
-                                                                            const next = e.target.checked
-                                                                                ? [...new Set([...current, role])]
-                                                                                : current.filter((r) => r !== role);
-                                                                            if (next.length === 0) return;
-                                                                            handleRolesChange(u.id, next);
-                                                                        }}
-                                                                    />
-                                                                    <span>{role}</span>
-                                                                </label>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
+                                                <RoleMultiSelect
+                                                    value={u.roles ?? [u.role]}
+                                                    disabled={u.status === 'disabled'}
+                                                    onChange={(roles) => handleRolesChange(u.id, roles)}
+                                                />
                                             </td>
                                             <td>
                                                 <span className={`admin__status ${statusClass(u.status)}`}>
@@ -1148,6 +1110,7 @@ export default function Admin() {
                                     <option value="feedback">Feedback Department Access — Feedback dashboard only</option>
                                     <option value="executive">Executive — ISD NM only</option>
                                     <option value="team_lead">Team Lead — ISD NM only</option>
+                                    <option value="data_analyst">Data Analyst — Business Analytics</option>
                                     <option value="admin">Admin — Full access + user management</option>
                                 </select>
                             </div>

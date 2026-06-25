@@ -10,6 +10,7 @@
  *   staff → Retail staff and profile
  *   executive / team_lead → ISD NM only (role-filtered links) + profile
  *   feedback → Feedback department only (+ profile)
+ *   data_analyst → Business Analytics (+ profile)
  *   viewer → Legacy alias (treated like staff for routes)
  */
 
@@ -20,10 +21,12 @@ export const ROLES = {
     FEEDBACK: 'feedback',
     EXECUTIVE: 'executive',
     TEAM_LEAD: 'team_lead',
+    DATA_ANALYST: 'data_analyst',
 };
 
-export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
+export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST];
 export const ADMIN_ONLY = [ROLES.ADMIN];
+export const BUSINESS_ANALYTICS_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 export const STAFF_ONLY = [ROLES.STAFF, ROLES.VIEWER];
 
 /** Retail – Staff dashboard: not available to ISD-only roles (executive / team_lead). */
@@ -80,7 +83,7 @@ export const routePermissions = {
     '/profile': PROFILE_ROLES,
     '/admin': ADMIN_ONLY,
     '/retail-admin': ADMIN_ONLY,
-    '/business-analytics': ADMIN_ONLY,
+    '/business-analytics': BUSINESS_ANALYTICS_ROLES,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
@@ -94,7 +97,7 @@ export const routePermissions = {
 export const sidebarPermissions = {
     '/admin': ADMIN_ONLY,
     '/retail-admin': ADMIN_ONLY,
-    '/business-analytics': ADMIN_ONLY,
+    '/business-analytics': BUSINESS_ANALYTICS_ROLES,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
@@ -143,6 +146,7 @@ export function defaultHomePath(userOrRole) {
 
     const roles = getUserRoles(userOrRole);
     if (roles.includes(ROLES.ADMIN)) return '/admin';
+    if (roles.includes(ROLES.DATA_ANALYST)) return '/business-analytics';
     if (roles.includes(ROLES.EXECUTIVE) || roles.includes(ROLES.TEAM_LEAD)) return '/isd-nm';
     if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
     if (roles.includes(ROLES.STAFF) || roles.includes(ROLES.VIEWER)) return '/retail-staff';

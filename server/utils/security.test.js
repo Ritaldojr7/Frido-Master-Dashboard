@@ -19,9 +19,9 @@ import {
 describe('VALID_ROLES', () => {
     it('contains core dashboard roles', () => {
         expect(VALID_ROLES).toEqual(
-            expect.arrayContaining(['admin', 'staff', 'viewer', 'feedback', 'executive', 'team_lead'])
+            expect.arrayContaining(['admin', 'staff', 'viewer', 'feedback', 'executive', 'team_lead', 'data_analyst'])
         );
-        expect(VALID_ROLES).toHaveLength(6);
+        expect(VALID_ROLES).toHaveLength(7);
     });
 
     it('does not contain manager', () => {
@@ -51,6 +51,7 @@ describe('resolveRoleToValidSlug', () => {
         expect(resolveRoleToValidSlug('team lead')).toBe('team_lead');
         expect(resolveRoleToValidSlug('TEAM LEAD')).toBe('team_lead');
         expect(resolveRoleToValidSlug('Executive (ISD NM only)')).toBe('executive');
+        expect(resolveRoleToValidSlug('Data Analyst')).toBe('data_analyst');
         expect(resolveRoleToValidSlug('team-lead')).toBe('team_lead');
     });
 
@@ -67,6 +68,7 @@ describe('normalizeRole', () => {
         expect(normalizeRole('Feedback')).toBe('feedback');
         expect(normalizeRole('Executive')).toBe('executive');
         expect(normalizeRole('TEAM_LEAD')).toBe('team_lead');
+        expect(normalizeRole('Data Analyst')).toBe('data_analyst');
         expect(normalizeRole('viewer')).toBe('viewer');
     });
 
