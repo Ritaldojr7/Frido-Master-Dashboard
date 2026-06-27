@@ -54,7 +54,14 @@ const sidebarSections = [
                     { path: '/isd/performance-profitability', label: 'Performance Profitability Dashboard', icon: ICONS.profitDash },
                 ],
             },
-            { path: '/retail-analytics', label: 'Retail Analytics', icon: ICONS.chart },
+            {
+                label: 'Retail Analytics',
+                icon: ICONS.folder,
+                children: [
+                    { path: 'https://dashboard.tangoeye.ai/auth/login', label: 'TangoEye AI', icon: ICONS.chart, isExternal: true },
+                    { path: 'https://pilot.goyoyo.ai/', label: 'YoYo AI', icon: ICONS.chart, isExternal: true },
+                ],
+            },
             {
                 label: 'Feedback',
                 icon: ICONS.chat,
@@ -64,6 +71,13 @@ const sidebarSections = [
                 ],
             },
             { path: '/orm', label: 'ORM', icon: ICONS.globe },
+        ],
+    },
+    {
+        label: 'Team and Bandwidth',
+        items: [
+            { path: 'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I/edit?gid=0#gid=0', label: 'Team Structure', icon: ICONS.document, isExternal: true },
+            { path: 'https://whimsical.com/PCns3cFh6JdKE69XtYkenY', label: 'Team Organogram', icon: ICONS.globe, isExternal: true },
         ],
     },
     {
