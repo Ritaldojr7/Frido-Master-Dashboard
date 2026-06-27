@@ -35,6 +35,19 @@ const ICONS = {
  */
 const sidebarSections = [
     {
+        label: 'ISD Team',
+        items: [
+            {
+                label: 'Team and Bandwidth',
+                icon: ICONS.folder,
+                children: [
+                    { path: 'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I/edit?gid=0#gid=0', label: 'Team Structure', icon: ICONS.document, isExternal: true },
+                    { path: 'https://whimsical.com/PCns3cFh6JdKE69XtYkenY', label: 'Team Organogram', icon: ICONS.globe, isExternal: true },
+                ],
+            },
+        ],
+    },
+    {
         label: 'Analytics',
         items: [
             {
@@ -82,19 +95,6 @@ const sidebarSections = [
         ],
     },
     {
-        label: 'ISD Team',
-        items: [
-            {
-                label: 'Team and Bandwidth',
-                icon: ICONS.folder,
-                children: [
-                    { path: 'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I/edit?gid=0#gid=0', label: 'Team Structure', icon: ICONS.document, isExternal: true },
-                    { path: 'https://whimsical.com/PCns3cFh6JdKE69XtYkenY', label: 'Team Organogram', icon: ICONS.globe, isExternal: true },
-                ],
-            },
-        ],
-    },
-    {
         label: 'Aggregator',
         items: [
             { path: '/retail-staff', label: 'Retail Staff', icon: ICONS.building },
@@ -125,18 +125,7 @@ function SidebarIcon({ d }) {
 }
 
 function SidebarSubGroup({ item, user, isCompactNav, onMobileClose }) {
-    const location = useLocation();
-    const [open, setOpen] = useState(() => {
-        // Auto-expand if any child is active
-        return item.children.some((c) => location.pathname === c.path);
-    });
-
-    // Keep open when navigating to a child
-    useEffect(() => {
-        if (item.children.some((c) => location.pathname === c.path)) {
-            setOpen(true);
-        }
-    }, [location.pathname, item.children]);
+    const [open, setOpen] = useState(true);
 
     const visibleChildren = item.children.filter((c) => hasAccess(user, c.path));
     if (visibleChildren.length === 0) return null;
