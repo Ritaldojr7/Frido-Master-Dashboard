@@ -18,6 +18,7 @@ import AiCallingFeedback from './pages/AiCallingFeedback';
 import ExecPerformanceDashboard from './pages/ExecPerformanceDashboard';
 import PerformanceProfitabilityDashboard from './pages/PerformanceProfitabilityDashboard';
 import OrmDashboard from './pages/OrmDashboard';
+import RetailAnalyticsDashboard from './pages/RetailAnalyticsDashboard';
 import {
     ADMIN_ONLY,
     AI_CALLING_FEEDBACK_ROLES,
@@ -142,6 +143,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={ORM_ROLES}>
                                                 <OrmDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/retail-analytics"
+                                        element={
+                                            <RoleGuard roles={BUSINESS_ANALYTICS_ROLES}>
+                                                <RetailAnalyticsDashboard />
                                             </RoleGuard>
                                         }
                                     />
