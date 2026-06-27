@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import SearchBar from '../SearchBar/SearchBar';
 import UserMenu from '../UserMenu/UserMenu';
-import { hasAccess, hasAnyRole, ADMIN_ONLY } from '../../config/permissions';
+import { hasAccess, ADMIN_ONLY } from '../../config/permissions';
 import { useDashboardData } from '../../context/DashboardDataContext';
 import './Layout.css';
 import fridoLogo from '../../assets/logo.png';
