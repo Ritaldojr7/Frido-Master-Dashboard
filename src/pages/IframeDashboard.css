@@ -1,0 +1,84 @@
+.iframe-dashboard {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.iframe-dashboard__header {
+    margin-bottom: 16px;
+}
+
+.iframe-dashboard__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+
+.iframe-dashboard__subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.iframe-dashboard__frame-wrap {
+    flex: 1;
+    min-height: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-md);
+    background: var(--bg-card);
+}
+
+.iframe-dashboard__frame {
+    width: 100%;
+    height: calc(100vh - 160px);
+    min-height: 600px;
+    border: none;
+    display: block;
+    background: #fff;
+}
+
+/* Blank / Coming Soon placeholder */
+.blank-dashboard {
+    width: 100%;
+}
+
+.blank-dashboard__header {
+    margin-bottom: 24px;
+}
+
+.blank-dashboard__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+
+.blank-dashboard__subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.blank-dashboard__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 80px 20px;
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-primary);
+    background: var(--bg-card);
+    color: var(--text-tertiary);
+    font-size: 14px;
+}
+
+.blank-dashboard__empty-icon {
+    font-size: 36px;
+    opacity: 0.5;
+}

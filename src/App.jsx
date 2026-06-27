@@ -15,12 +15,18 @@ import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
 import OrderDispute from './pages/OrderDispute';
 import AiCallingFeedback from './pages/AiCallingFeedback';
+import ExecPerformanceDashboard from './pages/ExecPerformanceDashboard';
+import PerformanceProfitabilityDashboard from './pages/PerformanceProfitabilityDashboard';
+import OrmDashboard from './pages/OrmDashboard';
 import {
     ADMIN_ONLY,
     AI_CALLING_FEEDBACK_ROLES,
     BUSINESS_ANALYTICS_ROLES,
     FEEDBACK_DEPARTMENT_ROLES,
     ISD_NM_ROLES,
+    ISD_EXEC_PERF_ROLES,
+    ISD_PROFITABILITY_ROLES,
+    ORM_ROLES,
     ORDER_DISPUTE_ROLES,
     PROFILE_ROLES,
     RETAIL_STAFF_ACCESS_ROLES,
@@ -112,6 +118,30 @@ function App() {
                                         element={
                                             <RoleGuard roles={ORDER_DISPUTE_ROLES}>
                                                 <OrderDispute />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/isd/executive-performance"
+                                        element={
+                                            <RoleGuard roles={ISD_EXEC_PERF_ROLES}>
+                                                <ExecPerformanceDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/isd/performance-profitability"
+                                        element={
+                                            <RoleGuard roles={ISD_PROFITABILITY_ROLES}>
+                                                <PerformanceProfitabilityDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/orm"
+                                        element={
+                                            <RoleGuard roles={ORM_ROLES}>
+                                                <OrmDashboard />
                                             </RoleGuard>
                                         }
                                     />

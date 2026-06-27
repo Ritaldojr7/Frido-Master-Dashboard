@@ -55,8 +55,8 @@ describe('role arrays', () => {
         expect(ALL_ROLES).toContain('team_lead');
     });
 
-    it('ISD_NM_ROLES lists admins, executives, and team leads only', () => {
-        expect(ISD_NM_ROLES).toEqual(['admin', 'executive', 'team_lead']);
+    it('ISD_NM_ROLES lists admins, executives, team leads, and data analysts', () => {
+        expect(ISD_NM_ROLES).toEqual(['admin', 'executive', 'team_lead', 'data_analyst']);
     });
 
     it('RETAIL_STAFF_ACCESS_ROLES excludes ISD-only roles', () => {
@@ -94,7 +94,7 @@ describe('routePermissions', () => {
         expect(routePermissions['/business-analytics']).toEqual(BUSINESS_ANALYTICS_ROLES);
     });
 
-    it('allows ISD NM to executives, team leads, and admins', () => {
+    it('allows ISD NM to executives, team leads, admins, and data analysts', () => {
         expect(routePermissions['/isd-nm']).toEqual(ISD_NM_ROLES);
     });
 });
@@ -129,6 +129,12 @@ describe('canSeeIsdResource', () => {
         expect(canSeeIsdResource('admin', 'admin')).toBe(true);
     });
 
+    it('data analysts see every tier including admin-only links', () => {
+        expect(canSeeIsdResource('data_analyst', 'executive')).toBe(true);
+        expect(canSeeIsdResource('data_analyst', 'team_lead')).toBe(true);
+        expect(canSeeIsdResource('data_analyst', 'admin')).toBe(true);
+    });
+
     it('executives only see executive tier', () => {
         expect(canSeeIsdResource('executive', 'executive')).toBe(true);
         expect(canSeeIsdResource('executive', 'team_lead')).toBe(false);
@@ -151,6 +157,18 @@ describe('hasAccess', () => {
         expect(hasAccess('data_analyst', '/business-analytics')).toBe(true);
         expect(hasAccess('admin', '/feedback-department')).toBe(true);
         expect(hasAccess('admin', '/isd-nm')).toBe(true);
+    });
+
+    it('restricts ISD sub-dashboards to admin and data_analyst', () => {
+        expect(hasAccess('admin', '/isd/executive-performance')).toBe(true);
+        expect(hasAccess('admin', '/isd/performance-profitability')).toBe(true);
+        expect(hasAccess('data_analyst', '/isd/executive-performance')).toBe(true);
+        expect(hasAccess('data_analyst', '/isd/performance-profitability')).toBe(true);
+
+        expect(hasAccess('executive', '/isd/executive-performance')).toBe(false);
+        expect(hasAccess('executive', '/isd/performance-profitability')).toBe(false);
+        expect(hasAccess('team_lead', '/isd/executive-performance')).toBe(false);
+        expect(hasAccess('team_lead', '/isd/performance-profitability')).toBe(false);
     });
 
     it('denies staff access to admin-only routes', () => {

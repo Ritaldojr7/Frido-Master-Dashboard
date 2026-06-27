@@ -86,6 +86,7 @@ export default defineConfig(({ mode }) => {
         // ClerkProvider requires a non-empty publishable key shape in tests / CI without repo .env.
         VITE_CLERK_PUBLISHABLE_KEY:
           process.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_00000000000000000000000000000000',
+        VITE_DEMO_MODE: 'false',
       },
       coverage: {
         provider: 'v8',
