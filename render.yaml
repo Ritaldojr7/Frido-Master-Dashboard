@@ -42,3 +42,12 @@ services:
         sync: false
       - key: MS_INVITE_SENDER
         sync: false
+      # GitHub dispatch for dashboard "Edit with Claude" feature
+      - key: GH_REPO
+        sync: false
+      - key: GH_TOKEN
+        sync: false
+      - key: IST_EDIT_PASS
+        sync: false
+      - key: EXEC_EDIT_PASS
+        sync: false

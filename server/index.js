@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboards.js';
 import feedbackProductsRoutes from './routes/feedbackProducts.js';
 import hrPoliciesRoutes from './routes/hrPolicies.js';
 import orderDisputesRoutes from './routes/orderDisputes.js';
+import dashboardEditRoutes from './routes/dashboardEdit.js';
 import { startOrderDisputeSyncScheduler } from './services/orderDisputeSync.js';
 import db from './db.js';
 
@@ -51,6 +52,7 @@ app.use('/api/dashboards', dashboardRoutes);
 app.use('/api/feedback/products', feedbackProductsRoutes);
 app.use('/api/hr-policies', hrPoliciesRoutes);
 app.use('/api/order-disputes', orderDisputesRoutes);
+app.use('/api', dashboardEditRoutes);
 
 // ── Health check ────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

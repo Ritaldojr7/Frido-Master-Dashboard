@@ -122,12 +122,95 @@ async function apiFetchBlob(path, options = {}) {
 const BACKEND_ME_TIMEOUT_MS = 25_000;
 
 function DemoAuthProvider({ children }) {
+    const [userRole, setUserRole] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const getRoleFromUrl = () => {
+                let params = new URLSearchParams(window.location.search);
+                let r = params.get('role');
+                if (r) return r;
+
+                const hash = window.location.hash;
+                const qIndex = hash.indexOf('?');
+                if (qIndex !== -1) {
+                    params = new URLSearchParams(hash.substring(qIndex));
+                    r = params.get('role');
+                    if (r) return r;
+                }
+                return null;
+            };
+
+            const queryRole = getRoleFromUrl();
+            if (queryRole) {
+                if (queryRole === 'isd' || queryRole === 'isd_nm') return 'executive';
+                if (queryRole === 'analyst' || queryRole === 'analytics') return 'data_analyst';
+                return queryRole;
+            }
+        }
+        return DEMO_ROLE;
+    });
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const handleUrlChange = () => {
+                let params = new URLSearchParams(window.location.search);
+                let r = params.get('role');
+                if (!r) {
+                    const hash = window.location.hash;
+                    const qIndex = hash.indexOf('?');
+                    if (qIndex !== -1) {
+                        params = new URLSearchParams(hash.substring(qIndex));
+                        r = params.get('role');
+                    }
+                }
+
+                if (r) {
+                    let nextRole = r;
+                    if (r === 'isd' || r === 'isd_nm') nextRole = 'executive';
+                    else if (r === 'analyst' || r === 'analytics') nextRole = 'data_analyst';
+                    setUserRole(nextRole);
+                }
+            };
+            window.addEventListener('popstate', handleUrlChange);
+            window.addEventListener('hashchange', handleUrlChange);
+            return () => {
+                window.removeEventListener('popstate', handleUrlChange);
+                window.removeEventListener('hashchange', handleUrlChange);
+            };
+        }
+    }, []);
+
+    const user = useMemo(() => {
+        const name = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+        const roles = [userRole];
+        if (userRole === 'executive') {
+            roles.push('team_lead');
+        }
+        return {
+            id: `demo-${userRole}`,
+            email: `${userRole}@myfrido.com`,
+            name: name,
+            role: userRole,
+            roles: roles,
+            department: userRole === 'executive' ? 'ISD' : 'Retail',
+            avatar_url: '',
+            status: 'active',
+        };
+    }, [userRole]);
+
     const logout = useCallback(() => {}, []);
-    const updateProfile = useCallback(async (updates) => ({ ...DEMO_USER, ...updates }), []);
-    const hasRole = useCallback(() => true, []);
+    const updateProfile = useCallback(async (updates) => ({ ...user, ...updates }), [user]);
+    
+    const hasRole = useCallback(
+        (...roles) => {
+            if (user.role === 'admin') return true;
+            return roles.some((r) => user.roles.includes(r));
+        },
+        [user]
+    );
+
     const value = useMemo(
         () => ({
-            user: DEMO_USER,
+            user,
             isAuthenticated: true,
             isLoading: false,
             logout,
@@ -135,8 +218,9 @@ function DemoAuthProvider({ children }) {
             hasRole,
             apiFetch,
         }),
-        [logout, updateProfile, hasRole]
+        [user, logout, updateProfile, hasRole]
     );
+
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

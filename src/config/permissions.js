@@ -33,7 +33,7 @@ export const STAFF_ONLY = [ROLES.STAFF, ROLES.VIEWER];
 export const RETAIL_STAFF_ACCESS_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER];
 
 /** ISD NM hub: executives, team leads, and admins */
-export const ISD_NM_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
+export const ISD_NM_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST];
 
 /** Who may open the Feedback Department page (admins retain full access). */
 export const FEEDBACK_DEPARTMENT_ROLES = [ROLES.ADMIN, ROLES.FEEDBACK];
@@ -43,6 +43,13 @@ export const ORDER_DISPUTE_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.TEAM_LEAD, R
 
 /** AI Calling (Feedback) — same access as Feedback Department for now. */
 export const AI_CALLING_FEEDBACK_ROLES = FEEDBACK_DEPARTMENT_ROLES;
+
+/** ISD sub-dashboards — Executive Performance and Performance Profitability. */
+export const ISD_EXEC_PERF_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
+export const ISD_PROFITABILITY_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
+
+/** ORM — blank placeholder for now, admin-only. */
+export const ORM_ROLES = [ROLES.ADMIN];
 
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES, ROLES.FEEDBACK];
@@ -89,6 +96,9 @@ export const routePermissions = {
     '/order-dispute': ORDER_DISPUTE_ROLES,
     '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,
+    '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
+    '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
+    '/orm': ORM_ROLES,
 };
 
 /**
@@ -103,6 +113,9 @@ export const sidebarPermissions = {
     '/order-dispute': ORDER_DISPUTE_ROLES,
     '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,
+    '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
+    '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
+    '/orm': ORM_ROLES,
 };
 
 /**
@@ -111,7 +124,7 @@ export const sidebarPermissions = {
  */
 export function canSeeIsdResource(userOrRole, minRole) {
     const roles = getUserRoles(userOrRole);
-    if (roles.includes(ROLES.ADMIN)) return true;
+    if (roles.includes(ROLES.ADMIN) || roles.includes(ROLES.DATA_ANALYST)) return true;
     if (minRole === ROLES.ADMIN) return false;
     const hasTeamLead = roles.includes(ROLES.TEAM_LEAD);
     const hasExecutive = roles.includes(ROLES.EXECUTIVE);

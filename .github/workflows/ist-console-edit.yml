@@ -1,0 +1,54 @@
+name: IST Console edit (Claude)
+
+on:
+  repository_dispatch:
+    types: [ist-console-edit]
+  workflow_dispatch:
+    inputs:
+      instruction:
+        description: "Plain-English change to make"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ist-console-edit
+  cancel-in-progress: false
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Run the Claude agent
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-opus-4-8
+          prompt: |
+            A dashboard user requested this change to the Frido IST Console:
+            "${{ github.event.client_payload.instruction || inputs.instruction }}"
+
+            The dashboard is a SINGLE self-contained file: `public/ist-console/index.html`.
+
+            You may ONLY edit `public/ist-console/index.html`. Do not touch anything else.
+
+            Never change the data or plumbing inside that file. Leave these exactly as they are:
+            - `SHEET_CSV_URL` (the Google Sheet link)
+            - the loader functions: `COLMAP`, `_num`, `_rate`, `_parseMonth`, `_headerIndex`, `csvToRecords`, `bootstrap`, `computeMonthsOrder`
+            - the "Edit with Claude" panel: anything with id `aiEditFab` / `aiEditPanel` and the `aiEditToggle` / `aiEditSend` functions
+            - the `var FN` variable
+
+            What you may change: visuals and presentation only — colours, labels, titles, card/section layout,
+            chart types, table columns, ordering, formatting. Keep the dark theme and overall structure.
+            Make the smallest change that satisfies the request.
+
+            Make the change on a NEW branch named ai-edit/ist-${{ github.run_id }},
+            then open a pull request to main with a short title and a body quoting the request. Do not merge.
+          claude_args: >-
+            --max-turns 20
+            --allowedTools "Read,Edit,Write,Bash(git*)"

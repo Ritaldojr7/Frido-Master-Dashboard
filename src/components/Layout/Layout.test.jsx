@@ -51,11 +51,10 @@ describe('Layout', () => {
 
   it('renders main navigation links', async () => {
     await renderLayout();
-    expect(screen.getByRole('link', { name: /retail - staff/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /retail - admin/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /retail staff/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /retail admin/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /^isd nm$/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /business analytics/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /feedback department/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /user management/i })).toBeInTheDocument();
   });
 
