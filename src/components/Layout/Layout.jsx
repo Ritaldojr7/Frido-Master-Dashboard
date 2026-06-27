@@ -37,7 +37,15 @@ const sidebarSections = [
     {
         label: 'Analytics',
         items: [
-            { path: '/business-analytics', label: 'Business Analytics', icon: ICONS.chart },
+            {
+                label: 'Data & Analytics',
+                icon: ICONS.folder,
+                children: [
+                    { path: 'https://analytics-dashboard-frontend-x2da.onrender.com/?tab=ist', label: 'Frido Analytics', icon: ICONS.chart, isExternal: true },
+                    { path: 'https://discount-manager-frontend.onrender.com/dashboard', label: 'Frido Discount', icon: ICONS.profitDash, isExternal: true },
+                    { path: '/business-analytics', label: 'Business Analytics', icon: ICONS.chart },
+                ],
+            },
             {
                 label: 'ISD',
                 icon: ICONS.folder,
@@ -46,6 +54,7 @@ const sidebarSections = [
                     { path: '/isd/performance-profitability', label: 'Performance Profitability Dashboard', icon: ICONS.profitDash },
                 ],
             },
+            { path: '/retail-analytics', label: 'Retail Analytics', icon: ICONS.chart },
             {
                 label: 'Feedback',
                 icon: ICONS.chat,
@@ -62,7 +71,7 @@ const sidebarSections = [
         items: [
             { path: '/retail-staff', label: 'Retail Staff', icon: ICONS.building },
             { path: '/retail-admin', label: 'Retail Admin', icon: ICONS.users },
-            { path: '/isd-nm', label: 'ISD NM', icon: ICONS.folder },
+            { path: '/isd-nm', label: 'ISD NM Staff', icon: ICONS.folder },
         ],
     },
     {
@@ -119,19 +128,35 @@ function SidebarSubGroup({ item, user, isCompactNav, onMobileClose }) {
             </button>
             {open && (
                 <div className="sidebar__subgroup-children">
-                    {visibleChildren.map((child) => (
-                        <NavLink
-                            key={child.path}
-                            to={child.path}
-                            className={({ isActive }) =>
-                                `sidebar__link sidebar__link--child ${isActive ? 'sidebar__link--active' : ''}`
-                            }
-                            onClick={() => { if (isCompactNav) onMobileClose(); }}
-                        >
-                            <SidebarIcon d={child.icon} />
-                            <span className="sidebar__link-label">{child.label}</span>
-                        </NavLink>
-                    ))}
+                    {visibleChildren.map((child) => {
+                        if (child.isExternal) {
+                            return (
+                                <a
+                                    key={child.path}
+                                    href={child.path}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="sidebar__link sidebar__link--child"
+                                >
+                                    <SidebarIcon d={child.icon} />
+                                    <span className="sidebar__link-label">{child.label}</span>
+                                </a>
+                            );
+                        }
+                        return (
+                            <NavLink
+                                key={child.path}
+                                to={child.path}
+                                className={({ isActive }) =>
+                                    `sidebar__link sidebar__link--child ${isActive ? 'sidebar__link--active' : ''}`
+                                }
+                                onClick={() => { if (isCompactNav) onMobileClose(); }}
+                            >
+                                <SidebarIcon d={child.icon} />
+                                <span className="sidebar__link-label">{child.label}</span>
+                            </NavLink>
+                        );
+                    })}
                 </div>
             )}
         </div>
