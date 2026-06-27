@@ -396,7 +396,7 @@ export default function Layout({ children }) {
                 <main className={`main-content ${location.pathname.startsWith('/isd/') ? 'main-content--iframe' : ''}`}>
                     {children}
                 </main>
-                {!location.pathname.startsWith('/isd/') && <Footer />}
+                {!location.pathname.startsWith('/isd') && <Footer />}
             </div>
         </div>
     );
