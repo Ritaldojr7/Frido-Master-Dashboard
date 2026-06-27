@@ -95,7 +95,7 @@ button{font-family:inherit}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--teal-wash);color:var(--teal-deep);border-radius:20px;padding:3px 11px;font-weight:600;font-size:11.5px}
 .chip b{font-weight:700}
 
-.view{padding:24px 26px 60px;max-width:1320px;width:100%}
+.view{padding:0;width:100%;max-width:none}
 .view[hidden]{display:none}
 
 /* ---------- hero (overview) ---------- */
@@ -216,725 +216,645 @@ footer.appfoot{padding:18px 26px 30px;color:var(--muted-2);font-size:11px;border
   .topbar .vt h2{font-size:16px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style><style>
+/* ---- enhancement-layer styles (additive; inherits existing tokens) ---- */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1100px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;line-height:1.3;white-space:nowrap}
+.pill.gp{background:var(--green-wash);color:var(--green)}.pill.ap{background:var(--amber-wash);color:#9a6500}.pill.rp{background:var(--red-wash);color:var(--red)}.pill.np{background:var(--teal-wash);color:var(--teal-deep)}.pill.gy{background:#EEF2F3;color:var(--muted)}
+.grade{font-family:"Space Grotesk";font-weight:700;width:34px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;font-size:13px}
+.grade.Ap{background:#0A6E69;color:#fff}.grade.A{background:var(--teal);color:#fff}.grade.Bp{background:#5FBDB5;color:#073b38}.grade.B{background:var(--teal-wash);color:var(--teal-deep)}.grade.C{background:var(--amber-wash);color:#9a6500}.grade.D{background:var(--red-wash);color:var(--red)}
+.bigscore{font-family:"Space Grotesk";font-weight:700;font-size:40px;line-height:1}
+.reasons{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.reasons li{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);background:var(--line-2);border-radius:8px;padding:7px 10px}
+.reasons li b{font-weight:600}
+.reasons li .kv{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600;white-space:nowrap}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px}
+.flow .node{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-weight:600}
+.flow .ar{color:var(--muted-2)}
+table.dt{width:100%;border-collapse:collapse;font-size:12.5px}
+table.dt th{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;white-space:nowrap;position:sticky;top:0;background:var(--card)}
+table.dt th:first-child,table.dt td:first-child{text-align:left}
+table.dt td{padding:8px 10px;border-bottom:1px solid var(--line-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.dt tr:hover td{background:var(--line-2)}
+.tablewrap{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.minibar{height:6px;border-radius:4px;background:var(--line);overflow:hidden;min-width:60px;display:inline-block;vertical-align:middle}
+.minibar>i{display:block;height:100%;background:var(--teal)}
+.cfg{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2)}
+.cfg label{flex:1;font-size:13px}.cfg input[type=number]{width:90px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font:inherit;text-align:right}
+.cfg input[type=range]{flex:1}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+.btn:hover{background:var(--teal-deep)}.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.sec:hover{background:var(--line-2)}
+.note{background:var(--teal-wash);border:1px solid #BfE0DC;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#0A4F4A;line-height:1.5}
+.warn{background:var(--amber-wash);border-color:#E8CE8A;color:#7a5200}
+.selrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.selrow select,.selrow input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+.kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.kpi .val{font-family:"Space Grotesk";font-weight:700;font-size:22px;margin-top:4px;letter-spacing:-.01em}
+.kpi .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow)}
+.swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.excluded{opacity:.5}
+.tag{font-size:10.5px;color:var(--muted);background:var(--line-2);padding:2px 7px;border-radius:6px;font-weight:600}
+.subnav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.subnav button{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;font-weight:500}
+.subnav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 </style>
 </head>
 <body>
 <div class="shell">
-  <aside class="rail" id="rail">
+  <aside class="rail">
     <div class="brand">
-      <svg class="mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-        <rect x="1.5" y="1.5" width="37" height="37" rx="10" stroke="#0E9E96" stroke-width="2.4"/>
-        <path d="M11 27c3-1.6 4.5-5 5.6-9.2C17.7 13.5 19 11 22 11c2.4 0 3.6 2 3.9 4.4" stroke="#5BE0D6" stroke-width="2.4" stroke-linecap="round"/>
-        <circle cx="27.5" cy="25.5" r="2.6" fill="#0E9E96"/>
-      </svg>
-      <div class="wm">Frido<small>IST Console</small></div>
+      <div class="mark"><svg viewBox="0 0 34 34" width="34" height="34"><rect width="34" height="34" rx="9" fill="#0E9E96"/><path d="M9 23V11h10M9 17h8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></div>
+      <div class="wm">Frido IST<small>Performance Console</small></div>
     </div>
-    <div class="navlbl">Dashboards</div>
-    <nav class="nav" id="nav">
+    <div class="navlbl">Evaluation</div>
+    <div class="nav" id="nav">
       <button data-view="overview" class="active"><svg class="ic" viewBox="0 0 24 24"><path d="M3 13h8V3H3zM13 21h8V3h-8zM3 21h8v-6H3z"/></svg> Executive Summary</button>
-      <button data-view="scorecard"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg> Agent Scorecard</button>
-      <button data-view="salary"><svg class="ic" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Salary Justification</button>
-      <button data-view="attendance"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg> Attendance vs Output</button>
-    </nav>
-    <div class="foot">
-      Built from the IST Incentive Mastersheet.<br>498 agent-months · 88 agents · Feb 2025–Apr 2026.
+      <button data-view="eval"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg> Agent Evaluation</button>
+      <button data-view="scorecard"><svg class="ic" viewBox="0 0 24 24"><path d="M3 5h18M3 10h18M3 15h18M3 20h18"/></svg> Agent Scorecard</button>
+      <button data-view="recs"><svg class="ic" viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg> HR Recommendations</button>
     </div>
+    <div class="navlbl">Analytics</div>
+    <div class="nav">
+      <button data-view="roi"><svg class="ic" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> ROI &amp; Salary</button>
+      <button data-view="prod"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg> Productivity &amp; Attendance</button>
+      <button data-view="cat"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg> Product &amp; Discount</button>
+      <button data-view="consist"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg> Consistency</button>
+      <button data-view="bench"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg> Benchmarking</button>
+      <button data-view="outliers"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Outliers &amp; Correlation</button>
+    </div>
+    <div class="navlbl">Config</div>
+    <div class="nav">
+      <button data-view="settings"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 2h-4l-.3 2.6a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L4.1 11a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 2.6h4l.3-2.6a7 7 0 0 0 1.7-1l2.4 1 2-3.4-2-1.6a7 7 0 0 0 .1-1z"/></svg> Settings &amp; Method</button>
+    </div>
+    <div class="foot">Data-driven HR evaluation.<br>Every recommendation is traceable to KPIs.</div>
   </aside>
 
-  <div class="main">
-    <div class="topbar">
-      <button class="hamb" id="hamb" aria-label="Toggle menu"><svg viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg></button>
-      <div class="vt"><h2 id="vTitle">Executive Summary</h2><p id="vSub">Team-level profitability, salary justification and ROI</p></div>
-      <div class="filters">
-        <div class="fld"><label for="fVert">Vertical</label><div class="sel"><select id="fVert"></select></div></div>
-        <div class="fld"><label for="fYear">Year</label><div class="sel"><select id="fYear"></select></div></div>
-        <div class="fld"><label for="fQtr">Quarter</label><div class="sel"><select id="fQtr"></select></div></div>
-        <button class="reset" id="reset">Reset</button>
+  <main class="main">
+    <header style="display:flex;align-items:center;gap:14px;padding:16px 26px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;flex-wrap:wrap">
+      <div style="font-family:'Space Grotesk';font-weight:600;font-size:15px" id="viewTitle">Executive Summary</div>
+      <div class="selrow" style="margin:0 0 0 auto">
+        <div class="fld"><label for="fVert" style="font-size:10px;color:var(--muted);display:block">VERTICAL</label><div class="sel"><select id="fVert"></select></div></div>
+        <div class="fld"><label for="fMonth" style="font-size:10px;color:var(--muted);display:block">MONTH</label><div class="sel"><select id="fMonth"></select></div></div>
+        <div class="fld"><label for="fYear" style="font-size:10px;color:var(--muted);display:block">YEAR</label><div class="sel"><select id="fYear"></select></div></div>
+        <div class="fld"><label for="fQtr" style="font-size:10px;color:var(--muted);display:block">QUARTER</label><div class="sel"><select id="fQtr"></select></div></div>
       </div>
+    </header>
+    <div id="scope" style="padding:10px 26px;font-size:12px;color:var(--muted);background:var(--line-2);border-bottom:1px solid var(--line)"></div>
+
+    <div style="padding:22px 26px 60px">
+      <section class="view" id="view-overview"></section>
+      <section class="view" id="view-eval" hidden></section>
+      <section class="view" id="view-scorecard" hidden></section>
+      <section class="view" id="view-recs" hidden></section>
+      <section class="view" id="view-roi" hidden></section>
+      <section class="view" id="view-prod" hidden></section>
+      <section class="view" id="view-cat" hidden></section>
+      <section class="view" id="view-consist" hidden></section>
+      <section class="view" id="view-bench" hidden></section>
+      <section class="view" id="view-outliers" hidden></section>
+      <section class="view" id="view-settings" hidden></section>
     </div>
-    <div class="scope" id="scope"></div>
-
-    <!-- ===================== OVERVIEW ===================== -->
-    <section class="view" id="view-overview">
-      <div class="hero">
-        <svg class="ssc" viewBox="0 0 100 100" fill="none"><path d="M20 75c12-5 17-22 21-38S52 12 62 18s8 22 4 33" stroke="#5BE0D6" stroke-width="3" stroke-linecap="round"/></svg>
-        <div class="eyebrow">True ROI of the Inside Sales Team</div>
-        <h1>Every <span class="big" id="heroRoi">₹12.20</span> of net sales for each <span class="big">₹1</span> spent on salary&nbsp;+&nbsp;incentive.</h1>
-        <p class="sub" id="heroSub"></p>
-        <div class="loadbar-wrap">
-          <div class="loadbar-scale"><span>₹0</span><span>cost recovered &amp; multiplied →</span><span id="heroMax">15×</span></div>
-          <div class="loadbar"><div class="be" id="heroBE"></div><div class="fill" id="heroFill"><span id="heroFillTxt"></span></div></div>
-        </div>
-      </div>
-
-      <div class="sec-h"><h3>Headline KPIs</h3><div class="ln"></div><span class="hint">Recomputed live for the current filter</span></div>
-      <div class="kpis" id="kpis"></div>
-
-      <div class="grid2" style="margin-top:22px">
-        <div class="panel">
-          <h4>Monthly trend — net sales vs. team ROI</h4>
-          <p class="p-sub">Bars: net sales (₹). Line: ROI = net sales ÷ (salary + incentive) that month.</p>
-          <div class="chart-box" style="height:300px"><canvas id="trendChart"></canvas></div>
-        </div>
-        <div class="panel">
-          <h4>Performance distribution</h4>
-          <p class="p-sub">Agents grouped by composite rank across revenue, profit, ROI &amp; attendance.</p>
-          <div class="chart-box" style="height:210px"><canvas id="tierChart"></canvas></div>
-          <div class="legend" id="tierLegend"></div>
-        </div>
-      </div>
-
-      <div class="sec-h"><h3>What leadership asked</h3><div class="ln"></div></div>
-      <div class="qa" id="qaStrip"></div>
-
-      <div class="note" id="ovNote"></div>
-    </section>
-
-    <!-- ===================== SCORECARD ===================== -->
-    <section class="view" id="view-scorecard" hidden>
-      <div class="tbl-tools">
-        <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="scSearch" placeholder="Search agent or ID…"></div>
-        <div class="tbl-meta" id="scMeta"></div>
-      </div>
-      <div class="tbl-scroll"><table id="scTable"><thead></thead><tbody></tbody></table></div>
-      <div class="note">Ranks are 1 = best within the current filter. <b>Tier</b> blends four ranks (revenue, profit contribution, ROI, attendance); the top ~30% are 🟢, the next ~40% 🟡, the bottom ~30% 🔴. Click any column header to sort. <b>Coaching list</b> = 🔴 agents; <b>management review</b> = 🔴 with below-median ROI <i>and</i> above-median discount.</div>
-    </section>
-
-    <!-- ===================== SALARY ===================== -->
-    <section class="view" id="view-salary" hidden>
-      <div class="sec-h"><h3>Does the team pay for itself?</h3><div class="ln"></div></div>
-      <div class="kpis" id="salKpis" style="grid-template-columns:repeat(4,1fr)"></div>
-      <div class="grid2 even" style="margin-top:22px">
-        <div class="panel">
-          <h4>Salary coverage by agent</h4>
-          <p class="p-sub">How many times each agent's net incentive covers their own salary. The mark is break-even (1.0×).</p>
-          <div class="tbl-tools" style="margin:4px 0 0"><div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="salSearch" placeholder="Search agent…"></div></div>
-        </div>
-        <div class="panel">
-          <h4>Months justified — distribution</h4>
-          <p class="p-sub">A month is "justified" when that month's net incentive ≥ that month's salary.</p>
-          <div class="chart-box" style="height:230px"><canvas id="justChart"></canvas></div>
-        </div>
-      </div>
-      <div class="tbl-scroll" style="margin-top:16px"><table id="salTable"><thead></thead><tbody></tbody></table></div>
-      <div class="note">Verdict thresholds — <span class="pill green" style="padding:1px 7px">✅ Sustains</span> coverage ≥ 1.0× &nbsp; <span class="pill amber" style="padding:1px 7px">⚠️ Partial</span> 0.7–1.0× &nbsp; <span class="pill red" style="padding:1px 7px">❌ Subsidised</span> &lt; 0.7×. "Months justified / active" answers <b>how many times</b> each agent has justified their salary.</div>
-    </section>
-
-    <!-- ===================== ATTENDANCE ===================== -->
-    <section class="view" id="view-attendance" hidden>
-      <div class="sec-h"><h3>Attendance vs. productivity</h3><div class="ln"></div><span class="hint">Split at the median attendance &amp; median revenue/day</span></div>
-      <div class="quad" id="quadCards"></div>
-      <div class="panel">
-        <h4>Each dot is an agent</h4>
-        <p class="p-sub">X: attendance %. Y: revenue per attendance day (₹). Lines mark the medians — the four zones are the quadrants above.</p>
-        <div class="chart-box" style="height:420px"><canvas id="scatterChart"></canvas></div>
-      </div>
-      <div class="note">🚀 <b>Low attendance, high output</b> agents are your efficiency stars — protect and learn from them. 🐢 <b>High attendance, low output</b> agents are showing up but under-converting — the clearest coaching opportunity.</div>
-    </section>
-
-    <footer class="appfoot">
-      Frido IST Performance &amp; Profitability Console · fully client-side, no server required · figures derived from the uploaded Incentive Mastersheet.
-      Filters not present in the source data (Team Lead, Department, Payment Type, Product Category) are intentionally omitted.
-    </footer>
-  </div>
+  </main>
 </div>
-
 <script>
-let RAW = [];
+/* ============================== CONFIG ============================== */
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYELSTwQWU1-7bYO5yV1wfA-W5QyTQ2A2KVBpcD0JfUc0SLMPxj4UpP0TmEaNamzPdtmYm5eSTVLFp/pub?gid=0&single=true&output=csv";
-
-/* ----- live Google Sheets loader ----- */
-const COLMAP = {
-  id:['employee id','emp id','employeeid','id'],
-  name:['row labels','agent name','agent','name'],
-  vert:['vertical','vert'],
-  mon:['month','month label','mon'],
-  gs:['sum of gross sales (ex gst)','gross sales','gs'],
+const COL={ink:'#14202E',teal:'#0E9E96',tealL:'#46D6C9',green:'#1F8A54',amber:'#DA9000',red:'#CB3B4A',line:'#DCE4E6',muted:'#5E7178'};
+const COLMAP={
+  id:['employee id','emp id','employeeid','id'], name:['row labels','agent name','agent','name'],
+  vert:['vertical','vert'], mon:['month','month label','mon'],
+  gs:['sum of gross sales (ex gst)','gross sales','gs'], vwd:['sum of value without discount','value without discount','vwd'],
   ns:['sum of taxable value','net sales','taxable value','ns'],
-  gi:['sum of gross incentive','gross incentive','gi'],
-  lb:['sum of load bearing','load bearing','lb'],
-  ni:['sum of net incentive','net incentive','ni'],
-  nip:['net incentive payable','nip'],
-  sal:['gross salary','salary','sal'],
-  mg:['monthly gross','mg'],
-  att:['attendance','attendance days','att'],
-  rr:['return rate','rr'],
-  disc:['discount %','discount','disc'],
-  cod:['cod %','cod'],
-  pre:['prepaid %','prepaid','pre'],
-  pcod:['partial cod %','partial cod','pcod'],
-  p_cush:['cushions','p_cush'],
-  p_chair:['ergonomic chair','p_chair'],
-  p_ins:['insoles','p_ins'],
-  p_matt:['mattress','p_matt'],
-  p_orth:['orthotics','p_orth'],
-  p_foot:['footwear','p_foot']
+  gi:['sum of gross incentive','gross incentive','gi'], lb:['sum of load bearing','load bearing','lb'],
+  ni:['sum of net incentive','net incentive','ni'], nip:['net incentive payable','nip'],
+  sal:['gross salary','salary','sal'], mg:['monthly gross','mg'], att:['attendance','attendance days','att'],
+  rr:['return rate','rr'], disc:['discount %','discount','disc'], cod:['cod %','cod'],
+  pre:['prepaid %','prepaid','pre'], pcod:['partial cod %','partial cod','pcod'],
+  p_cush:['cushions','p_cush'], p_chair:['ergonomic chair','p_chair'], p_ins:['insoles','p_ins'],
+  p_matt:['mattress','p_matt'], p_orth:['orthotics','p_orth'], p_foot:['footwear','p_foot']
 };
-const REQUIRED = ['id','name','vert','mon','ns','sal','ni','nip','att'];
+const REQUIRED=['id','name','vert','mon','ns','sal','ni','nip','att'];
+const CATS=[['p_cush','Cushions'],['p_chair','Ergonomic Chair'],['p_ins','Insoles'],['p_matt','Mattress'],['p_orth','Orthotics'],['p_foot','Footwear']];
 const MO={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
 const MNAME=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function _num(v){
-  if(v==null) return 0;
-  let s=String(v).trim();
-  if(s===''||s==='-'||s.indexOf('#')>=0) return 0;
-  s=s.replace(/[\u20B9,%\s()]/g,'');
-  const n=parseFloat(s);
-  return isNaN(n)?0:n;
-}
-function _rate(v){ const n=_num(v); return Math.abs(n)>1.5 ? n/100 : n; }
-function _parseMonth(v){
-  if(v==null) return null;
-  let s=String(v).trim(); if(!s) return null;
-  let y=null,m=null;
-  const mm=s.match(/^([A-Za-z]{3,})[\s\-\/.]+(\d{2,4})$/);
-  if(mm){ m=MO[mm[1].slice(0,3).toLowerCase()]; y=parseInt(mm[2],10); }
-  else { const d=new Date(s); if(!isNaN(d.getTime())){ m=d.getMonth(); y=d.getFullYear(); } }
-  if(m==null||y==null||isNaN(y)) return null;
-  if(y<100) y+=2000;
-  return {label:MNAME[m]+' '+y, yr:y, qtr:y+'-Q'+(Math.floor(m/3)+1)};
-}
-function _headerIndex(headers){
-  const lower=headers.map(h=>String(h||'').trim().toLowerCase());
-  const idx={};
-  for(const f in COLMAP){ for(const n of COLMAP[f]){ const i=lower.indexOf(n); if(i>=0){ idx[f]=headers[i]; break; } } }
-  return idx;
-}
-function csvToRecords(rows, headers){
-  const idx=_headerIndex(headers);
-  const missing=REQUIRED.filter(f=>idx[f]==null);
-  if(missing.length) return {error:'Sheet is missing column(s) for: '+missing.join(', ')+'. Headers found: '+headers.join(' | ')};
-  const g=(row,f)=> idx[f]!=null ? row[idx[f]] : undefined;
-  const out=[];
-  for(const row of rows){
-    const idv=g(row,'id');
-    if(idv==null||String(idv).trim()==='') continue;
-    const mp=_parseMonth(g(row,'mon'));
-    const ni=_num(g(row,'ni')), sal=_num(g(row,'sal'));
-    out.push({
-      id:String(idv).trim(),
-      name:String(g(row,'name')!=null?g(row,'name'):idv).trim(),
-      vert:(String(g(row,'vert')||'').trim())||'Unknown',
-      mon:mp?mp.label:String(g(row,'mon')||'').trim(),
-      yr:mp?mp.yr:null, qtr:mp?mp.qtr:'',
-      gs:_num(g(row,'gs')), ns:_num(g(row,'ns')), gi:_num(g(row,'gi')), lb:_num(g(row,'lb')),
-      ni:ni, nip:_num(g(row,'nip')), sal:sal, mg:_num(g(row,'mg')), att:_num(g(row,'att')),
-      rr:_rate(g(row,'rr')), disc:_rate(g(row,'disc')), cod:_rate(g(row,'cod')),
-      pre:_rate(g(row,'pre')), pcod:_rate(g(row,'pcod')),
-      p_cush:_num(g(row,'p_cush')), p_chair:_num(g(row,'p_chair')), p_ins:_num(g(row,'p_ins')),
-      p_matt:_num(g(row,'p_matt')), p_orth:_num(g(row,'p_orth')), p_foot:_num(g(row,'p_foot')),
-      just: ni>=sal?1:0
-    });
-  }
-  return {records:out};
-}
-function _setStatus(msg,isErr){ const el=document.getElementById('scope'); if(el) el.innerHTML='<span style="color:'+(isErr?'#C62828':'#5E7178')+'">'+msg+'</span>'; }
-async function bootstrap(){
-  _setStatus('Loading live data from Google Sheets\u2026',false);
-  try{
-    const res=await fetch(SHEET_CSV_URL,{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    const parsed=Papa.parse(text,{header:true,skipEmptyLines:'greedy'});
-    const headers=(parsed.meta&&parsed.meta.fields)||[];
-    const r=csvToRecords(parsed.data,headers);
-    if(r.error){ _setStatus('\u26A0 '+r.error,true); return; }
-    if(!r.records.length){ _setStatus('\u26A0 No data rows found in the published sheet.',true); return; }
-    RAW=r.records;
-    monthsOrder=computeMonthsOrder();
-    initFilters();
-    render();
-  }catch(e){
-    _setStatus('\u26A0 Could not load the sheet ('+e.message+'). Make sure it is published to the web as CSV and the link is public.',true);
-  }
+
+/* configurable weights + thresholds (persisted) */
+const DEF_W={contrib:25,netroi:20,prod:15,consist:10,expertise:10,discount:8,quality:7,attend:5};
+const DEF_G={Ap:85,A:75,Bp:65,B:55,C:40};
+const DEF_T={hiSalQ:0.75,loSalQ:0.25,topPct:0.90,hiRoiPct:0.75,botRoiPct:0.10,botScorePct:0.25,zeroStreak:3,discHiPct:0.75,retHiPct:0.75};
+let WEIGHTS=load('frido_w',DEF_W), GRADES=load('frido_g',DEF_G), THRESH=load('frido_t',DEF_T);
+function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v&&typeof v==='object'?Object.assign({},d,v):Object.assign({},d);}catch(e){return Object.assign({},d);}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+/* ============================== PARSE ============================== */
+function _num(v){if(v==null)return 0;let s=String(v).trim();if(s===''||s==='-'||s.indexOf('#')>=0)return 0;s=s.replace(/[\u20B9,%\s()]/g,'');const n=parseFloat(s);return isNaN(n)?0:n;}
+function _rate(v){if(v==null)return 0;const hasPct=String(v).indexOf('%')>=0;const n=_num(v);return hasPct?n/100:(Math.abs(n)>1.5?n/100:n);}
+function _parseMonth(v){if(v==null)return null;let s=String(v).trim();if(!s)return null;let y=null,m=null;const mm=s.match(/^([A-Za-z]{3,})[\s\-\/.]+(\d{2,4})$/);if(mm){m=MO[mm[1].slice(0,3).toLowerCase()];y=parseInt(mm[2],10);}else{const d=new Date(s);if(!isNaN(d.getTime())){m=d.getMonth();y=d.getFullYear();}}if(m==null||y==null||isNaN(y))return null;if(y<100)y+=2000;return{label:MNAME[m]+' '+y,yr:y,qtr:y+'-Q'+(Math.floor(m/3)+1),idx:y*12+m};}
+function _headerIndex(headers){const lower=headers.map(h=>String(h||'').trim().toLowerCase());const idx={};for(const f in COLMAP){for(const n of COLMAP[f]){const i=lower.indexOf(n);if(i>=0){idx[f]=headers[i];break;}}}return idx;}
+function csvToRecords(rows,headers){
+  const idx=_headerIndex(headers);const missing=REQUIRED.filter(f=>idx[f]==null);
+  if(missing.length)return{error:'Sheet missing column(s) for: '+missing.join(', ')+'. Found: '+headers.join(' | ')};
+  const g=(row,f)=>idx[f]!=null?row[idx[f]]:undefined;const out=[];
+  for(const row of rows){const idv=g(row,'id');if(idv==null||String(idv).trim()==='')continue;
+    const mp=_parseMonth(g(row,'mon'));const ni=_num(g(row,'ni')),sal=_num(g(row,'sal'));
+    out.push({id:String(idv).trim(),name:String(g(row,'name')!=null?g(row,'name'):idv).trim(),
+      vert:(String(g(row,'vert')||'').trim())||'Unknown',mon:mp?mp.label:String(g(row,'mon')||'').trim(),
+      yr:mp?mp.yr:null,qtr:mp?mp.qtr:'',midx:mp?mp.idx:0,
+      gs:_num(g(row,'gs')),vwd:_num(g(row,'vwd')),ns:_num(g(row,'ns')),gi:_num(g(row,'gi')),lb:_num(g(row,'lb')),
+      ni:ni,nip:_num(g(row,'nip')),sal:sal,mg:_num(g(row,'mg')),att:_num(g(row,'att')),
+      rr:_rate(g(row,'rr')),disc:_rate(g(row,'disc')),cod:_rate(g(row,'cod')),pre:_rate(g(row,'pre')),pcod:_rate(g(row,'pcod')),
+      p_cush:_num(g(row,'p_cush')),p_chair:_num(g(row,'p_chair')),p_ins:_num(g(row,'p_ins')),p_matt:_num(g(row,'p_matt')),p_orth:_num(g(row,'p_orth')),p_foot:_num(g(row,'p_foot'))});}
+  return{records:out};
 }
 
-/* ---------------- helpers ---------------- */
-let monthsOrder = [];
-function computeMonthsOrder(){
-  const seen=new Set(),arr=[];
-  const parse=s=>{const[m,y]=s.split(' ');return new Date(`${m} 1, ${y}`).getTime()};
-  RAW.forEach(r=>{if(!seen.has(r.mon)){seen.add(r.mon);arr.push(r.mon)}});
-  arr.sort((a,b)=>parse(a)-parse(b));
-  return arr;
-}
+/* ============================== UTILS ============================== */
 const N0=v=>(v==null||isNaN(v))?0:v;
-const fmtINR=v=>{ // short Indian: Cr / L / K
-  v=N0(v); const s=v<0?'-':''; v=Math.abs(v);
-  if(v>=1e7) return s+'₹'+(v/1e7).toFixed(2)+' Cr';
-  if(v>=1e5) return s+'₹'+(v/1e5).toFixed(2)+' L';
-  if(v>=1e3) return s+'₹'+(v/1e3).toFixed(1)+'K';
-  return s+'₹'+Math.round(v);
-};
+const fmtINR=v=>{v=N0(v);const s=v<0?'-':'';v=Math.abs(v);if(v>=1e7)return s+'₹'+(v/1e7).toFixed(2)+' Cr';if(v>=1e5)return s+'₹'+(v/1e5).toFixed(2)+' L';if(v>=1e3)return s+'₹'+(v/1e3).toFixed(1)+'K';return s+'₹'+Math.round(v);};
 const fmtFull=v=>'₹'+Math.round(N0(v)).toLocaleString('en-IN');
 const fmtPct=v=>(N0(v)*100).toFixed(1)+'%';
 const fmtX=v=>N0(v).toFixed(2)+'×';
 const uniq=a=>[...new Set(a)];
-const median=arr=>{if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2};
-const pctile=(arr,p)=>{if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const i=(s.length-1)*p;const lo=Math.floor(i),hi=Math.ceil(i);return lo===hi?s[lo]:s[lo]+(s[hi]-s[lo])*(i-lo)};
+const sum=(a,f)=>a.reduce((s,x)=>s+N0(f?f(x):x),0);
+const mean=a=>a.length?sum(a)/a.length:0;
+const median=arr=>{if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const stdev=a=>{if(a.length<2)return 0;const m=mean(a);return Math.sqrt(sum(a,x=>(x-m)*(x-m))/(a.length-1));};
+const pctile=(arr,p)=>{if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const i=(s.length-1)*p;const lo=Math.floor(i),hi=Math.ceil(i);return lo===hi?s[lo]:s[lo]+(s[hi]-s[lo])*(i-lo);};
+function pctRanker(vals){const s=[...vals].sort((a,b)=>a-b);return v=>{if(!s.length)return 0;let c=0;for(const x of s){if(x<=v)c++;}return c/s.length;};}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+let RAW=[], monthsOrder=[];
+const state={vert:'(All)',month:'(All)',year:'(All)',qtr:'(All)',view:'overview',evalId:null,scatter:'sal_ns',scSort:{k:'ns',dir:-1},scQ:'',
+  override:load('frido_ov',{}),exclude:load('frido_ex',{})};
+function isExcluded(id){return !!state.exclude[id];}
+function vertOf(id,fallback){return state.override[id]||fallback;}
+/* ============================== ENGINE ============================== */
+function rowsInScope(){return RAW.filter(r=>(state.vert==='(All)'||r.vert===state.vert)&&(state.month==='(All)'||r.mon===state.month)&&(state.year==='(All)'||String(r.yr)===state.year)&&(state.qtr==='(All)'||r.qtr===state.qtr));}
 
-/* ---------------- state ---------------- */
-const state={vert:'(All)',year:'(All)',qtr:'(All)',view:'overview',scSort:{k:'ns',dir:-1},salSort:{k:'cov',dir:-1},scQ:'',salQ:''};
-
-function rowsFiltered(){
-  return RAW.filter(r=>
-    (state.vert==='(All)'||r.vert===state.vert)&&
-    (state.year==='(All)'||String(r.yr)===state.year)&&
-    (state.qtr==='(All)'||r.qtr===state.qtr));
-}
-
-/* aggregate filtered rows -> per agent */
-function agentAgg(rows){
+function buildAgents(rows){
+  // month working-day reference = max attendance any agent logged that month
+  const monthWD={};rows.forEach(r=>{monthWD[r.mon]=Math.max(monthWD[r.mon]||0,N0(r.att));});
   const m=new Map();
   rows.forEach(r=>{
     let a=m.get(r.id);
-    if(!a){a={id:r.id,name:r.name,months:0,ns:0,gs:0,gi:0,lb:0,ni:0,nip:0,sal:0,att:0,wRet:0,wDisc:0,just:0,vByNs:{}};m.set(r.id,a)}
-    a.months++; a.ns+=N0(r.ns); a.gs+=N0(r.gs); a.gi+=N0(r.gi); a.lb+=N0(r.lb);
-    a.ni+=N0(r.ni); a.nip+=N0(r.nip); a.sal+=N0(r.sal); a.att+=N0(r.att);
-    a.wRet+=N0(r.rr)*N0(r.ns); a.wDisc+=N0(r.disc)*N0(r.ns);
-    a.just+=N0(r.just);
-    a.vByNs[r.vert]=(a.vByNs[r.vert]||0)+N0(r.ns);
+    if(!a){a={id:r.id,name:r.name,baseVert:r.vert,vByNs:{},months:new Set(),
+      ns:0,gs:0,vwd:0,gi:0,lb:0,ni:0,nip:0,sal:0,att:0,wd:0,wDisc:0,wRet:0,
+      cat:{p_cush:0,p_chair:0,p_ins:0,p_matt:0,p_orth:0,p_foot:0},monthly:{}};m.set(r.id,a);}
+    a.ns+=N0(r.ns);a.gs+=N0(r.gs);a.vwd+=N0(r.vwd);a.gi+=N0(r.gi);a.lb+=N0(r.lb);
+    a.ni+=N0(r.ni);a.nip+=N0(r.nip);a.sal+=N0(r.sal);a.att+=N0(r.att);
+    a.wd+=monthWD[r.mon]||0;a.wDisc+=N0(r.disc)*N0(r.ns);a.wRet+=N0(r.rr)*N0(r.ns);
+    a.vByNs[r.vert]=(a.vByNs[r.vert]||0)+N0(r.ns);a.months.add(r.mon);
+    CATS.forEach(([k])=>a.cat[k]+=N0(r[k])*N0(r.ns));
+    const mm=a.monthly[r.midx]||(a.monthly[r.midx]={ns:0,nip:0,att:0,mon:r.mon});
+    mm.ns+=N0(r.ns);mm.nip+=N0(r.nip);mm.att+=N0(r.att);
   });
-  const out=[...m.values()];
+  let out=[...m.values()];
   out.forEach(a=>{
-    a.primary=Object.entries(a.vByNs).sort((x,y)=>y[1]-x[1])[0][0];
-    a.cost=a.sal+a.nip;
-    a.profit=a.ns-a.cost;
-    a.roi=a.cost>0?a.ns/a.cost:0;
-    a.attPct=a.months>0?a.att/(a.months*31):0;
-    a.revWork=a.months>0?a.ns/(a.months*31):0;
-    a.revAtt=a.att>0?a.ns/a.att:0;
-    a.incPerDay=a.att>0?a.nip/a.att:0;
-    a.profitPerDay=a.att>0?a.profit/a.att:0;
-    a.retPct=a.ns>0?a.wRet/a.ns:0;
-    a.discPct=a.ns>0?a.wDisc/a.ns:0;
-    a.cov=a.sal>0?a.ni/a.sal:null;
-    a.justRate=a.months>0?a.just/a.months:0;
+    a.vert=state.override[a.id]||(Object.entries(a.vByNs).sort((x,y)=>y[1]-x[1])[0]||['Unknown'])[0];
+    a.primary=(Object.entries(a.vByNs).sort((x,y)=>y[1]-x[1])[0]||['Unknown'])[0];
+    a.nMonths=a.months.size;
+    a.cost=a.sal+a.nip;a.profit=a.ns-a.cost;
+    a.netROI=a.cost>0?a.ns/a.cost:0;a.grossROI=a.sal>0?a.gs/a.sal:0;
+    a.attPct=a.wd>0?a.att/a.wd:0;a.leave=Math.max(0,a.wd-a.att);
+    a.revWD=a.wd>0?a.ns/a.wd:0;a.revAtt=a.att>0?a.ns/a.att:0;
+    a.profitAtt=a.att>0?a.profit/a.att:0;
+    a.discPct=a.ns>0?a.wDisc/a.ns:0;a.retPct=a.ns>0?a.wRet/a.ns:0;
+    a.discLeak=Math.max(0,a.vwd-a.gs); // ex-GST value foregone to discounts
+    a.cov=a.sal>0?a.ni/a.sal:0; // incentive coverage of salary
+    a.eligible=a.nip>0; a.salJustified=a.nip>0;
+    a.incPctSal=a.sal>0?a.nip/a.sal:0; a.incPctNs=a.ns>0?a.nip/a.ns:0;
+    a.costRecovery=a.cost>0?a.ns/a.cost:0;
+    // monthly series chronological
+    const ser=Object.keys(a.monthly).map(k=>+k).sort((x,y)=>x-y).map(k=>a.monthly[k]);
+    a.series=ser; const nsv=ser.map(s=>s.ns);
+    a.avgMo=mean(nsv); a.medMo=median(nsv); a.sd=stdev(nsv);
+    a.cov_var=a.avgMo>0?a.sd/a.avgMo:0; a.consistency=Math.max(0,1-a.cov_var);
+    a.best=ser.length?ser.reduce((p,c)=>c.ns>p.ns?c:p):null; a.worst=ser.length?ser.reduce((p,c)=>c.ns<p.ns?c:p):null;
+    a.growth=nsv.length>1&&nsv[0]>0?(nsv[nsv.length-1]-nsv[0])/nsv[0]:0;
+    // consecutive zero-incentive streak
+    let mx=0,cur=0;ser.forEach(s=>{if(s.nip<=0){cur++;mx=Math.max(mx,cur);}else cur=0;});a.zeroStreak=mx;
+    a.zeroMonths=ser.filter(s=>s.nip<=0).length;
+    // product expertise: breadth (cats >=5% share) + balance (normalized entropy)
+    const tot=CATS.reduce((s,[k])=>s+a.cat[k],0)||1;const shares=CATS.map(([k])=>a.cat[k]/tot);
+    a.catShare={};CATS.forEach(([k],i)=>a.catShare[k]=shares[i]);
+    const breadth=shares.filter(s=>s>=0.05).length/6;
+    const H=-shares.filter(s=>s>0).reduce((s,p)=>s+p*Math.log(p),0);const balance=H/Math.log(6);
+    a.expertise=0.5*breadth+0.5*balance;
+    a.topCat=CATS.map(([k,n])=>[n,a.catShare[k]]).sort((x,y)=>y[1]-x[1])[0];
+    a.weakCat=CATS.map(([k,n])=>[n,a.catShare[k]]).sort((x,y)=>x[1]-y[1])[0];
   });
-  // ranks 1=best
-  const rankBy=(key,desc=true)=>{
-    const s=[...out].sort((x,y)=>desc?y[key]-x[key]:x[key]-y[key]);
-    s.forEach((a,i)=>a['rank_'+key]=i+1);
+  // exclude from cohort stats but keep for listing
+  const active=out.filter(a=>!isExcluded(a.id));
+  // pillar percentiles across ACTIVE cohort
+  const R={
+    contrib:pctRanker(active.map(a=>a.ns)), netroi:pctRanker(active.map(a=>a.netROI)),
+    prod:pctRanker(active.map(a=>a.revAtt)), consist:pctRanker(active.map(a=>a.consistency)),
+    expertise:pctRanker(active.map(a=>a.expertise)), discount:pctRanker(active.map(a=>1-a.discPct)),
+    quality:pctRanker(active.map(a=>1-a.retPct)), attend:pctRanker(active.map(a=>a.attPct))
   };
-  rankBy('ns');rankBy('profit');rankBy('roi');rankBy('attPct');
-  out.forEach(a=>a.comp=(a.rank_ns+a.rank_profit+a.rank_roi+a.rank_attPct)/4);
-  const comps=out.map(a=>a.comp);
-  const p30=pctile(comps,0.30),p70=pctile(comps,0.70);
-  out.forEach(a=>a.tier=a.comp<=p30?'top':(a.comp<=p70?'avg':'under'));
+  const wsum=Object.values(WEIGHTS).reduce((s,x)=>s+x,0)||1;
+  out.forEach(a=>{
+    a.p={contrib:R.contrib(a.ns)*100,netroi:R.netroi(a.netROI)*100,prod:R.prod(a.revAtt)*100,
+      consist:R.consist(a.consistency)*100,expertise:R.expertise(a.expertise)*100,
+      discount:R.discount(1-a.discPct)*100,quality:R.quality(1-a.retPct)*100,attend:R.attend(a.attPct)*100};
+    a.score=Object.keys(WEIGHTS).reduce((s,k)=>s+WEIGHTS[k]*a.p[k],0)/wsum;
+    a.grade=a.score>=GRADES.Ap?'A+':a.score>=GRADES.A?'A':a.score>=GRADES.Bp?'B+':a.score>=GRADES.B?'B':a.score>=GRADES.C?'C':'D';
+  });
+  // cohort percentiles for score, roi, salary, discount
+  const scoreRank=pctRanker(active.map(a=>a.score)), roiRank=pctRanker(active.map(a=>a.netROI)), groiRank=pctRanker(active.map(a=>a.grossROI)),
+        discRank=pctRanker(active.map(a=>a.discPct)), retRank=pctRanker(active.map(a=>a.retPct));
+  const monS=active.map(a=>a.sal/Math.max(1,a.nMonths));const salHi=pctile(monS,THRESH.hiSalQ),salLo=pctile(monS,THRESH.loSalQ);
+  out.forEach(a=>{
+    a.scorePct=scoreRank(a.score);a.roiPct=roiRank(a.netROI);a.groiPct=groiRank(a.grossROI);a.discTopPct=discRank(a.discPct);a.retTopPct=retRank(a.retPct);
+    a.monSal=a.sal/Math.max(1,a.nMonths);a.hiSal=a.monSal>=salHi;a.loSal=a.monSal<=salLo;
+    a.rec=recommend(a);
+  });
+  // ranks
+  const rankBy=(key,desc=true)=>{const s=[...active].sort((x,y)=>desc?y[key]-x[key]:x[key]-y[key]);s.forEach((a,i)=>a['rank_'+key]=i+1);};
+  rankBy('ns');rankBy('netROI');rankBy('grossROI');rankBy('revAtt');rankBy('score');rankBy('consistency');rankBy('expertise');rankBy('attPct');
+  out._active=active; out._salHi=salHi; out._salLo=salLo;
   return out;
 }
 
-/* team KPIs */
-function teamKPIs(rows){
-  const k={agents:uniq(rows.map(r=>r.id)).length,
-    gs:0,ns:0,nip:0,sal:0,ni:0,justRows:0,rows:rows.length};
-  rows.forEach(r=>{k.gs+=N0(r.gs);k.ns+=N0(r.ns);k.nip+=N0(r.nip);k.sal+=N0(r.sal);k.ni+=N0(r.ni);k.justRows+=N0(r.just)});
-  k.commission=k.sal+k.nip;
-  k.roi=k.commission>0?k.ns/k.commission:0;
-  k.coverage=k.sal>0?k.ni/k.sal:0;
-  k.justPct=k.rows>0?k.justRows/k.rows:0;
-  k.revPerAgent=k.agents>0?k.ns/k.agents:0;
-  k.profitPerAgent=k.agents>0?(k.ns-k.commission)/k.agents:0;
-  k.profit=k.ns-k.commission;
-  return k;
+/* ---- recommendation engine: first match wins; each carries traceable reasons ---- */
+function recommend(a){
+  const T=THRESH, r=(t,tone,reasons)=>({tag:t,tone:tone,reasons:reasons});
+  const pc=v=>Math.round(v*100);
+  // 1 Termination Review
+  if(!a.eligible && a.roiPct<=T.botRoiPct && a.zeroStreak>=T.zeroStreak)
+    return r('Termination Review','rp',[
+      ['Net payable incentive is ₹0 for the whole period',fmtFull(a.nip)],
+      ['Net ROI in bottom decile','P'+pc(a.roiPct)+' · '+fmtX(a.netROI)],
+      [a.zeroStreak+' consecutive zero-incentive months','≥'+T.zeroStreak]]);
+  // 2 PIP
+  if(a.zeroStreak>=T.zeroStreak || (!a.eligible && a.scorePct<=T.botScorePct))
+    return r('Performance Improvement Plan','rp',[
+      a.zeroStreak>=T.zeroStreak?[a.zeroStreak+' consecutive zero-incentive months','≥'+T.zeroStreak]:['Zero incentive & bottom-quartile score','P'+pc(a.scorePct)],
+      ['Net ROI','rank #'+(a.rank_netROI||'–')+' · '+fmtX(a.netROI)],
+      ['Performance score',a.score.toFixed(1)+' ('+a.grade+')']]);
+  // 3 Critical salary mismatch / review
+  if(a.hiSal && (!a.eligible || a.roiPct<=T.botScorePct))
+    return r(!a.eligible?'Critical Salary Mismatch':'Salary Revision','rp',[
+      ['High salary (top quartile)',fmtFull(a.monSal)+'/mo'],
+      a.eligible?['Net ROI below cohort','P'+pc(a.roiPct)+' · '+fmtX(a.netROI)]:['Generates ₹0 net incentive',fmtFull(a.nip)],
+      ['Net sales vs cost',fmtINR(a.ns)+' / '+fmtINR(a.cost)]]);
+  // 4 Salary revision (underpaid star)
+  if(a.loSal && a.roiPct>=T.hiRoiPct)
+    return r('Salary Revision Recommended','np',[
+      ['Low salary (bottom quartile)',fmtFull(a.monSal)+'/mo'],
+      ['High Net ROI','P'+pc(a.roiPct)+' · '+fmtX(a.netROI)],
+      ['Net sales generated',fmtINR(a.ns)]]);
+  // 5 Promotion
+  if(a.scorePct>=T.topPct && a.consistency>=0.6 && a.eligible)
+    return r('Promotion Ready','gp',[
+      ['Performance score in top decile','P'+pc(a.scorePct)+' · '+a.score.toFixed(1)],
+      ['Consistent output (low variance)','CoV '+pc(a.cov_var)+'%'],
+      ['Incentive-eligible',fmtFull(a.nip)]]);
+  // 6 High performer
+  if(a.scorePct>=T.hiRoiPct)
+    return r('High Performer','gp',[
+      ['Top-quartile performance score','P'+pc(a.scorePct)+' · '+a.score.toFixed(1)],
+      ['Net ROI',fmtX(a.netROI)+' (rank #'+(a.rank_netROI||'–')+')'],
+      ['Net sales',fmtINR(a.ns)]]);
+  // 7 Department / vertical change
+  const verts=Object.entries(a.vByNs);
+  if(verts.length>1 && a.scorePct<=0.5){
+    const perV=verts.map(([v,ns])=>[v,ns]).sort((x,y)=>y[1]-x[1]);
+    if(perV[0][0]!==a.primary || (perV[1] && perV[1][1]>perV[0][1]*0.6))
+      return r('Department / Vertical Change','ap',[
+        ['Below-median score in current mix','P'+pc(a.scorePct)],
+        ['Works '+verts.length+' verticals; strongest: '+perV[0][0],fmtINR(perV[0][1])],
+        ['Re-test fit in best-performing vertical','review']]);
+  }
+  // 8 Coaching — targeted: a fixable weakness, ineligibility, or bottom-quartile-but-earning
+  if(!a.eligible || a.discTopPct>=T.discHiPct || a.retTopPct>=T.retHiPct || a.scorePct<=T.botScorePct){
+    const rs=[];
+    if(a.discTopPct>=T.discHiPct)rs.push(['High discount reliance','P'+pc(a.discTopPct)+' · '+fmtPct(a.discPct)]);
+    if(a.retTopPct>=T.retHiPct)rs.push(['High return rate',fmtPct(a.retPct)]);
+    if(!a.eligible)rs.push(['Below incentive threshold',fmtFull(a.nip)]);
+    if(a.scorePct<=T.botScorePct)rs.push(['Bottom-quartile score','P'+pc(a.scorePct)+' · '+a.score.toFixed(1)]);
+    rs.push(['Net ROI',fmtX(a.netROI)]);
+    return r('Coaching Required','ap',rs.slice(0,3));
+  }
+  // 9 Retain (default: eligible, solid, no specific flag)
+  return r('Retain','np',[
+    ['Solid, stable performance',a.score.toFixed(1)+' ('+a.grade+')'],
+    ['Incentive-eligible · coverage',fmtX(a.cov)],
+    ['Net ROI · consistency',fmtX(a.netROI)+' · CoV '+pc(a.cov_var)+'%']]);
 }
-
-/* ---------------- filters UI ---------------- */
-function fillSelect(id,vals){
-  const el=document.getElementById(id);
-  el.innerHTML='';
-  ['(All)',...vals].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v==='(All)'?'(All)':v;el.appendChild(o)});
+const REC_TONE={'Promotion Ready':'gp','High Performer':'gp','Retain':'np','Salary Revision Recommended':'np','Coaching Required':'ap','Department / Vertical Change':'ap','Salary Revision':'rp','Critical Salary Mismatch':'rp','Performance Improvement Plan':'rp','Termination Review':'rp'};
+/* ============================== BOOT / FILTERS ============================== */
+function _setStatus(msg,isErr){const el=document.getElementById('scope');if(el)el.innerHTML='<span style="color:'+(isErr?'#C62828':'#5E7178')+'">'+msg+'</span>';}
+async function bootstrap(){
+  _setStatus('Loading live data from Google Sheets…',false);
+  try{
+    const res=await fetch(SHEET_CSV_URL,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);
+    const text=await res.text();const parsed=Papa.parse(text,{header:true,skipEmptyLines:'greedy'});
+    const headers=(parsed.meta&&parsed.meta.fields)||[];const r=csvToRecords(parsed.data,headers);
+    if(r.error){_setStatus('⚠ '+r.error,true);return;}
+    if(!r.records.length){_setStatus('⚠ No data rows found.',true);return;}
+    RAW=r.records;monthsOrder=uniq(RAW.sort((a,b)=>a.midx-b.midx).map(r=>r.mon));
+    initFilters();render();
+  }catch(e){_setStatus('⚠ Could not load the sheet ('+e.message+'). Ensure it is published to web as CSV.',true);}
 }
+function fillSelect(id,vals){const el=document.getElementById(id);el.innerHTML='';['(All)',...vals].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o);});}
 function initFilters(){
   fillSelect('fVert',uniq(RAW.map(r=>r.vert)).sort());
-  fillSelect('fYear',uniq(RAW.map(r=>String(r.yr))).sort());
-  fillSelect('fQtr',uniq(RAW.map(r=>r.qtr)).sort());
-  document.getElementById('fVert').onchange=e=>{state.vert=e.target.value;render()};
-  document.getElementById('fYear').onchange=e=>{state.year=e.target.value;syncQtr();render()};
-  document.getElementById('fQtr').onchange=e=>{state.qtr=e.target.value;render()};
-  document.getElementById('reset').onclick=()=>{state.vert='(All)';state.year='(All)';state.qtr='(All)';
-    document.getElementById('fVert').value='(All)';document.getElementById('fYear').value='(All)';
-    syncQtr();document.getElementById('fQtr').value='(All)';render()};
+  fillSelect('fMonth',uniq(RAW.sort((a,b)=>a.midx-b.midx).map(r=>r.mon)));
+  fillSelect('fYear',uniq(RAW.map(r=>String(r.yr))).filter(x=>x!=='null').sort());
+  fillSelect('fQtr',uniq(RAW.map(r=>r.qtr)).filter(Boolean).sort());
+  ['fVert','fMonth','fYear','fQtr'].forEach(id=>document.getElementById(id).addEventListener('change',e=>{
+    const key=id==='fVert'?'vert':id==='fMonth'?'month':id==='fYear'?'year':'qtr';state[key]=e.target.value;render();}));
 }
-function syncQtr(){ // keep quarters consistent with chosen year
-  const qs=uniq(RAW.filter(r=>state.year==='(All)'||String(r.yr)===state.year).map(r=>r.qtr)).sort();
-  fillSelect('fQtr',qs);
-  if(!qs.includes(state.qtr.replace('(All)','')))state.qtr='(All)';
-  document.getElementById('fQtr').value=state.qtr;
-}
+/* chart registry */
+const _charts={};
+function chart(id,cfg){if(_charts[id]){_charts[id].destroy();}const el=document.getElementById(id);if(!el)return;_charts[id]=new Chart(el,cfg);}
+const cardEl=(title,sub,body,extra)=>`<div class="card" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);${extra||''}"><div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px"><div style="font-family:'Space Grotesk';font-weight:600;font-size:14px">${title}</div>${sub?`<div style="font-size:11.5px;color:var(--muted);margin-left:auto">${sub}</div>`:''}</div>${body}</div>`;
+const kpiEl=(lab,val,sub)=>`<div class="kpi"><div class="lab">${lab}</div><div class="val">${val}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
 
-/* ---------------- nav ---------------- */
-const titles={overview:['Executive Summary','Team-level profitability, salary justification and ROI'],
-  scorecard:['Agent Scorecard','One row per agent · ranked & tiered within the current filter'],
-  salary:['Salary Justification','Whether each agent generates enough to cover their pay'],
-  attendance:['Attendance vs Output','Who shows up, who converts, and who does both']};
-document.getElementById('nav').addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b)return;
-  state.view=b.dataset.view;
-  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x===b));
-  document.querySelectorAll('.view').forEach(v=>v.hidden=true);
-  document.getElementById('view-'+state.view).hidden=false;
-  document.getElementById('vTitle').textContent=titles[state.view][0];
-  document.getElementById('vSub').textContent=titles[state.view][1];
-  document.getElementById('rail').classList.remove('open');
-  render();
-});
-document.getElementById('hamb').onclick=()=>document.getElementById('rail').classList.toggle('open');
-
-/* ---------------- charts registry ---------------- */
-const charts={};
-function destroy(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
-const COL={ink:'#14202E',teal:'#0E9E96',tealL:'#46D6C9',green:'#1F8A54',amber:'#DA9000',red:'#CB3B4A',line:'#DCE4E6',muted:'#5E7178'};
-Chart.defaults.font.family="Inter";
-Chart.defaults.font.size=11;
-Chart.defaults.color=COL.muted;
-
-/* ---------------- scope chip ---------------- */
-function renderScope(rows){
-  const parts=[];
-  parts.push(`<span class="chip">Vertical: <b>${state.vert}</b></span>`);
-  parts.push(`<span class="chip">Year: <b>${state.year}</b></span>`);
-  parts.push(`<span class="chip">Quarter: <b>${state.qtr}</b></span>`);
-  parts.push(`<span style="margin-left:auto">${rows.length} agent-months · ${uniq(rows.map(r=>r.id)).length} agents in scope</span>`);
-  document.getElementById('scope').innerHTML=parts.join('');
-}
-
-/* ===================== OVERVIEW ===================== */
-function renderOverview(rows,agents){
-  const k=teamKPIs(rows);
-  // hero
-  document.getElementById('heroRoi').textContent=fmtX(k.roi).replace('×','');
-  document.getElementById('heroSub').textContent=
-    `Across the current scope the team turned ${fmtINR(k.commission)} of salary and incentive into ${fmtINR(k.ns)} of net sales — a profit contribution of ${fmtINR(k.profit)}. The bar below shows how far past break-even each rupee travels.`;
-  const heroMax=15;
-  document.getElementById('heroMax').textContent=heroMax+'×';
-  document.getElementById('heroBE').style.left=(1/heroMax*100)+'%';
-  const fillPct=Math.min(k.roi/heroMax*100,100);
-  const fill=document.getElementById('heroFill');
-  document.getElementById('heroFillTxt').textContent=fmtX(k.roi);
-  requestAnimationFrame(()=>{fill.style.width=fillPct+'%'});
-  // kpis
-  const cards=[
-    {l:'Active agents',v:k.agents,s:`of 88 in the master file`},
-    {l:'Net sales',v:fmtINR(k.ns),s:'taxable value, ex-GST'},
-    {l:'Gross sales',v:fmtINR(k.gs),s:'before discount & GST'},
-    {l:'Incentive paid',v:fmtINR(k.nip),s:'net incentive payable',cls:'a'},
-    {l:'Salary cost',v:fmtINR(k.sal),s:'attendance-adjusted',cls:'a'},
-    {l:'Commission cost',v:fmtINR(k.commission),s:'salary + incentive',cls:'a'},
-    {l:'Salary justified',v:fmtPct(k.justPct),s:'of agent-months',cls:k.justPct>=.6?'g':'r'},
-    {l:'Team ROI',v:fmtX(k.roi),s:'net sales ÷ cost',cls:'g'},
-    {l:'Revenue / agent',v:fmtINR(k.revPerAgent),s:'in scope'},
-    {l:'Profit / agent',v:fmtINR(k.profitPerAgent),s:'after their pay',cls:'g'},
-  ];
-  document.getElementById('kpis').innerHTML=cards.map(c=>
-    `<div class="kpi ${c.cls||''}"><div class="tick"></div><div class="k-lbl">${c.l}</div><div class="k-val tnum">${c.v}</div><div class="k-sub">${c.s}</div></div>`).join('');
-
-  // trend
-  const byMon=monthsOrder.map(mon=>{
-    const rs=rows.filter(r=>r.mon===mon);
-    const ns=rs.reduce((s,r)=>s+N0(r.ns),0);
-    const cost=rs.reduce((s,r)=>s+N0(r.sal)+N0(r.nip),0);
-    return{mon,ns,cost,roi:cost>0?ns/cost:0,has:rs.length>0};
-  }).filter(d=>d.has);
-  destroy('trendChart');
-  charts.trendChart=new Chart(document.getElementById('trendChart'),{
-    data:{labels:byMon.map(d=>d.mon),
-      datasets:[
-        {type:'bar',label:'Net sales',data:byMon.map(d=>d.ns),backgroundColor:COL.teal,borderRadius:5,yAxisID:'y',order:2,maxBarThickness:42},
-        {type:'line',label:'ROI (×)',data:byMon.map(d=>d.roi),borderColor:COL.ink,backgroundColor:COL.ink,borderWidth:2.5,tension:.35,pointRadius:3,pointBackgroundColor:COL.amber,yAxisID:'y1',order:1}
-      ]},
-    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:true,labels:{usePointStyle:true,boxWidth:8}},
-        tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y1'?` ROI ${c.parsed.y.toFixed(2)}×`:` Net sales ${fmtINR(c.parsed.y)}`}}},
-      scales:{
-        y:{position:'left',grid:{color:COL.line},ticks:{callback:v=>fmtINR(v)}},
-        y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'×'},suggestedMax:Math.max(15,Math.ceil(Math.max(...byMon.map(d=>d.roi))))},
-        x:{grid:{display:false}}}}
-  });
-
-  // tier distribution
-  const tc={top:0,avg:0,under:0}; agents.forEach(a=>tc[a.tier]++);
-  destroy('tierChart');
-  charts.tierChart=new Chart(document.getElementById('tierChart'),{
-    type:'doughnut',
-    data:{labels:['🟢 Top','🟡 Average','🔴 Under'],datasets:[{data:[tc.top,tc.avg,tc.under],backgroundColor:[COL.green,COL.amber,COL.red],borderWidth:2,borderColor:'#fff'}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} agents`}}}}
-  });
-  document.getElementById('tierLegend').innerHTML=
-    `<span><i style="background:${COL.green}"></i>Top ${tc.top}</span><span><i style="background:${COL.amber}"></i>Average ${tc.avg}</span><span><i style="background:${COL.red}"></i>Under ${tc.under}</span>`;
-
-  // questions answered
-  const top3=[...agents].sort((a,b)=>b.ns-a.ns).slice(0,3).map(a=>a.name);
-  const prof3=[...agents].sort((a,b)=>b.profit-a.profit).slice(0,3).map(a=>a.name);
-  const eff3=[...agents].filter(a=>a.cost>0).sort((a,b)=>b.roi-a.roi).slice(0,3).map(a=>a.name);
-  const coach=agents.filter(a=>a.tier==='under').length;
-  const med={roi:median(agents.map(a=>a.roi)),disc:median(agents.map(a=>a.discPct))};
-  const review=agents.filter(a=>a.tier==='under'&&a.roi<med.roi&&a.discPct>med.disc).length;
-  const qa=[
-    ['Highest business value (net sales)',`<b>${top3.join(', ')}</b> lead the board.`],
-    ['Highest profitability (after pay)',`<b>${prof3.join(', ')}</b> contribute the most profit.`],
-    ['Most incentive-efficient (ROI)',`<b>${eff3.join(', ')}</b> return the most per rupee.`],
-    ['Justify their salary',`<b>${fmtPct(k.justPct)}</b> of agent-months clear the bar; team coverage is <b>${fmtX(k.coverage)}</b>.`],
-    ['Need coaching',`<b>${coach}</b> agents sit in the 🔴 tier.`],
-    ['Need management review',`<b>${review}</b> are 🔴 with low ROI &amp; high discount reliance.`],
-  ];
-  document.getElementById('qaStrip').innerHTML=qa.map(q=>
-    `<div class="q"><div class="qq">${q[0]}</div><div class="qaText">${q[1]}</div></div>`).join('');
-
-  document.getElementById('ovNote').innerHTML=
-    `<b>Reading the numbers.</b> Net sales = taxable value (after discount, ex-GST). Cost = attendance-adjusted gross salary + net incentive payable. Profit contribution is revenue minus that cost — it is not full P&amp;L profit (no overheads, tooling or returns cost is loaded in). "Salary justified" counts agent-months where the month's net incentive alone met or beat the month's salary.`;
-}
-
-/* ===================== SCORECARD ===================== */
-const scCols=[
-  {k:'rank_ns',t:'#',cls:'c',fmt:(v,a)=>`<span class="rk ${a.tier==='top'?'top':''}">${v}</span>`},
-  {k:'name',t:'Agent',cls:'l',fmt:(v,a)=>`<span class="agent">${v}</span><br><span class="eid">${a.id} · ${a.primary}</span>`},
-  {k:'months',t:'Mo.',cls:'c'},
-  {k:'gs_sal',t:'Salary',fmt:(v,a)=>fmtINR(a.sal)},
-  {k:'ns',t:'Net sales',heat:'teal',fmt:v=>fmtINR(v)},
-  {k:'gi',t:'Gross inc.',fmt:v=>fmtINR(v)},
-  {k:'nip',t:'Net inc. pay.',fmt:v=>fmtINR(v)},
-  {k:'attPct',t:'Attend.',heat:'green',fmt:v=>fmtPct(v)},
-  {k:'retPct',t:'Return',heat:'redrev',fmt:v=>fmtPct(v)},
-  {k:'discPct',t:'Discount',heat:'redrev',fmt:v=>fmtPct(v)},
-  {k:'revWork',t:'Rev/work day',fmt:v=>fmtINR(v)},
-  {k:'revAtt',t:'Rev/att day',fmt:v=>fmtINR(v)},
-  {k:'profit',t:'Profit contrib.',fmt:v=>fmtINR(v)},
-  {k:'roi',t:'ROI',fmt:v=>fmtX(v)},
-  {k:'tier',t:'Tier',cls:'c',fmt:v=>{const m={top:['green','🟢 Top'],avg:['amber','🟡 Avg'],under:['red','🔴 Under']}[v];return `<span class="pill ${m[0]}">${m[1]}</span>`}}
-];
-function renderScorecard(agents){
-  let list=[...agents];
-  const q=state.scQ.toLowerCase();
-  if(q)list=list.filter(a=>a.name.toLowerCase().includes(q)||a.id.toLowerCase().includes(q));
-  const sk=state.scSort.k,dir=state.scSort.dir;
-  const val=a=> sk==='name'?a.name : sk==='gs_sal'?a.sal : a[sk];
-  list.sort((x,y)=>{const xv=val(x),yv=val(y);if(typeof xv==='string')return dir*xv.localeCompare(yv);return dir*(xv-yv)});
-  // heat ranges
-  const ranges={};['ns','attPct','retPct','discPct'].forEach(k=>{const vals=agents.map(a=>a[k]);ranges[k]=[Math.min(...vals),Math.max(...vals)]});
-  const thead=document.querySelector('#scTable thead');
-  thead.innerHTML='<tr>'+scCols.map(c=>{
-    const sorted=(c.k===sk)?'sorted':'';const ar=sorted?(dir<0?'▼':'▲'):'';
-    return `<th class="${c.cls||''} ${sorted}" data-k="${c.k}">${c.t}<span class="ar">${ar||'↕'}</span></th>`}).join('')+'</tr>';
-  thead.querySelectorAll('th').forEach(th=>th.onclick=()=>{
-    const k=th.dataset.k;
-    if(state.scSort.k===k)state.scSort.dir*=-1;
-    else{state.scSort.k=k;state.scSort.dir=(k==='name')?1:-1}
-    renderScorecard(agents);
-  });
-  const tbody=document.querySelector('#scTable tbody');
-  tbody.innerHTML=list.map(a=>'<tr>'+scCols.map(c=>{
-    let inner=c.fmt?c.fmt(c.k==='gs_sal'?a.sal:a[c.k],a):a[c.k];
-    let heatBar='';
-    if(c.heat&&ranges[c.k]){
-      const[mn,mx]=ranges[c.k];const t=mx>mn?(a[c.k]-mn)/(mx-mn):0;
-      let col;
-      if(c.heat==='teal')col=`rgba(14,158,150,${.12+t*.5})`;
-      else if(c.heat==='green')col=`rgba(31,138,84,${.12+t*.5})`;
-      else col=`rgba(203,59,74,${.12+t*.5})`; // redrev: more = worse
-      heatBar=`<span class="bar" style="width:${(t*100).toFixed(0)}%;background:${col}"></span>`;
-    }
-    return `<td class="${c.cls||''} ${c.heat?'cell-heat':''}">${heatBar}${inner}</td>`;
-  }).join('')+'</tr>').join('');
-  document.getElementById('scMeta').textContent=`${list.length} agents shown`;
-}
-
-/* ===================== SALARY ===================== */
-function renderSalary(rows,agents){
-  const k=teamKPIs(rows);
-  const sustains=agents.filter(a=>a.cov!=null&&a.cov>=1).length;
-  const partial=agents.filter(a=>a.cov!=null&&a.cov>=0.7&&a.cov<1).length;
-  const sub=agents.filter(a=>a.cov!=null&&a.cov<0.7).length;
-  const na=agents.filter(a=>a.cov==null).length;
-  const cards=[
-    {l:'Team coverage',v:fmtX(k.coverage),s:'net incentive ÷ salary',cls:'g'},
-    {l:'✅ Sustains (≥1×)',v:sustains,s:'pay covered by output',cls:'g'},
-    {l:'⚠️ Partial (0.7–1×)',v:partial,s:'close to break-even',cls:'a'},
-    {l:'❌ Subsidised (<0.7×)',v:sub+(na?` +${na}`:''),s:'needs review'+(na?` · ${na} no-salary mo.`:''),cls:'r'},
-  ];
-  document.getElementById('salKpis').innerHTML=cards.map(c=>
-    `<div class="kpi ${c.cls||''}"><div class="tick"></div><div class="k-lbl">${c.l}</div><div class="k-val tnum">${c.v}</div><div class="k-sub">${c.s}</div></div>`).join('');
-
-  // distribution chart of months justified
-  const maxMo=Math.max(...agents.map(a=>a.months),1);
-  const buckets=Array.from({length:maxMo+1},(_,i)=>agents.filter(a=>a.just===i).length);
-  destroy('justChart');
-  charts.justChart=new Chart(document.getElementById('justChart'),{
-    type:'bar',
-    data:{labels:buckets.map((_,i)=>i),datasets:[{label:'Agents',data:buckets,backgroundColor:COL.teal,borderRadius:5}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>`${c[0].label} months justified`,label:c=>` ${c.parsed.y} agents`}}},
-      scales:{x:{grid:{display:false},title:{display:true,text:'months justified'}},y:{grid:{color:COL.line},ticks:{precision:0}}}}
-  });
-
-  // table
-  let list=[...agents];
-  const q=state.salQ.toLowerCase();
-  if(q)list=list.filter(a=>a.name.toLowerCase().includes(q)||a.id.toLowerCase().includes(q));
-  const sk=state.salSort.k,dir=state.salSort.dir;
-  const val=a=>sk==='name'?a.name:(sk==='cov'?(a.cov==null?-1:a.cov):a[sk]);
-  list.sort((x,y)=>{const xv=val(x),yv=val(y);if(typeof xv==='string')return dir*xv.localeCompare(yv);return dir*(xv-yv)});
-  const cols=[
-    {k:'name',t:'Agent',cls:'l'},
-    {k:'months',t:'Active mo.',cls:'c'},
-    {k:'just',t:'Justified mo.',cls:'c'},
-    {k:'justRate',t:'Justified rate',fmt:v=>fmtPct(v)},
-    {k:'sal',t:'Salary',fmt:v=>fmtINR(v)},
-    {k:'ni',t:'Net incentive',fmt:v=>fmtINR(v)},
-    {k:'cov',t:'Coverage',cls:'cov'},
-    {k:'verdict',t:'Verdict',cls:'c'}
-  ];
-  const thead=document.querySelector('#salTable thead');
-  thead.innerHTML='<tr>'+cols.map(c=>{
-    const sorted=(c.k===sk)?'sorted':'';const ar=sorted?(dir<0?'▼':'▲'):'↕';
-    return `<th class="${c.cls==='l'?'l':(c.cls==='c'?'c':'')} ${sorted}" data-k="${c.k}">${c.t}<span class="ar">${ar}</span></th>`}).join('')+'</tr>';
-  thead.querySelectorAll('th').forEach(th=>th.onclick=()=>{const kk=th.dataset.k;if(kk==='verdict')return;
-    if(state.salSort.k===kk)state.salSort.dir*=-1;else{state.salSort.k=kk;state.salSort.dir=(kk==='name')?1:-1}renderSalary(rows,agents)});
-  const tbody=document.querySelector('#salTable tbody');
-  const covMax=2; // scale for mini load bar
-  tbody.innerHTML=list.map(a=>{
-    let verdict,vc;
-    if(a.cov==null){verdict='—';vc='amber'}
-    else if(a.cov>=1){verdict='✅ Sustains';vc='green'}
-    else if(a.cov>=0.7){verdict='⚠️ Partial';vc='amber'}
-    else{verdict='❌ Subsidised';vc='red'}
-    const covCell=a.cov==null?'<span class="eid">no salary recorded</span>':(()=>{
-      const t=Math.min(a.cov/covMax,1)*100;const bе=Math.min(1/covMax,1)*100;
-      const col=a.cov>=1?COL.green:(a.cov>=0.7?COL.amber:COL.red);
-      return `<div class="mini-load"><span class="num">${fmtX(a.cov)}</span><div class="track"><span class="f" style="width:${t}%;background:${col}"></span><span class="b" style="left:${bе}%"></span></div></div>`;
-    })();
-    return '<tr>'+cols.map(c=>{
-      if(c.k==='name')return `<td class="l"><span class="agent">${a.name}</span> <span class="eid">${a.id}</span></td>`;
-      if(c.k==='cov')return `<td>${covCell}</td>`;
-      if(c.k==='verdict')return `<td class="c"><span class="pill ${vc}">${verdict}</span></td>`;
-      const cls=c.cls==='c'?'c':'';
-      return `<td class="${cls}">${c.fmt?c.fmt(a[c.k]):a[c.k]}</td>`;
-    }).join('')+'</tr>';
-  }).join('');
-}
-
-/* ===================== ATTENDANCE ===================== */
-function renderAttendance(agents){
-  const medAtt=median(agents.map(a=>a.attPct));
-  const medRev=median(agents.map(a=>a.revAtt));
-  const q={ideal:[],rocket:[],turtle:[],warn:[]};
-  agents.forEach(a=>{
-    const hiA=a.attPct>=medAtt,hiR=a.revAtt>=medRev;
-    a.quad=hiA&&hiR?'ideal':(!hiA&&hiR?'rocket':(hiA&&!hiR?'turtle':'warn'));
-    q[a.quad].push(a);
-  });
-  const qd=[
-    ['ideal','⭐','Ideal',q.ideal.length,'High attendance & high output'],
-    ['rocket','🚀','Efficiency stars',q.rocket.length,'Low attendance, high output'],
-    ['turtle','🐢','Coaching focus',q.turtle.length,'High attendance, low output'],
-    ['warn','⚠️','At risk',q.warn.length,'Low attendance & low output'],
-  ];
-  document.getElementById('quadCards').innerHTML=qd.map(d=>
-    `<div class="qc ${d[0]}"><div class="q-em">${d[1]}</div><div class="q-n tnum">${d[3]}</div><div class="q-t">${d[2]}</div><div class="q-d">${d[4]}</div></div>`).join('');
-
-  const colMap={ideal:COL.green,rocket:COL.teal,turtle:COL.amber,warn:COL.red};
-  const ds=['ideal','rocket','turtle','warn'].map(qk=>({
-    label:{ideal:'⭐ Ideal',rocket:'🚀 Efficiency',turtle:'🐢 Coaching',warn:'⚠️ At risk'}[qk],
-    data:q[qk].map(a=>({x:a.attPct*100,y:a.revAtt,name:a.name,id:a.id})),
-    backgroundColor:colMap[qk],borderColor:'#fff',borderWidth:1,pointRadius:6,pointHoverRadius:8
-  }));
-  destroy('scatterChart');
-  charts.scatterChart=new Chart(document.getElementById('scatterChart'),{
-    type:'scatter',
-    data:{datasets:ds},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{usePointStyle:true,boxWidth:8}},
-        tooltip:{callbacks:{label:c=>` ${c.raw.name}: ${c.raw.x.toFixed(0)}% att · ${fmtINR(c.raw.y)}/day`}},
-        annotation:false},
-      scales:{
-        x:{title:{display:true,text:'Attendance %'},grid:{color:COL.line},ticks:{callback:v=>v+'%'}},
-        y:{title:{display:true,text:'Revenue per attendance day (₹)'},grid:{color:COL.line},ticks:{callback:v=>fmtINR(v)}}}
-    },
-    plugins:[{id:'medlines',afterDraw:chart=>{
-      const{ctx,chartArea,scales}=chart;const x=scales.x.getPixelForValue(medAtt*100),y=scales.y.getPixelForValue(medRev);
-      ctx.save();ctx.strokeStyle='#9AB0B6';ctx.setLineDash([5,4]);ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.moveTo(x,chartArea.top);ctx.lineTo(x,chartArea.bottom);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(chartArea.left,y);ctx.lineTo(chartArea.right,y);ctx.stroke();
-      ctx.setLineDash([]);ctx.fillStyle='#7C9298';ctx.font='10px Inter';
-      ctx.fillText('median att '+(medAtt*100).toFixed(0)+'%',x+4,chartArea.top+12);
-      ctx.fillText('median '+fmtINR(medRev)+'/day',chartArea.left+4,y-5);
-      ctx.restore();
-    }}]
-  });
-}
-
-/* ---------------- master render ---------------- */
+/* ============================== RENDER DISPATCH ============================== */
+const TITLES={overview:'Executive Summary',eval:'Agent Evaluation',scorecard:'Agent Scorecard',recs:'HR Recommendations',roi:'ROI & Salary',prod:'Productivity & Attendance',cat:'Product & Discount',consist:'Performance Consistency',bench:'Benchmarking',outliers:'Outliers & Correlation',settings:'Settings & Methodology'};
 function render(){
-  const rows=rowsFiltered();
-  const agents=agentAgg(rows);
-  renderScope(rows);
-  if(state.view==='overview')renderOverview(rows,agents);
-  else if(state.view==='scorecard')renderScorecard(agents);
-  else if(state.view==='salary')renderSalary(rows,agents);
-  else if(state.view==='attendance')renderAttendance(agents);
+  document.getElementById('viewTitle').textContent=TITLES[state.view]||'';
+  document.querySelectorAll('.view').forEach(v=>v.hidden=true);
+  const host=document.getElementById('view-'+state.view);if(host)host.hidden=false;
+  const rows=rowsInScope();const agents=buildAgents(rows);const active=agents._active;
+  const exCount=agents.length-active.length;
+  const scopeTxt=`<b>${active.length}</b> agents in scope · ${rows.length} agent-months · vertical <b>${state.vert}</b> · ${state.month==='(All)'?'':state.month+' · '}${state.year}/${state.qtr}`+(Object.keys(state.override).length?` · <span class="tag">${Object.keys(state.override).length} vertical override(s)</span>`:'');
+  const exIds=Object.keys(state.exclude);
+  const restore=exIds.length?`<span class="tag" style="background:var(--red-wash);color:var(--red)">Removed ${exIds.length}:</span> `+exIds.map(id=>{const a=agents.find(x=>x.id===id)||{name:id};return `<span class="tag" style="cursor:pointer" title="Restore to analysis" onclick="scExclude('${id}')">${esc(a.name)} ↩</span>`;}).join(' '):'';
+  const picker=`<select id="rmPick" title="Remove an agent from all analysis" style="padding:5px 9px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:12px;background:#fff;max-width:220px;color:var(--red)"><option value="">✕ Remove agent…</option>${[...active].sort((a,b)=>a.name.localeCompare(b.name)).map(a=>`<option value="${a.id}">${esc(a.name)} · ${a.id}</option>`).join('')}</select>`;
+  document.getElementById('scope').innerHTML=`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div>${scopeTxt}</div><div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${restore}${picker}</div></div>`;
+  const rp=document.getElementById('rmPick');if(rp)rp.addEventListener('change',e=>{if(e.target.value)scExclude(e.target.value);});
+  ({overview:renderOverview,eval:renderEval,scorecard:renderScorecard,recs:renderRecs,roi:renderROI,prod:renderProd,cat:renderCat,consist:renderConsist,bench:renderBench,outliers:renderOutliers,settings:renderSettings}[state.view]||(()=>{}))(rows,agents,active);
 }
 
-/* search inputs */
-document.getElementById('scSearch').addEventListener('input',e=>{state.scQ=e.target.value;render()});
-document.getElementById('salSearch').addEventListener('input',e=>{state.salQ=e.target.value;render()});
+/* ============================== EXECUTIVE SUMMARY ============================== */
+function renderOverview(rows,agents,active){
+  const k={agents:active.length,ns:sum(active,a=>a.ns),sal:sum(active,a=>a.sal),nip:sum(active,a=>a.nip),gs:sum(active,a=>a.gs)};
+  k.cost=k.sal+k.nip;k.netROI=k.cost>0?k.ns/k.cost:0;k.grossROI=k.sal>0?k.gs/k.sal:0;
+  k.eligible=active.filter(a=>a.eligible).length;k.zero=active.filter(a=>!a.eligible).length;
+  k.revAgent=k.agents?k.ns/k.agents:0;k.revWD=sum(active,a=>a.wd)>0?k.ns/sum(active,a=>a.wd):0;
+  const recCount={};active.forEach(a=>recCount[a.rec.tag]=(recCount[a.rec.tag]||0)+1);
+  const top=k=>active.length?active.reduce((p,c)=>c[k]>p[k]?c:p):null;
+  const best=top('ns'),hiroi=top('netROI'),hiprod=top('revAtt'),hicons=top('consistency'),hiexp=top('expertise');
+  const worstRoi=active.length?active.reduce((p,c)=>c.netROI<p.netROI?c:p):null;
+  const hiSalPoor=[...active].filter(a=>a.hiSal).sort((a,b)=>a.score-b.score)[0];
+  const cards=[kpiEl('Agents in scope',k.agents,k.eligible+' incentive-eligible · '+k.zero+' at ₹0'),
+    kpiEl('Total net sales',fmtINR(k.ns),'gross '+fmtINR(k.gs)),
+    kpiEl('Total cost (sal+inc)',fmtINR(k.cost),fmtINR(k.sal)+' salary · '+fmtINR(k.nip)+' incentive'),
+    kpiEl('Avg Net ROI',fmtX(k.netROI),'gross ROI '+fmtX(k.grossROI)),
+    kpiEl('Revenue / agent',fmtINR(k.revAgent),fmtINR(k.revWD)+' per working day'),
+    kpiEl('Zero-incentive agents',k.zero,((k.zero/Math.max(1,k.agents))*100).toFixed(0)+'% of cohort')];
+  const recOrder=['Promotion Ready','High Performer','Retain','Salary Revision Recommended','Coaching Required','Department / Vertical Change','Salary Revision','Performance Improvement Plan','Critical Salary Mismatch','Termination Review'];
+  const recRow=recOrder.filter(t=>recCount[t]).map(t=>`<span class="pill ${REC_TONE[t]}">${t} · ${recCount[t]}</span>`).join(' ');
+  const lead=(lab,a,extra)=>a?`<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line-2)"><span style="font-size:11px;color:var(--muted);width:150px">${lab}</span><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b><span style="margin-left:auto;color:var(--muted)">${extra}</span></div>`:'';
+  document.getElementById('view-overview').innerHTML=
+    `<div class="grid g3" style="margin-bottom:16px">${cards.join('')}</div>`+
+    cardEl('Recommendation distribution','click a recommendation type in HR Recommendations to drill down',`<div style="display:flex;flex-wrap:wrap;gap:7px">${recRow}</div>`,'margin-bottom:16px')+
+    `<div class="grid g2">`+
+      cardEl('Standouts','',lead('Highest net sales',best,fmtINR(best&&best.ns))+lead('Highest Net ROI',hiroi,fmtX(hiroi&&hiroi.netROI))+lead('Highest productivity',hiprod,fmtINR(hiprod&&hiprod.revAtt)+'/day')+lead('Most consistent',hicons,'CoV '+((hicons&&hicons.cov_var*100)||0).toFixed(0)+'%')+lead('Top product expertise',hiexp,((hiexp&&hiexp.expertise*100)||0).toFixed(0)+'/100'))+
+      cardEl('Attention required','',lead('Lowest Net ROI',worstRoi,fmtX(worstRoi&&worstRoi.netROI))+lead('High salary, weak score',hiSalPoor,(hiSalPoor&&hiSalPoor.score.toFixed(1)))+`<div style="margin-top:10px"><canvas id="ovChart" height="150"></canvas></div>`)+
+    `</div>`;
+  const byMon=monthsOrder.map(mon=>{const rs=rows.filter(r=>r.mon===mon);const ns=sum(rs,r=>r.ns);const cost=sum(rs,r=>r.sal)+sum(rs,r=>r.nip);return{mon,ns,roi:cost>0?ns/cost:0};}).filter(d=>d.ns>0);
+  chart('ovChart',{data:{labels:byMon.map(d=>d.mon),datasets:[{type:'bar',label:'Net sales',data:byMon.map(d=>d.ns),backgroundColor:COL.teal,borderRadius:5,yAxisID:'y',order:2},{type:'line',label:'ROI ×',data:byMon.map(d=>d.roi),borderColor:COL.ink,backgroundColor:COL.amber,borderWidth:2.5,tension:.35,pointRadius:3,yAxisID:'y1',order:1}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>fmtINR(v)}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'×'}}}}});
+}
+/* ============================== AGENT EVALUATION (merged master) ============================== */
+function openEval(id){state.evalId=id;state.view='eval';document.querySelectorAll('#nav button,.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view==='eval'));render();}
+function renderEval(rows,agents,active){
+  const host=document.getElementById('view-eval');
+  const list=[...agents].sort((a,b)=>a.name.localeCompare(b.name));
+  if(!state.evalId||!agents.find(a=>a.id===state.evalId))state.evalId=(active[0]||agents[0]||{}).id;
+  const a=agents.find(x=>x.id===state.evalId);
+  if(!a){host.innerHTML='<div class="note warn">No agents in current scope.</div>';return;}
+  const verts=uniq(RAW.map(r=>r.vert)).sort();
+  const picker=`<div class="selrow">
+    <select id="evalPick" style="min-width:240px">${list.map(x=>`<option value="${x.id}" ${x.id===a.id?'selected':''}>${esc(x.name)} · ${x.id}${isExcluded(x.id)?' (excluded)':''}</option>`).join('')}</select>
+    <span class="tag">Reassign vertical (analysis only)</span>
+    <select id="evalVert">${verts.map(v=>`<option value="${v}" ${v===a.vert?'selected':''}>${v}</option>`).join('')}</select>
+    <button class="btn sec" id="evalExcl">${isExcluded(a.id)?'Re-include in analysis':'Exclude from analysis'}</button>
+  </div>`;
+  const prof=[['Employee',esc(a.name)],['Employee ID',a.id],['Vertical (current)',esc(a.vert)+(state.override[a.id]?' · overridden':'')],['Primary vertical (by sales)',esc(a.primary)],['Months active',a.nMonths],['Working days (ref)',Math.round(a.wd)],['Attendance days',Math.round(a.att)],['Leave days',Math.round(a.leave)],['Gross salary (period)',fmtFull(a.sal)],['Incentive earned',fmtFull(a.nip)],['Total cost (CTC)',fmtFull(a.cost)]];
+  const profHTML=`<table class="dt"><tbody>${prof.map(([l,v])=>`<tr><td style="color:var(--muted)">${l}</td><td style="text-align:right;font-weight:600">${v}</td></tr>`).join('')}</tbody></table>`;
+  const kpis=[kpiEl('Net sales',fmtINR(a.ns),'rank #'+(a.rank_ns||'–')),kpiEl('Gross sales',fmtINR(a.gs),''),kpiEl('Net ROI',fmtX(a.netROI),'rank #'+(a.rank_netROI||'–')),kpiEl('Gross ROI',fmtX(a.grossROI),''),kpiEl('Rev / attendance day',fmtINR(a.revAtt),'rank #'+(a.rank_revAtt||'–')),kpiEl('Rev / working day',fmtINR(a.revWD),''),kpiEl('Attendance',fmtPct(a.attPct),Math.round(a.att)+'/'+Math.round(a.wd)+' days'),kpiEl('Weighted discount',fmtPct(a.discPct),'leakage '+fmtINR(a.discLeak)),kpiEl('Return rate',fmtPct(a.retPct),''),kpiEl('Consistency (CoV)',(a.cov_var*100).toFixed(0)+'%',a.consistency>=0.6?'stable':'volatile'),kpiEl('Sales growth',(a.growth*100).toFixed(0)+'%','first→last month'),kpiEl('Product expertise',(a.expertise*100).toFixed(0)+'/100','top: '+a.topCat[0])];
+  // salary justification flow
+  const sj=`<div class="flow" style="margin-bottom:10px"><span class="node">Salary ${fmtINR(a.sal)}</span><span class="ar">→</span><span class="node">Net sales ${fmtINR(a.ns)}</span><span class="ar">→</span><span class="node">Profit ${fmtINR(a.profit)}</span><span class="ar">→</span><span class="node">Net ROI ${fmtX(a.netROI)}</span><span class="ar">→</span><span class="node">Net payable ${fmtFull(a.nip)}</span><span class="ar">→</span><span class="pill ${a.salJustified?'gp':'rp'}">${a.salJustified?'✅ Salary justified':'❌ Salary requires review'}</span></div>`;
+  const inc=[['Gross incentive',fmtFull(a.gi)],['Load-bearing deduction','− '+fmtFull(a.lb)],['Net incentive',fmtFull(a.ni)],['Net incentive payable',fmtFull(a.nip)],['Incentive as % of salary',fmtPct(a.incPctSal)],['Incentive as % of net sales',fmtPct(a.incPctNs)],['Salary coverage (inc/sal)',fmtX(a.cov)]];
+  const incHTML=`<table class="dt"><tbody>${inc.map(([l,v])=>`<tr><td style="color:var(--muted)">${l}</td><td style="text-align:right;font-weight:600">${v}</td></tr>`).join('')}</tbody></table><div style="margin-top:10px"><span class="pill ${a.eligible?'gp':'rp'}">${a.eligible?'✅ Incentive eligible':'❌ Not incentive eligible'}</span> ${a.zeroStreak?`<span class="pill ap">${a.zeroStreak} consecutive zero-incentive month(s)</span>`:''}</div>`;
+  const reasonsHTML=`<ul class="reasons">${a.rec.reasons.filter(Boolean).map(([t,v])=>`<li><b>${t}</b><span class="kv">${v}</span></li>`).join('')}</ul>`;
+  const recCard=cardEl('HR Recommendation',a.grade+' · score '+a.score.toFixed(1),`<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><span class="bigscore">${a.score.toFixed(0)}</span><div><span class="pill ${a.rec.tone}" style="font-size:13px;padding:5px 12px">${a.rec.tag}</span><div style="font-size:11.5px;color:var(--muted);margin-top:4px">Grade ${a.grade} · cohort percentile P${Math.round(a.scorePct*100)}</div></div></div><div style="font-size:11.5px;color:var(--muted);margin:8px 0 2px">Triggered by:</div>${reasonsHTML}`);
+  host.innerHTML=picker+
+    `<div class="grid g2" style="margin-bottom:16px">`+cardEl('Employee profile','',profHTML)+recCard+`</div>`+
+    cardEl('Mandatory sales KPIs','normalized by attendance & working days',`<div class="grid g4">${kpis.join('')}</div>`,'margin-bottom:16px')+
+    cardEl('Salary justification','Salary → Revenue → Profit → ROI → Incentive → Verdict',sj,'margin-bottom:16px')+
+    `<div class="grid g3" style="margin-bottom:16px">`+
+      cardEl('Incentive eligibility','',incHTML)+
+      cardEl('Performance pillars','percentile vs cohort',`<canvas id="evRadar" height="220"></canvas>`)+
+      cardEl('Category mix','share of net sales',`<canvas id="evCat" height="220"></canvas>`)+
+    `</div>`+
+    cardEl('Monthly net sales & incentive','',`<canvas id="evTrend" height="90"></canvas>`);
+  // wire controls
+  document.getElementById('evalPick').addEventListener('change',e=>{state.evalId=e.target.value;render();});
+  document.getElementById('evalVert').addEventListener('change',e=>{const v=e.target.value;if(v===a.primary)delete state.override[a.id];else state.override[a.id]=v;save('frido_ov',state.override);render();});
+  document.getElementById('evalExcl').addEventListener('click',()=>{if(isExcluded(a.id))delete state.exclude[a.id];else state.exclude[a.id]=1;save('frido_ex',state.exclude);render();});
+  // charts
+  chart('evRadar',{type:'radar',data:{labels:['Contribution','Net ROI','Productivity','Consistency','Expertise','Discount ctrl','Quality','Attendance'],datasets:[{data:[a.p.contrib,a.p.netroi,a.p.prod,a.p.consist,a.p.expertise,a.p.discount,a.p.quality,a.p.attend],borderColor:COL.teal,backgroundColor:'rgba(14,158,150,.18)',pointBackgroundColor:COL.teal}]},options:{plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{stepSize:25,backdropColor:'transparent'}}}}});
+  const cv=CATS.map(([k,n])=>a.catShare[k]);
+  chart('evCat',{type:'doughnut',data:{labels:CATS.map(c=>c[1]),datasets:[{data:cv,backgroundColor:[COL.teal,COL.ink,COL.amber,COL.tealL,COL.green,COL.red]}]},options:{plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}}});
+  chart('evTrend',{data:{labels:a.series.map(s=>s.mon),datasets:[{type:'bar',label:'Net sales',data:a.series.map(s=>s.ns),backgroundColor:COL.teal,borderRadius:4,yAxisID:'y'},{type:'line',label:'Net payable incentive',data:a.series.map(s=>s.nip),borderColor:COL.amber,backgroundColor:COL.amber,borderWidth:2,tension:.3,pointRadius:3,yAxisID:'y1'}]},options:{plugins:{legend:{display:true,labels:{boxWidth:10,font:{size:10}}}},scales:{y:{ticks:{callback:v=>fmtINR(v)}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>fmtINR(v)}}}}});
+}
 
-bootstrap();
+/* ============================== HR RECOMMENDATIONS ============================== */
+function renderRecs(rows,agents,active){
+  const host=document.getElementById('view-recs');
+  const order=['Termination Review','Critical Salary Mismatch','Performance Improvement Plan','Salary Revision','Department / Vertical Change','Coaching Required','Salary Revision Recommended','Retain','High Performer','Promotion Ready'];
+  const groups={};active.forEach(a=>{(groups[a.rec.tag]=groups[a.rec.tag]||[]).push(a);});
+  const chips=order.filter(t=>groups[t]).map(t=>`<button class="subnav-c pill ${REC_TONE[t]}" data-rec="${t}" style="border:0;cursor:pointer;font-size:12px;padding:5px 11px">${t} · ${groups[t].length}</button>`).join(' ');
+  const rowsHTML=active.slice().sort((x,y)=>order.indexOf(x.rec.tag)-order.indexOf(y.rec.tag)||x.score-y.score).map(a=>{
+    const why=a.rec.reasons.filter(Boolean).map(([t,v])=>`${t} (${v})`).join('; ');
+    return `<tr><td><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b><div style="font-size:10.5px;color:var(--muted)">${a.id} · ${esc(a.vert)}</div></td><td><span class="grade ${a.grade.replace('+','p')}">${a.grade}</span></td><td style="text-align:right">${a.score.toFixed(1)}</td><td style="text-align:right">${fmtX(a.netROI)}</td><td style="text-align:right">${fmtFull(a.nip)}</td><td><span class="pill ${a.rec.tone}">${a.rec.tag}</span></td><td style="white-space:normal;color:var(--muted);font-size:11.5px;max-width:380px">${why}</td><td style="text-align:center"><button title="Remove from analysis" onclick="scExclude('${a.id}')" style="border:0;background:transparent;color:var(--red);cursor:pointer;font-size:14px;font-weight:700">✕</button></td></tr>`;
+  }).join('');
+  host.innerHTML=cardEl('Recommendation summary','every recommendation lists the KPIs that triggered it',`<div style="display:flex;flex-wrap:wrap;gap:7px">${chips}</div>`,'margin-bottom:16px')+
+    `<div class="note" style="margin-bottom:14px">Recommendations are assigned by a deterministic rule cascade (first matching rule wins). Thresholds are configurable in <b>Settings</b>. No subjective input is used.</div>`+
+    `<div class="tablewrap"><table class="dt"><thead><tr><th>Agent</th><th>Grade</th><th>Score</th><th>Net ROI</th><th>Net payable</th><th>Recommendation</th><th style="text-align:left">Why (traceable KPIs)</th><th style="text-align:center">Del</th></tr></thead><tbody>${rowsHTML}</tbody></table></div>`;
+  host.querySelectorAll('.subnav-c').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.rec;const g=groups[t];alert(t+' ('+g.length+'):\n\n'+g.map(a=>'• '+a.name+' — '+a.rec.reasons.filter(Boolean).map(r=>r[0]).join('; ')).join('\n'));}));
+}
+/* shared sortable table */
+function dtable(cols,data,fmt){
+  const head='<tr>'+cols.map(c=>`<th>${c[1]}</th>`).join('')+'<th style="text-align:center">Del</th></tr>';
+  const body=data.map(a=>'<tr>'+cols.map(c=>{const v=a[c[0]];const f=fmt&&fmt[c[0]]?fmt[c[0]](v,a):v;return `<td${c[0]==='name'?'':' style="text-align:right"'}>${c[0]==='name'?`<b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b>`:f}</td>`;}).join('')+`<td style="text-align:center"><button title="Remove from analysis" onclick="scExclude('${a.id}')" style="border:0;background:transparent;color:var(--red);cursor:pointer;font-size:14px;font-weight:700">✕</button></td>`+'</tr>').join('');
+  return `<div class="tablewrap"><table class="dt"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+/* ROI & SALARY */
+function renderROI(rows,agents,active){
+  const host=document.getElementById('view-roi');
+  const sorted=[...active].sort((a,b)=>b.netROI-a.netROI);
+  const lowNet=[...active].filter(a=>a.grossROI>0).map(a=>({a,gap:a.grossROI-a.netROI})).sort((x,y)=>y.gap-x.gap).slice(0,8);
+  const cols=[['name','Agent'],['vert','Vertical'],['sal','Salary'],['ns','Net sales'],['grossROI','Gross ROI'],['netROI','Net ROI'],['roiPct','ROI pctile'],['discPct','Disc%'],['retPct','Ret%']];
+  const fmt={vert:v=>esc(v),sal:fmtINR,ns:fmtINR,grossROI:fmtX,netROI:fmtX,roiPct:v=>'P'+Math.round(v*100),discPct:fmtPct,retPct:fmtPct};
+  host.innerHTML=`<div class="note" style="margin-bottom:14px"><b>Gross ROI</b> = Gross sales ÷ Salary. <b>Net ROI</b> = Net sales ÷ (Salary + Net incentive payable). A large gap flags revenue eroded by discounts, returns, or incentive cost.</div>`+
+    `<div class="grid g2" style="margin-bottom:16px">`+
+      cardEl('Salary vs Net sales','bubble size = Net ROI',`<canvas id="roiScatter" height="170"></canvas>`)+
+      cardEl('Largest Gross→Net ROI erosion','',`<table class="dt"><thead><tr><th style="text-align:left">Agent</th><th>Gross</th><th>Net</th><th>Disc%</th><th>Ret%</th></tr></thead><tbody>${lowNet.map(({a})=>`<tr><td><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b></td><td style="text-align:right">${fmtX(a.grossROI)}</td><td style="text-align:right">${fmtX(a.netROI)}</td><td style="text-align:right">${fmtPct(a.discPct)}</td><td style="text-align:right">${fmtPct(a.retPct)}</td></tr>`).join('')}</tbody></table>`)+
+    `</div>`+
+    cardEl('ROI leaderboard','',dtable(cols,sorted,fmt));
+  chart('roiScatter',{type:'bubble',data:{datasets:[{data:active.map(a=>({x:a.monSal,y:a.ns,r:Math.max(3,Math.min(20,a.netROI))})),backgroundColor:'rgba(14,158,150,.5)',borderColor:COL.teal}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?`${a.name}: ${fmtINR(a.ns)} @ ${fmtINR(a.monSal)}/mo, ${fmtX(a.netROI)}`:'';}}}},scales:{x:{title:{display:true,text:'Avg monthly salary'},ticks:{callback:v=>fmtINR(v)}},y:{title:{display:true,text:'Net sales'},ticks:{callback:v=>fmtINR(v)}}}}});
+}
+/* PRODUCTIVITY & ATTENDANCE */
+function renderProd(rows,agents,active){
+  const host=document.getElementById('view-prod');
+  const top=[...active].sort((a,b)=>b.revAtt-a.revAtt);
+  const cols=[['name','Agent'],['att','Att days'],['wd','Working days'],['attPct','Att%'],['revAtt','Rev/att day'],['revWD','Rev/working day'],['profitAtt','Profit/att day'],['leave','Leave days']];
+  const fmt={att:v=>Math.round(v),wd:v=>Math.round(v),attPct:fmtPct,revAtt:fmtINR,revWD:fmtINR,profitAtt:fmtINR,leave:v=>Math.round(v)};
+  host.innerHTML=`<div class="note" style="margin-bottom:14px">Productivity is normalized by days worked so part-month or low-attendance agents are compared fairly. <b>Working days</b> = the maximum attendance any agent logged that month (a proxy for available selling days, since true roster days aren't in the data).</div>`+
+    `<div class="grid g2" style="margin-bottom:16px">`+cardEl('Attendance vs Net sales','',`<canvas id="attScatter" height="170"></canvas>`)+cardEl('Revenue per attendance day — top 12','',`<canvas id="prodBar" height="170"></canvas>`)+`</div>`+
+    cardEl('Productivity table','',dtable(cols,top,fmt));
+  chart('attScatter',{type:'scatter',data:{datasets:[{data:active.map(a=>({x:a.attPct*100,y:a.ns})),backgroundColor:'rgba(14,158,150,.5)'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?`${a.name}: ${fmtPct(a.attPct)} att, ${fmtINR(a.ns)}`:'';}}}},scales:{x:{title:{display:true,text:'Attendance %'},ticks:{callback:v=>v+'%'}},y:{ticks:{callback:v=>fmtINR(v)}}}}});
+  const t12=top.slice(0,12);chart('prodBar',{type:'bar',data:{labels:t12.map(a=>a.name.split(' ')[0]),datasets:[{data:t12.map(a=>a.revAtt),backgroundColor:COL.teal,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmtINR(v)}}}}});
+}
+/* PRODUCT & DISCOUNT */
+function renderCat(rows,agents,active){
+  const host=document.getElementById('view-cat');
+  const catTot=CATS.map(([k,n])=>({n,v:sum(active,a=>a.catShare[k]*a.ns)}));
+  const top=[...active].sort((a,b)=>b.discLeak-a.discLeak);
+  const cols=[['name','Agent'],['expertise','Expertise'],['topCat','Top category'],['discPct','Weighted disc%'],['discLeak','Disc leakage'],['retPct','Return%']];
+  const fmt={expertise:v=>Math.round(v*100),topCat:v=>v[0],discPct:fmtPct,discLeak:fmtINR,retPct:fmtPct};
+  host.innerHTML=`<div class="note" style="margin-bottom:14px"><b>Product Expertise Score</b> blends category breadth (how many categories ≥5% of an agent's sales) and balance (evenness of the mix). <b>Discount leakage</b> = value-without-discount − gross sales (ex-GST revenue foregone). Per-category discount and selling price aren't in the dataset, so those are intentionally omitted.</div>`+
+    `<div class="grid g2" style="margin-bottom:16px">`+cardEl('Team revenue by category','',`<canvas id="catBar" height="170"></canvas>`)+cardEl('Discount vs Net sales','',`<canvas id="discScatter" height="170"></canvas>`)+`</div>`+
+    cardEl('Product & discount table','sorted by discount leakage',dtable(cols,top,fmt));
+  chart('catBar',{type:'bar',data:{labels:catTot.map(c=>c.n),datasets:[{data:catTot.map(c=>c.v),backgroundColor:[COL.teal,COL.ink,COL.amber,COL.tealL,COL.green,COL.red],borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>fmtINR(v)}}}}});
+  chart('discScatter',{type:'scatter',data:{datasets:[{data:active.map(a=>({x:a.discPct*100,y:a.ns})),backgroundColor:'rgba(218,144,0,.55)'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?`${a.name}: ${fmtPct(a.discPct)} disc, ${fmtINR(a.ns)}`:'';}}}},scales:{x:{title:{display:true,text:'Weighted discount %'},ticks:{callback:v=>v+'%'}},y:{ticks:{callback:v=>fmtINR(v)}}}}});
+}
+/* CONSISTENCY */
+function renderConsist(rows,agents,active){
+  const host=document.getElementById('view-consist');
+  const sorted=[...active].filter(a=>a.nMonths>1).sort((a,b)=>a.cov_var-b.cov_var);
+  const flag=sorted.filter(a=>a.cov_var>0.5);
+  const cols=[['name','Agent'],['nMonths','Months'],['avgMo','Avg/mo'],['medMo','Median/mo'],['sd','Std dev'],['cov_var','CoV'],['best','Best'],['worst','Worst']];
+  const fmt={avgMo:fmtINR,medMo:fmtINR,sd:fmtINR,cov_var:v=>(v*100).toFixed(0)+'%',best:v=>v?v.mon:'–',worst:v=>v?v.mon:'–'};
+  host.innerHTML=`<div class="note ${flag.length?'warn':''}" style="margin-bottom:14px">Consistency uses the coefficient of variation (CoV = std dev ÷ mean) of monthly net sales. Lower is steadier. ${flag.length?`<b>${flag.length}</b> agent(s) exceed 50% CoV (highly volatile).`:'No agents exceed the 50% volatility flag.'} Weekly/daily consistency isn't computable — the data is monthly.</div>`+
+    cardEl('Most → least consistent','only agents with 2+ months',dtable(cols,sorted,fmt));
+}
+/* BENCHMARKING */
+function renderBench(rows,agents,active){
+  const host=document.getElementById('view-bench');
+  const company={ns:mean(active.map(a=>a.ns)),netROI:mean(active.map(a=>a.netROI)),revAtt:mean(active.map(a=>a.revAtt)),disc:mean(active.map(a=>a.discPct))};
+  const byVert={};active.forEach(a=>{(byVert[a.vert]=byVert[a.vert]||[]).push(a);});
+  const vrows=Object.entries(byVert).map(([v,as])=>({v,n:as.length,ns:mean(as.map(a=>a.ns)),netROI:mean(as.map(a=>a.netROI)),revAtt:mean(as.map(a=>a.revAtt)),disc:mean(as.map(a=>a.discPct))})).sort((a,b)=>b.netROI-a.netROI);
+  host.innerHTML=`<div class="grid g4" style="margin-bottom:16px">${kpiEl('Company avg net sales',fmtINR(company.ns))}${kpiEl('Company avg Net ROI',fmtX(company.netROI))}${kpiEl('Company avg rev/att day',fmtINR(company.revAtt))}${kpiEl('Company avg discount',fmtPct(company.disc))}</div>`+
+    cardEl('Vertical benchmarks','averages per vertical (respects vertical overrides)',`<table class="dt"><thead><tr><th style="text-align:left">Vertical</th><th>Agents</th><th>Avg net sales</th><th>Avg Net ROI</th><th>Avg rev/att day</th><th>Avg discount</th></tr></thead><tbody>${vrows.map(r=>`<tr><td>${esc(r.v)}</td><td style="text-align:right">${r.n}</td><td style="text-align:right">${fmtINR(r.ns)}</td><td style="text-align:right">${fmtX(r.netROI)}</td><td style="text-align:right">${fmtINR(r.revAtt)}</td><td style="text-align:right">${fmtPct(r.disc)}</td></tr>`).join('')}</tbody></table>`,'margin-bottom:16px')+
+    cardEl('Vertical Net ROI','',`<canvas id="benchBar" height="120"></canvas>`);
+  chart('benchBar',{type:'bar',data:{labels:vrows.map(r=>r.v),datasets:[{data:vrows.map(r=>r.netROI),backgroundColor:COL.teal,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'×'}}}}});
+}
+/* OUTLIERS & CORRELATION */
+function iqrOut(active,key){const v=active.map(a=>a[key]);const q1=pctile(v,.25),q3=pctile(v,.75),iqr=q3-q1;const lo=q1-1.5*iqr,hi=q3+1.5*iqr;return active.filter(a=>a[key]<lo||a[key]>hi).map(a=>({a,v:a[key],hi:a[key]>hi}));}
+function renderOutliers(rows,agents,active){
+  const host=document.getElementById('view-outliers');
+  const defs=[['monSal','Salary'],['netROI','Net ROI'],['ns','Revenue'],['discPct','Discount'],['attPct','Attendance'],['score','Performance']];
+  const blocks=defs.map(([k,lab])=>{const o=iqrOut(active,k);return cardEl(lab+' outliers',o.length+' flagged (1.5×IQR)',o.length?`<table class="dt"><tbody>${o.sort((x,y)=>y.v-x.v).map(({a,v,hi})=>`<tr><td><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b></td><td style="text-align:right">${k==='netROI'?fmtX(v):k==='discPct'||k==='attPct'?fmtPct(v):k==='score'?v.toFixed(1):fmtINR(v)}</td><td style="text-align:right"><span class="pill ${hi?'gp':'rp'}">${hi?'high':'low'}</span></td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--muted);font-size:12px">None.</div>');}).join('');
+  const opts=[['sal_ns','Salary vs Net sales'],['sal_roi','Salary vs Net ROI'],['sal_inc','Salary vs Incentive'],['att_ns','Attendance vs Net sales'],['disc_ns','Discount vs Net sales']];
+  host.innerHTML=cardEl('Correlation explorer','',`<div class="selrow"><select id="scatSel">${opts.map(o=>`<option value="${o[0]}" ${o[0]===state.scatter?'selected':''}>${o[1]}</option>`).join('')}</select></div><canvas id="corrScatter" height="120"></canvas>`,'margin-bottom:16px')+`<div class="grid g3">${blocks}</div>`;
+  document.getElementById('scatSel').addEventListener('change',e=>{state.scatter=e.target.value;render();});
+  const map={sal_ns:[a=>a.monSal,a=>a.ns,'Salary','Net sales',fmtINR,fmtINR],sal_roi:[a=>a.monSal,a=>a.netROI,'Salary','Net ROI',fmtINR,v=>v.toFixed(1)],sal_inc:[a=>a.monSal,a=>a.nip,'Salary','Incentive',fmtINR,fmtINR],att_ns:[a=>a.attPct*100,a=>a.ns,'Attendance %','Net sales',v=>v+'%',fmtINR],disc_ns:[a=>a.discPct*100,a=>a.ns,'Discount %','Net sales',v=>v+'%',fmtINR]}[state.scatter];
+  chart('corrScatter',{type:'scatter',data:{datasets:[{data:active.map(a=>({x:map[0](a),y:map[1](a)})),backgroundColor:'rgba(14,158,150,.5)'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?a.name:'';}}}},scales:{x:{title:{display:true,text:map[2]},ticks:{callback:map[4]}},y:{title:{display:true,text:map[3]},ticks:{callback:map[5]}}}}});
+}
+/* ============================== SETTINGS & METHODOLOGY ============================== */
+const WLAB={contrib:'Contribution (net sales rank)',netroi:'Net ROI',prod:'Working-day productivity',consist:'Performance consistency',expertise:'Product expertise',discount:'Discount control',quality:'Quality (low returns)',attend:'Attendance'};
+const TLAB={hiSalQ:'High-salary cutoff (percentile)',loSalQ:'Low-salary cutoff (percentile)',topPct:'Promotion: score percentile ≥',hiRoiPct:'High-ROI percentile ≥',botRoiPct:'Termination: ROI percentile ≤',botScorePct:'Bottom-score percentile ≤',zeroStreak:'Zero-incentive months for PIP/Termination',discHiPct:'High-discount percentile ≥',retHiPct:'High-return percentile ≥'};
+function renderSettings(rows,agents,active){
+  const host=document.getElementById('view-settings');
+  const wsum=Object.values(WEIGHTS).reduce((s,x)=>s+x,0);
+  const wrows=Object.keys(DEF_W).map(k=>`<div class="cfg"><label>${WLAB[k]}</label><input type="number" min="0" max="100" step="1" data-w="${k}" value="${WEIGHTS[k]}"></div>`).join('');
+  const grows=Object.keys(DEF_G).map(k=>`<div class="cfg"><label>${k.replace('p','+')} grade · score ≥</label><input type="number" min="0" max="100" step="1" data-g="${k}" value="${GRADES[k]}"></div>`).join('');
+  const trows=Object.keys(DEF_T).map(k=>`<div class="cfg"><label>${TLAB[k]}</label><input type="number" step="${k==='zeroStreak'?1:0.05}" data-t="${k}" value="${THRESH[k]}"></div>`).join('');
+  const excl=Object.keys(state.exclude);const ov=Object.entries(state.override);
+  host.innerHTML=`<div class="grid g2" style="margin-bottom:16px">`+
+    cardEl('Scorecard weights','must be relative; auto-normalized (now sums to '+wsum+')',wrows+`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="saveW">Apply weights</button><button class="btn sec" id="resetW">Reset</button></div>`)+
+    cardEl('Grade bands','final score thresholds',grows+`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="saveG">Apply grades</button><button class="btn sec" id="resetG">Reset</button></div>`)+
+  `</div>`+
+    cardEl('HR decision thresholds','all recommendation rules read these',`<div class="grid g2">${trows}</div><div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="saveT">Apply thresholds</button><button class="btn sec" id="resetT">Reset</button></div>`,'margin-bottom:16px')+
+    cardEl('Excluded agents & vertical overrides','raw data is never modified',
+      `<div style="font-size:12.5px"><b>Excluded (${excl.length}):</b> ${excl.length?excl.map(id=>{const a=agents.find(x=>x.id===id);return `<span class="tag" style="cursor:pointer" onclick="(function(){delete state.exclude['${id}'];save('frido_ex',state.exclude);render();})()">${a?esc(a.name):id} ✕</span>`;}).join(' '):'none'}</div>
+       <div style="font-size:12.5px;margin-top:8px"><b>Vertical overrides (${ov.length}):</b> ${ov.length?ov.map(([id,v])=>{const a=agents.find(x=>x.id===id);return `<span class="tag" style="cursor:pointer" onclick="(function(){delete state.override['${id}'];save('frido_ov',state.override);render();})()">${a?esc(a.name):id} → ${esc(v)} ✕</span>`;}).join(' '):'none'}</div>`,'margin-bottom:16px')+
+    cardEl('Methodology & data coverage','what is measured, and what was intentionally excluded',
+      `<div style="font-size:12.5px;line-height:1.6;color:var(--ink-2)">
+       <p style="margin:0 0 8px"><b>Final score</b> = weighted average of eight percentile-ranked pillars (above), computed within the active cohort. Grades and the recommendation cascade read only these scores and the thresholds above — no subjective input.</p>
+       <p style="margin:0 0 6px"><b>Included & computed from your data:</b> net/gross sales, gross→net incentive (with load-bearing deduction), net incentive payable, gross salary, attendance days, return rate, discount %, payment mix (COD/prepaid/partial), six product-category revenue shares, and month/vertical — at agent×month×vertical grain.</p>
+       <p style="margin:0 0 6px"><b>Intentionally excluded (not present in the source data), to avoid fabricated metrics in HR decisions:</b></p>
+       <ul style="margin:0 0 8px 18px;padding:0">
+         <li>Order count, units sold, AOV, revenue-per-order, orders-per-day — no order/unit columns exist.</li>
+         <li>Target achievement % — no targets in the data.</li>
+         <li>Manager, joining date, experience, active-selling vs roster days, hours — not captured.</li>
+         <li>Customer quality beyond return rate (repeat/new customers, refunds, complaints, replacements) — not captured.</li>
+         <li>Per-category discount / selling price, weekly/daily consistency — granularity not available.</li>
+       </ul>
+       <p style="margin:0"><b>Working days</b> is a proxy (max attendance logged that month) since true roster days aren't in the data. <b>Salary justification</b> follows your rule: net payable &gt; ₹0 → justified; = ₹0 → requires review.</p>
+       </div>`);
+  // wire
+  const collect=attr=>{const o={};host.querySelectorAll(`[data-${attr}]`).forEach(i=>o[i.dataset[attr==='w'?'w':attr==='g'?'g':'t']]=parseFloat(i.value)||0);return o;};
+  document.getElementById('saveW').onclick=()=>{WEIGHTS=collect('w');save('frido_w',WEIGHTS);render();};
+  document.getElementById('resetW').onclick=()=>{WEIGHTS=Object.assign({},DEF_W);save('frido_w',WEIGHTS);render();};
+  document.getElementById('saveG').onclick=()=>{GRADES=collect('g');save('frido_g',GRADES);render();};
+  document.getElementById('resetG').onclick=()=>{GRADES=Object.assign({},DEF_G);save('frido_g',GRADES);render();};
+  document.getElementById('saveT').onclick=()=>{THRESH=collect('t');save('frido_t',THRESH);render();};
+  document.getElementById('resetT').onclick=()=>{THRESH=Object.assign({},DEF_T);save('frido_t',THRESH);render();};
+}
+
+/* ============================== AGENT SCORECARD (ranked table) ============================== */
+function scSortClick(k){if(state.scSort.k===k)state.scSort.dir*=-1;else state.scSort={k:k,dir:k==='name'?1:-1};render();}
+window.scSortClick=scSortClick;
+function renderScorecard(rows,agents,active){
+  const host=document.getElementById('view-scorecard');
+  const cols=[
+    ['name','Agent',null,'l'],['nMonths','Mo.',v=>Math.round(v)],['sal','Salary',fmtINR],
+    ['ns','Net sales',fmtINR,'heat'],['gi','Gross inc.',fmtINR],['nip','Net inc. pay.',fmtINR],
+    ['attPct','Attend.',fmtPct,'green'],['retPct','Return',fmtPct,'red'],['discPct','Discount',fmtPct,'red'],
+    ['revWD','Rev/work day',fmtINR],['revAtt','Rev/att day',fmtINR],['profit','Profit contrib.',fmtINR],
+    ['netROI','Net ROI',fmtX],['grossROI','Gross ROI',fmtX],
+    ['roiPct','Net ROI %ile',v=>'P'+Math.round(v*100)],['groiPct','Gross ROI %ile',v=>'P'+Math.round(v*100)],
+    ['grade','Grade',v=>`<span class="grade ${String(v).replace('+','p')}">${v}</span>`]
+  ];
+  const q=state.scQ.trim().toLowerCase();
+  let data=active.filter(a=>!q||a.name.toLowerCase().includes(q)||a.id.toLowerCase().includes(q)||a.vert.toLowerCase().includes(q));
+  const k=state.scSort.k,dir=state.scSort.dir;
+  data=[...data].sort((a,b)=>k==='name'?dir*a.name.localeCompare(b.name):dir*((a[k]||0)-(b[k]||0)));
+  const maxNs=Math.max(1,...active.map(a=>a.ns)),maxRet=Math.max(.0001,...active.map(a=>a.retPct)),maxDisc=Math.max(.0001,...active.map(a=>a.discPct));
+  const arrow=key=>state.scSort.k===key?(state.scSort.dir<0?' ▼':' ▲'):'';
+  const head='<tr><th style="text-align:center">#</th>'+cols.map(c=>`<th onclick="scSortClick('${c[0]}')" style="${c[3]==='l'?'text-align:left':''}">${c[1]}${arrow(c[0])}</th>`).join('')+'<th style="text-align:center">Del</th></tr>';
+  const body=data.map((a,i)=>{
+    const cells=cols.map(c=>{
+      const raw=a[c[0]];const val=c[2]?c[2](raw,a):raw;
+      let style='text-align:right';let inner=val;
+      if(c[3]==='l'){style='text-align:left';inner=`<b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b><div style="font-size:10.5px;color:var(--muted)">${a.id} · ${esc(a.vert)}</div>`;}
+      else if(c[3]==='heat'){const f=raw/maxNs;style+=`;background:linear-gradient(90deg, rgba(14,158,150,${(0.10+0.30*f).toFixed(3)}) ${(f*100).toFixed(0)}%, transparent ${(f*100).toFixed(0)}%);font-weight:600`;}
+      else if(c[3]==='green'){style+=`;background:rgba(31,138,84,${(0.08+0.30*Math.min(1,raw)).toFixed(3)})`;}
+      else if(c[3]==='red'){const m=c[0]==='retPct'?maxRet:maxDisc;style+=`;background:rgba(203,59,74,${(0.05+0.28*Math.min(1,raw/m)).toFixed(3)})`;}
+      return `<td style="${style}">${inner}</td>`;
+    }).join('');
+    return `<tr><td style="text-align:center;color:var(--muted)">${i+1}</td>${cells}<td style="text-align:center"><button title="Remove from analysis" onclick="scExclude('${a.id}')" style="border:0;background:transparent;color:var(--red);cursor:pointer;font-size:14px;font-weight:700">✕</button></td></tr>`;
+  }).join('');
+  const exIds=Object.keys(state.exclude);
+  const exStrip=exIds.length?`<div style="margin-bottom:10px;font-size:12px"><span class="tag">Removed (${exIds.length}):</span> ${exIds.map(id=>{const a=agents.find(x=>x.id===id)||{name:id};return `<span class="tag" style="cursor:pointer" onclick="scExclude('${id}')">${esc(a.name)} ↩ restore</span>`;}).join(' ')}</div>`:'';
+  host.innerHTML=
+    `<div class="selrow"><input id="scSearch" placeholder="Search agent, ID, or vertical…" value="${esc(state.scQ)}" style="min-width:280px"><span style="margin-left:auto;color:var(--muted);font-size:12px">${data.length} of ${active.length} agents · sorted by ${cols.find(c=>c[0]===k)?cols.find(c=>c[0]===k)[1]:k}</span></div>`+
+    exStrip+
+    `<div class="note" style="margin-bottom:12px">One row per agent, ranked & tiered within the current filter. Click any column to sort, click a name to open the full evaluation, and use ✕ to remove an agent from all analysis (raw data is never deleted — restore from the strip above or in Settings).</div>`+
+    `<div class="tablewrap"><table class="dt">${head}<tbody>${body}</tbody></table></div>`;
+  const s=document.getElementById('scSearch');s.addEventListener('input',e=>{state.scQ=e.target.value;const cur=e.target.selectionStart;render();const ns=document.getElementById('scSearch');if(ns){ns.focus();ns.setSelectionRange(cur,cur);}});
+}
+function scExclude(id){if(isExcluded(id))delete state.exclude[id];else state.exclude[id]=1;save('frido_ex',state.exclude);render();}
+window.scExclude=scExclude;window.renderScorecard=renderScorecard;
+
+/* ============================== NAV / BOOT ============================== */
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{
+  state.view=b.dataset.view;
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x===b));
+  render();
+}));
+window.openEval=openEval;window.state=state;window.save=save;window.render=render;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootstrap);else bootstrap();
 </script>
-
-<style>
-#aiEditFab{position:fixed;right:20px;bottom:20px;z-index:9998;background:#111827;color:#e5e7eb;border:1px solid #334155;border-radius:999px;padding:11px 16px;font:600 13px/1 'Inter',system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);transition:transform .12s ease,background .12s ease}
-#aiEditFab:hover{background:#1f2937;transform:translateY(-1px)}
-#aiEditPanel{position:fixed;right:20px;bottom:74px;z-index:9999;width:340px;max-width:calc(100vw - 40px);display:none;flex-direction:column;gap:10px;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);font-family:'Inter',system-ui,sans-serif;color:#e5e7eb}
-#aiEditPanel h4{margin:0;font:600 14px/1.3 'Space Grotesk','Inter',sans-serif}
-#aiEditPanel p.hint{margin:0;font-size:11.5px;color:#94a3b8;line-height:1.45}
-#aiEditPanel textarea{width:100%;box-sizing:border-box;min-height:74px;resize:vertical;background:#1e293b;border:1px solid #334155;border-radius:9px;color:#e5e7eb;font:13px/1.4 'Inter',sans-serif;padding:9px}
-#aiEditPanel input{width:100%;box-sizing:border-box;background:#1e293b;border:1px solid #334155;border-radius:9px;color:#e5e7eb;font:13px 'Inter',sans-serif;padding:9px}
-#aiEditPanel textarea:focus,#aiEditPanel input:focus{outline:none;border-color:#14b8a6}
-#aiEditPanel .row{display:flex;gap:8px}
-#aiEditPanel button.send{flex:1;background:#14b8a6;color:#04231f;border:none;border-radius:9px;padding:10px;font:600 13px 'Inter',sans-serif;cursor:pointer}
-#aiEditPanel button.send:hover{background:#0fd1bb}
-#aiEditPanel button.close{background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:9px;padding:10px 12px;font:600 13px 'Inter',sans-serif;cursor:pointer}
-#aiEditStatus{font-size:12px;min-height:16px;color:#94a3b8;line-height:1.4}
-</style>
-<button id="aiEditFab" onclick="aiEditToggle()">&#9998; Edit with Claude</button>
-<div id="aiEditPanel" role="dialog" aria-label="Edit dashboard with Claude">
-  <h4>Ask Claude to change this dashboard</h4>
-  <p class="hint">Describe one change in plain English. Claude opens a pull request you can review before it goes live.</p>
-  <textarea id="aiEditText" placeholder="e.g. Change the Team ROI card colour to green, and rename 'Net Sales' to 'Revenue'."></textarea>
-  <input id="aiEditPass" type="password" placeholder="Edit password" autocomplete="off">
-  <div class="row">
-    <button class="send" onclick="aiEditSend()">Request change</button>
-    <button class="close" onclick="aiEditToggle()">Close</button>
-  </div>
-  <div id="aiEditStatus"></div>
-</div>
-<script>
-(function(){
-  var FN='/api/ist-edit-trigger';
-  var savedPass='';
-  window.aiEditToggle=function(){
-    var p=document.getElementById('aiEditPanel');
-    var open=(p.style.display==='flex');
-    p.style.display=open?'none':'flex';
-    if(!open){ document.getElementById('aiEditText').focus(); }
-  };
-  window.aiEditSend=async function(){
-    var t=document.getElementById('aiEditText');
-    var pw=document.getElementById('aiEditPass');
-    var s=document.getElementById('aiEditStatus');
-    var instruction=(t.value||'').trim();
-    var password=(pw.value||savedPass).trim();
-    if(!instruction){ s.style.color='#fca5a5'; s.textContent='Type what you want changed.'; return; }
-    if(!password){ s.style.color='#fca5a5'; s.textContent='Enter the edit password.'; return; }
-    savedPass=password;
-    s.style.color='#94a3b8'; s.textContent='Sending to Claude\u2026';
-    try{
-      var r=await fetch(FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({instruction:instruction,password:password})});
-      if(r.status===401){ s.style.color='#fca5a5'; s.textContent='Wrong password.'; savedPass=''; return; }
-      if(r.status===202||r.ok){ s.style.color='#34d399'; s.textContent='\u2713 Sent. Claude will open a pull request in about a minute.'; t.value=''; return; }
-      var e=await r.text(); s.style.color='#fca5a5'; s.textContent='Error: '+e.slice(0,140);
-    }catch(err){ s.style.color='#fca5a5'; s.textContent='Network error: '+err.message; }
-  };
-})();
-</script>
-
 </body>
 </html>
