@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frido · Salary Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --bg:#F4F6F8; --surface:#FFFFFF; --surface-2:#FBFCFD;
+    --ink:#15212E; --muted:#5E6B7A; --faint:#8A97A6; --line:#E4E9EF;
+    --primary:#15586B; --primary-soft:#1F6F7E; --accent:#C49A3F;
+    --pos:#3E8E6E; --neg:#C25A43;
+    --radius:14px; --shadow:0 1px 2px rgba(21,33,46,.04), 0 6px 22px rgba(21,33,46,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace; font-feature-settings:'tnum' 1; letter-spacing:-.01em}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; margin:0; letter-spacing:-.01em}
+
+  /* ---------- Header ---------- */
+  header{
+    background:linear-gradient(180deg,#0F4350 0%, #15586B 100%);
+    color:#EAF1F2; padding:26px 28px 22px;
+  }
+  .wrap{max-width:none; margin:0 auto}
+  .eyebrow{
+    font-size:11.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+    color:#9FC4CC; display:flex; align-items:center; gap:9px;
+  }
+  .eyebrow::before{content:""; width:22px; height:2px; background:var(--accent); display:inline-block}
+  header h1{font-size:30px; font-weight:700; margin:10px 0 6px; color:#fff}
+  header .sub{color:#B9D2D8; font-size:13.5px; max-width:760px}
+  .src{margin-top:12px; font-size:11.5px; color:#94B9C1; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
+
+  /* ---------- Controls ---------- */
+  .controls{
+    position:sticky; top:0; z-index:50;
+    background:rgba(255,255,255,.86); backdrop-filter:saturate(150%) blur(10px);
+    border-bottom:1px solid var(--line); padding:12px 28px;
+  }
+  .controls-inner{max-width:none; margin:0 auto; display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap}
+  .ctrl{display:flex; flex-direction:column; gap:5px}
+  .ctrl label{font-size:11px; font-weight:600; color:var(--muted); letter-spacing:.04em; text-transform:uppercase}
+  select,input[type=text]{
+    font-family:inherit; font-size:13.5px; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:9px;
+    padding:8px 11px; min-width:170px; outline:none; transition:border-color .15s, box-shadow .15s;
+  }
+  select:focus,input[type=text]:focus{border-color:var(--primary-soft); box-shadow:0 0 0 3px rgba(31,111,126,.13)}
+  .url-ctrl input{min-width:300px}
+  .btn{
+    font-family:inherit; font-size:13px; font-weight:600; cursor:pointer;
+    border:1px solid transparent; border-radius:9px; padding:9px 15px; transition:.15s;
+  }
+  .btn-primary{background:var(--primary); color:#fff}
+  .btn-primary:hover{background:var(--primary-soft)}
+  .btn-ghost{background:transparent; color:var(--muted); border-color:var(--line)}
+  .btn-ghost:hover{color:var(--ink); border-color:var(--faint)}
+  .seg{display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--surface)}
+  .seg-btn{font-family:inherit; font-size:13px; font-weight:600; padding:8px 14px; border:none; background:transparent; color:var(--muted); cursor:pointer; transition:.15s; white-space:nowrap}
+  .seg-btn:hover{color:var(--ink)}
+  .seg-btn.active{background:var(--primary); color:#fff}
+  .seg-btn+.seg-btn{border-left:1px solid var(--line)}
+  .spacer{flex:1}
+
+  /* ---------- Layout ---------- */
+  main{max-width:none; margin:0 auto; padding:24px 32px 70px}
+  .section{margin-top:30px}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+  .section-head h2{font-size:18px; font-weight:600}
+  .section-head .rule{flex:1; height:1px; background:var(--line)}
+  .section-head .count{font-size:12px; color:var(--faint); font-weight:500}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow)}
+
+  /* KPI */
+  .kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(196px,1fr)); gap:13px}
+  .kpi{padding:16px 17px; position:relative; overflow:hidden}
+  .kpi::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--primary)}
+  .kpi.gold::before{background:var(--accent)}
+  .kpi .k-label{font-size:11.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.05em}
+  .kpi .k-val{font-size:24px; font-weight:600; margin-top:9px; color:var(--ink); line-height:1.1}
+  .kpi .k-sub{font-size:11.5px; color:var(--faint); margin-top:6px; min-height:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+  /* Charts */
+  .chart-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
+  .chart-card{padding:16px 16px 8px}
+  .chart-card h3{font-size:14.5px; font-weight:600; color:var(--ink)}
+  .chart-card .c-sub{font-size:11.5px; color:var(--faint); margin:3px 0 6px}
+  .chart{width:100%; height:300px}
+  .chart.tall{height:380px}
+
+  /* Tables */
+  .table-wrap{overflow:auto; border-radius:var(--radius)}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  thead th{
+    position:sticky; top:0; background:var(--surface-2); z-index:1;
+    text-align:left; font-weight:600; color:var(--muted); font-size:11.5px;
+    text-transform:uppercase; letter-spacing:.04em; padding:11px 13px; white-space:nowrap;
+    border-bottom:1px solid var(--line); cursor:pointer; user-select:none;
+  }
+  thead th.no-sort{cursor:default}
+  thead th .arr{color:var(--accent); font-size:10px; margin-left:3px}
+  tbody td{padding:10px 13px; border-bottom:1px solid #EEF2F5; white-space:nowrap}
+  tbody tr:hover{background:#F8FAFB}
+  td.num,th.num{text-align:right}
+  .rank-pill{display:inline-block; min-width:24px; text-align:center; padding:2px 7px; border-radius:6px; background:#EEF3F4; color:var(--primary); font-weight:600; font-size:12px}
+  .rank-pill.top{background:#F6EEDD; color:#8A6516}
+  .tag{display:inline-block; padding:2px 8px; border-radius:6px; background:#EEF2F5; color:var(--muted); font-size:11.5px; font-weight:500}
+  .emp-tools{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+  .emp-tools .hint{font-size:11.5px; color:var(--faint)}
+
+  /* Insights */
+  .insights{padding:20px 22px}
+  .insights ul{margin:0; padding:0; list-style:none; display:grid; gap:12px}
+  .insights li{display:flex; gap:12px; align-items:flex-start; font-size:13.5px; color:#2A3744; line-height:1.55}
+  .insights li::before{content:""; flex:0 0 auto; width:7px; height:7px; border-radius:2px; background:var(--accent); margin-top:7px; transform:rotate(45deg)}
+  .insights b{color:var(--ink); font-weight:600}
+
+  /* Data quality strip */
+  .dq{margin-top:18px; border-left:3px solid var(--accent)}
+  .dq-head{display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer}
+  .dq-head .badge{font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; background:#F6EEDD; color:#8A6516}
+  .dq-head .badge.ok{background:#E5F1EB; color:#2E6B4F}
+  .dq-head .badge.warn{background:#F7E7E2; color:#9C3D26}
+  .dq-head h3{font-size:13.5px; font-weight:600}
+  .dq-head .chev{margin-left:auto; color:var(--faint); transition:transform .2s}
+  .dq.open .chev{transform:rotate(180deg)}
+  .dq-body{display:none; padding:4px 16px 16px}
+  .dq.open .dq-body{display:block}
+  .map-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:14px}
+  .map-grid .ctrl select{min-width:0; width:100%}
+  .dq-stats{display:flex; flex-wrap:wrap; gap:18px; font-size:12.5px; color:var(--muted)}
+  .dq-stats b{color:var(--ink); font-weight:600}
+
+  /* status / empty */
+  #status{padding:40px 28px; text-align:center; color:var(--muted)}
+  .err{max-width:640px; margin:0 auto; text-align:left; background:#FCF4F2; border:1px solid #F1D9D2; border-radius:12px; padding:18px 20px; color:#7A3322}
+  .err code{background:#fff; padding:1px 5px; border-radius:4px; font-size:12px; border:1px solid #ecd; word-break:break-all}
+  .empty-overlay{display:none; padding:24px; text-align:center; color:var(--faint); font-size:13.5px}
+  body.no-rows .empty-overlay{display:block}
+
+  .spin{display:inline-block; width:34px; height:34px; border:3px solid var(--line); border-top-color:var(--primary); border-radius:50%; animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  @media (max-width:880px){
+    .chart-grid{grid-template-columns:1fr}
+    header h1{font-size:24px}
+    main{padding:20px 16px 60px}
+    header,.controls{padding-left:16px; padding-right:16px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Frido · Compensation Intelligence</div>
+    <h1>Salary Analysis</h1>
+    <div class="sub">Workforce compensation breakdown for the Inside Sales org — distribution, concentration, banding and pay-equity signals. Use the slicers to drill into any department, manager or individual.</div>
+    <div class="src"><span class="dot"></span> Reading live from the published <b>&nbsp;ISD&nbsp;</b> sheet · all amounts in ₹ · <span id="loadinfo">connecting…</span></div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="ctrl">
+      <label for="f-dept">Department</label>
+      <select id="f-dept"><option value="">All departments</option></select>
+    </div>
+    <div class="ctrl" id="ctrl-vert" style="display:none">
+      <label for="f-vert">Vertical</label>
+      <select id="f-vert"><option value="">All verticals</option></select>
+    </div>
+    <div class="ctrl">
+      <label for="f-mgr">Manager</label>
+      <select id="f-mgr"><option value="">All managers</option></select>
+    </div>
+    <div class="ctrl">
+      <label for="f-emp">Employee</label>
+      <select id="f-emp"><option value="">All employees</option></select>
+    </div>
+    <button class="btn btn-ghost" id="reset">Reset filters</button>
+    <div class="spacer"></div>
+    <div class="ctrl">
+      <label>Salary view</label>
+      <div class="seg" id="mode-toggle">
+        <button type="button" data-mode="yearly" class="seg-btn active">Annual CTC</button>
+        <button type="button" data-mode="monthly" class="seg-btn">Monthly</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="reload">↻ Refresh from sheet</button>
+  </div>
+</div>
+
+<div id="status"><div class="spin"></div><div style="margin-top:14px">Loading compensation data…</div></div>
+
+<main id="app" style="display:none">
+
+  <!-- Data quality -->
+  <div class="card dq" id="dq">
+    <div class="dq-head" id="dq-head">
+      <span class="badge" id="dq-badge">checking…</span>
+      <h3>Data quality &amp; column mapping</h3>
+      <span class="chev">▼</span>
+    </div>
+    <div class="dq-body">
+      <div class="map-grid" id="map-grid"></div>
+      <div class="dq-stats" id="dq-stats"></div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="section" style="margin-top:22px">
+    <div class="section-head"><h2>Key metrics</h2><div class="rule"></div><div class="count" id="kpi-scope"></div></div>
+    <div class="kpi-grid" id="kpis"></div>
+  </div>
+
+  <div class="empty-overlay">No employees match the current filters. Adjust or reset the slicers above.</div>
+
+  <!-- Charts -->
+  <div class="section">
+    <div class="section-head"><h2>Visual breakdown</h2><div class="rule"></div></div>
+    <div class="chart-grid">
+      <div class="card chart-card"><h3>Department-wise total salary cost</h3><div class="c-sub">Total salary cost per department</div><div class="chart" id="c-deptcost"></div></div>
+      <div class="card chart-card"><h3>Department-wise average salary</h3><div class="c-sub">Mean pay per department</div><div class="chart" id="c-deptavg"></div></div>
+      <div class="card chart-card" id="card-vertcost" style="display:none"><h3>Vertical-wise total salary cost</h3><div class="c-sub">Total salary outlay per vertical</div><div class="chart" id="c-vertcost"></div></div>
+      <div class="card chart-card" id="card-vertavg" style="display:none"><h3>Vertical-wise average salary</h3><div class="c-sub">Mean pay per vertical</div><div class="chart" id="c-vertavg"></div></div>
+      <div class="card chart-card"><h3>Manager-wise salary distribution</h3><div class="c-sub">Spread of pay within each manager's team (min · Q1 · median · Q3 · max)</div><div class="chart tall" id="c-mgrbox"></div></div>
+      <div class="card chart-card"><h3>Employee salary ranking</h3><div class="c-sub">All employees by salary — scroll for lower ranks</div><div class="chart tall" id="c-emprank"></div></div>
+      <div class="card chart-card"><h3>Top 10 highest paid</h3><div class="c-sub">&nbsp;</div><div class="chart" id="c-top10"></div></div>
+      <div class="card chart-card"><h3>Bottom 10 lowest paid</h3><div class="c-sub">&nbsp;</div><div class="chart" id="c-bot10"></div></div>
+      <div class="card chart-card"><h3>Salary distribution histogram</h3><div class="c-sub">Headcount across salary buckets</div><div class="chart" id="c-hist"></div></div>
+      <div class="card chart-card"><h3>Salary band analysis</h3><div class="c-sub">Cost and headcount per band</div><div class="chart" id="c-band"></div></div>
+      <div class="card chart-card"><h3>Department — headcount vs salary cost</h3><div class="c-sub">Bars: total cost · Line: headcount</div><div class="chart" id="c-depthc"></div></div>
+      <div class="card chart-card"><h3>Manager — headcount vs salary cost</h3><div class="c-sub">Bars: total cost · Line: team size</div><div class="chart" id="c-mgrhc"></div></div>
+    </div>
+  </div>
+
+  <!-- Band table -->
+  <div class="section">
+    <div class="section-head"><h2>Salary band breakdown</h2><div class="rule"></div></div>
+    <div class="card table-wrap"><table id="t-band"></table></div>
+  </div>
+
+  <!-- Department table -->
+  <div class="section">
+    <div class="section-head"><h2>Department analysis</h2><div class="rule"></div><div class="count" id="dept-count"></div></div>
+    <div class="card table-wrap"><table id="t-dept"></table></div>
+  </div>
+
+  <!-- Vertical table -->
+  <div class="section" id="sec-vert" style="display:none">
+    <div class="section-head"><h2>Vertical analysis</h2><div class="rule"></div><div class="count" id="vert-count"></div></div>
+    <div class="card table-wrap"><table id="t-vert"></table></div>
+  </div>
+
+  <!-- Manager table -->
+  <div class="section">
+    <div class="section-head"><h2>Manager analysis</h2><div class="rule"></div><div class="count" id="mgr-count"></div></div>
+    <div class="card table-wrap"><table id="t-mgr"></table></div>
+  </div>
+
+  <!-- Employee table -->
+  <div class="section">
+    <div class="section-head"><h2>Employee salary table</h2><div class="rule"></div><div class="count" id="emp-count"></div></div>
+    <div class="emp-tools">
+      <input type="text" id="emp-search" placeholder="Search name, department, manager…" style="min-width:280px">
+      <span class="hint">Ranks are company-wide (within department and overall), independent of the slicers.</span>
+    </div>
+    <div class="card table-wrap" style="max-height:560px"><table id="t-emp"></table></div>
+  </div>
+
+  <!-- Insights -->
+  <div class="section">
+    <div class="section-head"><h2>Key observations</h2><div class="rule"></div></div>
+    <div class="card insights"><ul id="insights"></ul></div>
+  </div>
+
+</main>
+
+<script>
+/* ================= config ================= */
+const DEFAULT_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgibkBcfTDb1kObv8Ja9E63vYZdOYfrFbGS3fjzuE_L7_LUVY_ZssVVngoQ8g7pwrZr1D3iyLsdN8h/pub?gid=0&single=true&output=csv";
+
+const C={ink:'#15212E',muted:'#5E6B7A',faint:'#8A97A6',line:'#E4E9EF',teal:'#1F6F7E',tealDark:'#15586B',gold:'#C49A3F',pos:'#3E8E6E',neg:'#C25A43'};
+const CAT=['#1B3A5B','#2D7D8A','#4C9F70','#E0A458','#C8553D','#7A5C9E','#5B6C8F','#9C6B3F','#3E8E6E','#B0413E'];
+let BANDS=[];  // salary bands, built dynamically from the data range (lowest → highest, rounded)
+
+/* ================= state ================= */
+let RAW=[], FIELDS=[], RECORDS=[], DQ={}, hasVert=false, MODE='yearly';
+let MAP={name:null,vert:null,dept:null,mgr:null,desig:null,salary:null};
+let filters={vert:'',dept:'',mgr:'',emp:''};
+let empSort={key:'rankOverall',dir:1}, empSearch='';
+let deptSort={key:'cost',dir:-1}, mgrSort={key:'cost',dir:-1}, vertSort={key:'cost',dir:-1};
+const charts={};
+
+/* ================= helpers ================= */
+const $=id=>document.getElementById(id);
+const sum=a=>a.reduce((x,y)=>x+y,0);
+const mean=a=>a.length?sum(a)/a.length:0;
+function median(a){if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+function stddev(a){if(a.length<1)return 0;const mu=mean(a);return Math.sqrt(sum(a.map(v=>(v-mu)**2))/a.length);}
+function quantile(s,q){if(!s.length)return 0;const pos=(s.length-1)*q,b=Math.floor(pos),r=pos-b;return s[b+1]!==undefined?s[b]+r*(s[b+1]-s[b]):s[b];}
+function groupBy(rows,key){const m=new Map();for(const r of rows){const k=r[key]||'—';(m.get(k)||m.set(k,[]).get(k)).push(r);}return m;}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=x=>(x*100).toFixed(1)+'%';
+
+function indianGroup(n){
+  const neg=n<0; let s=Math.round(Math.abs(n)).toString();
+  if(s.length>3){const l3=s.slice(-3); s=s.slice(0,-3).replace(/\B(?=(\d{2})+(?!\d))/g,',')+','+l3;}
+  return (neg?'-':'')+s;
+}
+const fmtFull=n=>'₹'+indianGroup(n);
+function fmtCompact(n){
+  const a=Math.abs(n), sign=n<0?'-':'';
+  if(a>=1e7) return sign+'₹'+(a/1e7).toFixed(2).replace(/\.?0+$/,'')+' Cr';
+  if(a>=1e5) return sign+'₹'+(a/1e5).toFixed(2).replace(/\.?0+$/,'')+' L';
+  if(a>=1e3) return sign+'₹'+(a/1e3).toFixed(1).replace(/\.0$/,'')+'K';
+  return sign+'₹'+indianGroup(a);
+}
+function parseNum(v){
+  if(v==null)return NaN; if(typeof v==='number')return v;
+  let s=String(v).trim(); if(!s)return NaN;
+  const lc=s.toLowerCase(); let mult=1;
+  if(/\bcr(ore)?s?\b/.test(lc)||/[0-9]\s*cr$/.test(lc))mult=1e7;
+  else if(/\bl(ac|akh)?s?\b/.test(lc)||/[0-9]\s*l$/.test(lc))mult=1e5;
+  else if(/[0-9]\s*k$/.test(lc))mult=1e3;
+  s=s.replace(/[^0-9.\-]/g,'');
+  if(s===''||s==='.'||s==='-')return NaN;
+  const n=parseFloat(s); return isNaN(n)?NaN:n*mult;
+}
+function bandOf(v){ for(const b of BANDS){ if(v>=b.min && v<b.max) return b; } return BANDS[BANDS.length-1]; }
+function roundDownNice(x){ if(x<=0)return 0; const m=Math.pow(10,Math.floor(Math.log10(x))); return Math.floor(x/m)*m; }
+function buildBands(vals){
+  if(!vals.length) return [];
+  const mn=Math.min(...vals), mx=Math.max(...vals);
+  if(!(mx>mn)){ const v=Math.round(mn); return [{min:v-1,max:v+1,label:fmtCompact(v)}]; }
+  const lo=roundDownNice(mn);                 // round start at/just below the LOWEST salary (not 0)
+  const step=niceStep(mx-lo,7);               // round bucket width, ~7 buckets up to the highest
+  const out=[];
+  for(let s=lo; s<mx; s+=step){ out.push({min:s, max:s+step, label:fmtCompact(s)+'–'+fmtCompact(s+step)}); }
+  if(!out.length) out.push({min:lo,max:lo+step,label:fmtCompact(lo)+'–'+fmtCompact(lo+step)});
+  return out;
+}
+
+/* ================= column detection ================= */
+function detect(fields,patterns,avoid){
+  for(const p of patterns){
+    const hit=fields.find(f=>p.test(f)&&!(avoid&&avoid.test(f)));
+    if(hit)return hit;
+  }
+  return null;
+}
+function autoMap(fields){
+  return {
+    name:  detect(fields,[/employee\s*name/i,/emp\s*name/i,/full\s*name/i,/^name$/i,/staff/i,/name/i],/manager|reporting|supervisor|dept|vertical/i),
+    vert:  detect(fields,[/\bvertical\b/i,/business\s*vertical/i,/\bsegment\b/i,/\bcategory\b/i,/\bbu\b/i]),
+    dept:  detect(fields,[/department/i,/\bdept\b/i,/division/i,/\bfunction\b/i,/business\s*unit/i]),
+    mgr:   detect(fields,[/manager\s*name/i,/reporting\s*manager/i,/reports?\s*to/i,/\bmanager\b/i,/supervisor/i,/reporting/i,/\blead\b/i]),
+    desig: detect(fields,[/designation/i,/\brole\b/i,/job\s*title/i,/\btitle\b/i,/position/i,/grade/i,/\blevel\b/i]),
+    salary:detect(fields,[/\bsalary\b/i,/\bctc\b/i,/gross\s*pay/i,/gross/i,/net\s*pay/i,/cost\s*to\s*company/i,/compensation/i,/\bpackage\b/i,/\bpay\b/i,/\bwage/i,/\bamount\b/i],/band|range|increment|hike|bonus/i),
+  };
+}
+
+/* ================= normalise + rank ================= */
+function buildRecords(){
+  const blanks=[], skipped=[]; const recs=[];
+  const seen={};
+  for(const r of RAW){
+    const name=(MAP.name?String(r[MAP.name]??'').trim():'');
+    const salRaw=MAP.salary?r[MAP.salary]:undefined;
+    const sal=parseNum(salRaw);
+    if(!name && (salRaw==null||String(salRaw).trim()==='')) continue; // wholly empty row
+    if(!name){blanks.push(r);}
+    if(isNaN(sal)){skipped.push(name||'(unnamed)'); continue;}
+    const rec={
+      name: name||'(unnamed)',
+      vert: (MAP.vert?String(r[MAP.vert]??'').trim():'')||'—',
+      dept: (MAP.dept?String(r[MAP.dept]??'').trim():'')||'—',
+      mgr:  (MAP.mgr?String(r[MAP.mgr]??'').trim():'')||'—',
+      desig:(MAP.desig?String(r[MAP.desig]??'').trim():'')||'',
+      ctc:  sal,        // raw annual CTC (source of truth)
+      salary: sal       // display value (annual or monthly, set by applyScale)
+    };
+    seen[rec.name]=(seen[rec.name]||0)+1;
+    recs.push(rec);
+  }
+  const dupes=Object.entries(seen).filter(([,c])=>c>1).map(([n,c])=>n+' ×'+c);
+  // ranks (company-wide, competition ranking on ties) — order-invariant under scaling
+  rankAssign(recs,'rankOverall');
+  for(const [,rows] of groupBy(recs,'dept')) rankAssign(rows,'rankDept');
+  RECORDS=recs;
+  hasVert = !!MAP.vert && new Set(recs.map(r=>r.vert)).size>1;
+  applyScale();     // sets r.salary per current MODE and (re)builds BANDS
+  DQ={total:RAW.length, valid:recs.length, skipped:skipped.length, skippedNames:skipped, blanks:blanks.length, dupes};
+}
+function currentScale(){ return MODE==='monthly' ? 1/12 : 1; }
+function applyScale(){
+  const sc=currentScale();
+  for(const r of RECORDS){ r.salary = r.ctc * sc; }
+  BANDS = buildBands(RECORDS.map(r=>r.salary));
+}
+function rankAssign(rows,field){
+  rows.sort((a,b)=>b.salary-a.salary);
+  let rank=0, prev=null;
+  rows.forEach((r,i)=>{ if(prev===null||r.salary!==prev){rank=i+1; prev=r.salary;} r[field]=rank; });
+}
+
+/* ================= filtering ================= */
+function filtered(){
+  return RECORDS.filter(r=>
+    (!filters.vert||r.vert===filters.vert)&&
+    (!filters.dept||r.dept===filters.dept)&&
+    (!filters.mgr ||r.mgr===filters.mgr)&&
+    (!filters.emp ||r.name===filters.emp));
+}
+function uniq(arr){return [...new Set(arr)].sort((a,b)=>a.localeCompare(b));}
+function rebuildSlicers(){
+  const vSel=$('f-vert'), dSel=$('f-dept'), mSel=$('f-mgr'), eSel=$('f-emp');
+  // vertical & department are co-equal top filters that refine each other's options
+  if(vSel) fill(vSel, uniq(RECORDS.filter(r=>!filters.dept||r.dept===filters.dept).map(r=>r.vert)), filters.vert, 'All verticals');
+  fill(dSel, uniq(RECORDS.filter(r=>!filters.vert||r.vert===filters.vert).map(r=>r.dept)), filters.dept, 'All departments');
+  const mPool=RECORDS.filter(r=>(!filters.vert||r.vert===filters.vert)&&(!filters.dept||r.dept===filters.dept));
+  fill(mSel, uniq(mPool.map(r=>r.mgr)), filters.mgr, 'All managers');
+  const ePool=mPool.filter(r=>!filters.mgr||r.mgr===filters.mgr);
+  fill(eSel, uniq(ePool.map(r=>r.name)), filters.emp, 'All employees');
+}
+function fill(sel,opts,current,allLabel){
+  sel.innerHTML='<option value="">'+allLabel+'</option>'+opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+  sel.value=opts.includes(current)?current:'';
+}
+
+/* ================= KPIs ================= */
+function renderKPIs(f){
+  $('kpi-scope').textContent = scopeLabel() + ' · ' + (MODE==='monthly'?'Monthly (CTC ÷ 12)':'Annual CTC');
+  if(!f.length){ $('kpis').innerHTML=''; return; }
+  const sals=f.map(r=>r.salary);
+  const total=sum(sals), avg=mean(sals), med=median(sals), sd=stddev(sals);
+  const hi=f.reduce((a,b)=>b.salary>a.salary?b:a), lo=f.reduce((a,b)=>b.salary<a.salary?b:a);
+  const dAvg=[...groupBy(f,'dept')].map(([d,rows])=>({d,v:mean(rows.map(r=>r.salary))})).sort((a,b)=>b.v-a.v)[0];
+  const mAvg=[...groupBy(f,'mgr')].map(([m,rows])=>({m,v:mean(rows.map(r=>r.salary))})).sort((a,b)=>b.v-a.v)[0];
+  const cards=[
+    {l:'Total employees', v:indianGroup(f.length), s:`${new Set(f.map(r=>r.dept)).size} depts · ${new Set(f.map(r=>r.mgr)).size} managers`},
+    {l:'Total salary cost', v:fmtCompact(total), s:fmtFull(total), g:1},
+    {l:'Average salary', v:fmtFull(avg), s:'mean across selection'},
+    {l:'Median salary', v:fmtFull(med), s:'typical pay (50th pct)'},
+    {l:'Highest salary', v:fmtFull(hi.salary), s:esc(hi.name)},
+    {l:'Lowest salary', v:fmtFull(lo.salary), s:esc(lo.name)},
+    {l:'Salary std. dev.', v:fmtFull(sd), s:'population σ · spread'},
+    {l:'Pay ratio (max÷min)', v:(hi.salary/Math.max(lo.salary,1)).toFixed(1)+'×', s:'top-to-bottom spread'},
+    {l:'Top dept by avg pay', v:fmtCompact(dAvg.v), s:esc(dAvg.d), g:1},
+    {l:'Top manager by avg pay', v:fmtCompact(mAvg.v), s:esc(mAvg.m), g:1},
+  ];
+  if(hasVert){
+    const vAvg=[...groupBy(f,'vert')].map(([v,rows])=>({v,val:mean(rows.map(r=>r.salary))})).sort((a,b)=>b.val-a.val)[0];
+    cards.push({l:'Top vertical by avg pay', v:fmtCompact(vAvg.val), s:esc(vAvg.v), g:1});
+  }
+  $('kpis').innerHTML=cards.map(c=>`
+    <div class="card kpi ${c.g?'gold':''}">
+      <div class="k-label">${c.l}</div>
+      <div class="k-val mono">${c.v}</div>
+      <div class="k-sub">${c.s}</div>
+    </div>`).join('');
+}
+function scopeLabel(){
+  const p=[]; if(filters.dept)p.push(filters.dept); if(filters.mgr)p.push(filters.mgr); if(filters.emp)p.push(filters.emp);
+  return p.length?('Filtered · '+p.join(' › ')):'Whole organisation';
+}
+
+/* ================= charts ================= */
+const baseGrid={left:8,right:18,top:18,bottom:8,containLabel:true};
+const axisLabel={color:C.muted,fontSize:11,fontFamily:'Inter'};
+const splitLine={lineStyle:{color:C.line,type:'dashed'}};
+function tip(extra={}){return Object.assign({backgroundColor:'#fff',borderColor:C.line,borderWidth:1,padding:[8,11],textStyle:{color:C.ink,fontSize:12,fontFamily:'Inter'},extraCssText:'box-shadow:0 6px 22px rgba(21,33,46,.12);border-radius:9px;'},extra);}
+function chart(id){ if(!charts[id]){ const el=$(id); if(el) el.innerHTML=''; charts[id]=echarts.init(el); } return charts[id]; }
+const rupeeAxis={axisLabel:Object.assign({},axisLabel,{formatter:v=>fmtCompact(v)})};
+
+function barH(id,cats,vals,color,fmt){
+  chart(id).setOption({
+    grid:Object.assign({},baseGrid,{left:8}),
+    tooltip:tip({trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${esc(p[0].name)}<br><b>${fmt(p[0].value)}</b>`}),
+    xAxis:Object.assign({type:'value',splitLine,axisLine:{show:false},axisTick:{show:false}},rupeeAxis),
+    yAxis:{type:'category',data:cats,axisLabel:Object.assign({},axisLabel,{width:130,overflow:'truncate'}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false},inverse:true},
+    series:[{type:'bar',data:vals,itemStyle:{color:color,borderRadius:[0,4,4,0]},barMaxWidth:22}]
+  },true);
+}
+function barV(id,cats,vals,color,fmt,rotate){
+  chart(id).setOption({
+    grid:Object.assign({},baseGrid,{bottom:rotate?34:8}),
+    tooltip:tip({trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${esc(p[0].name)}<br><b>${fmt(p[0].value)}</b>`}),
+    xAxis:{type:'category',data:cats,axisLabel:Object.assign({},axisLabel,{rotate:rotate||0,interval:0,width:90,overflow:'truncate'}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false}},
+    yAxis:Object.assign({type:'value',splitLine,axisLine:{show:false},axisTick:{show:false}},rupeeAxis),
+    series:[{type:'bar',data:vals.map((v,i)=>({value:v,itemStyle:{color:typeof color==='function'?color(i):color}})),itemStyle:{borderRadius:[4,4,0,0]},barMaxWidth:46}]
+  },true);
+}
+
+const CHART_IDS=['c-deptcost','c-deptavg','c-vertcost','c-vertavg','c-mgrbox','c-emprank','c-top10','c-bot10','c-hist','c-band','c-depthc','c-mgrhc'];
+function draw(id,fn){ try{ fn(); }catch(e){ chartErr(id,e); if(window.console)console.error('[chart '+id+']',e); } }
+function chartErr(id,e){ try{ if(charts[id]){charts[id].dispose(); delete charts[id];} }catch(_){} const el=$(id); if(el) el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:14px;color:var(--neg);font-size:12px;text-align:center;line-height:1.5">Couldn’t draw this chart.<br><span style="color:var(--faint)">'+esc(e.message||e)+'</span></div>'; }
+function chartEngineMissing(){ CHART_IDS.forEach(id=>{const el=$(id); if(el) el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:14px;color:var(--neg);font-size:12.5px;text-align:center;line-height:1.5">Chart engine didn’t load.<br><span style="color:var(--faint)">Network blocked the ECharts CDN — reconnect and hit ↻ Refresh.</span></div>';}); }
+
+function renderCharts(f){
+  if(!f.length){ Object.values(charts).forEach(c=>{try{c.clear();}catch(_){}}); return; }
+  if(typeof echarts==='undefined'){ chartEngineMissing(); return; }
+  const valOf=rows=>rows.map(r=>r.salary);
+
+  // shared dept aggregates
+  const dAgg=[...groupBy(f,'dept')].map(([d,rows])=>({d,cost:sum(valOf(rows)),avg:mean(valOf(rows)),n:rows.length}));
+  const dCost=[...dAgg].sort((a,b)=>b.cost-a.cost);
+  const dAvg=[...dAgg].sort((a,b)=>b.avg-a.avg);
+
+  draw('c-deptcost',()=>barH('c-deptcost',dCost.map(x=>x.d),dCost.map(x=>x.cost),C.teal,fmtFull));
+  draw('c-deptavg',()=>barH('c-deptavg',dAvg.map(x=>x.d),dAvg.map(x=>x.avg),'#2D7D8A',fmtFull));
+
+  if(hasVert){
+    const vAgg=[...groupBy(f,'vert')].map(([v,rows])=>({v,cost:sum(valOf(rows)),avg:mean(valOf(rows)),n:rows.length}));
+    const vCost=[...vAgg].sort((a,b)=>b.cost-a.cost);
+    const vAvgA=[...vAgg].sort((a,b)=>b.avg-a.avg);
+    draw('c-vertcost',()=>barH('c-vertcost',vCost.map(x=>x.v),vCost.map(x=>x.cost),'#7A5C9E',fmtFull));
+    draw('c-vertavg',()=>barH('c-vertavg',vAvgA.map(x=>x.v),vAvgA.map(x=>x.avg),'#5B6C8F',fmtFull));
+  }
+
+  draw('c-mgrbox',()=>{
+    const mGroups=[...groupBy(f,'mgr')].map(([m,rows])=>{const s=valOf(rows).sort((a,b)=>a-b);return{m,n:rows.length,box:[s[0],quantile(s,.25),median(s),quantile(s,.75),s[s.length-1]]};}).sort((a,b)=>b.box[2]-a.box[2]);
+    chart('c-mgrbox').setOption({
+      grid:Object.assign({},baseGrid,{bottom:mGroups.length>6?44:24}),
+      tooltip:tip({trigger:'item',formatter:p=>{const b=p.value;return Array.isArray(b)?`${esc(p.name)}<br>Max <b>${fmtFull(b[5])}</b><br>Q3 ${fmtFull(b[4])}<br>Median <b>${fmtFull(b[3])}</b><br>Q1 ${fmtFull(b[2])}<br>Min ${fmtFull(b[1])}`:esc(p.name);}}),
+      xAxis:{type:'category',data:mGroups.map(x=>x.m),axisLabel:Object.assign({},axisLabel,{rotate:mGroups.length>6?32:0,interval:0,width:90,overflow:'truncate'}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false}},
+      yAxis:Object.assign({type:'value',splitLine,axisLine:{show:false}},rupeeAxis),
+      series:[{type:'boxplot',data:mGroups.map(x=>x.box),itemStyle:{color:'#EAF1F2',borderColor:C.tealDark,borderWidth:1.4},boxWidth:['25%','45%']}]
+    },true);
+  });
+
+  draw('c-emprank',()=>{
+    const rk=[...f].sort((a,b)=>a.salary-b.salary);
+    const N=rk.length, win=20, startPct=N>win?(1-win/N)*100:0;
+    chart('c-emprank').setOption({
+      grid:Object.assign({},baseGrid,{left:8,right:60}),
+      tooltip:tip({trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${esc(p[0].name)}<br><b>${fmtFull(p[0].value)}</b>`}),
+      xAxis:Object.assign({type:'value',splitLine,axisLine:{show:false},axisTick:{show:false}},rupeeAxis),
+      yAxis:{type:'category',data:rk.map(r=>r.name),axisLabel:Object.assign({},axisLabel,{width:120,overflow:'truncate'}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false}},
+      dataZoom:[{type:'slider',yAxisIndex:0,start:startPct,end:100,width:14,right:6,brushSelect:false},{type:'inside',yAxisIndex:0,start:startPct,end:100}],
+      series:[{type:'bar',data:rk.map(r=>r.salary),itemStyle:{color:C.teal,borderRadius:[0,3,3,0]},barMaxWidth:16}]
+    },true);
+  });
+
+  const byDesc=[...f].sort((a,b)=>b.salary-a.salary);
+  draw('c-top10',()=>{const top=byDesc.slice(0,10);barH('c-top10',top.map(r=>r.name),top.map(r=>r.salary),C.gold,fmtFull);});
+  draw('c-bot10',()=>{const bot=[...byDesc].slice(-10);barH('c-bot10',bot.map(r=>r.name),bot.map(r=>r.salary),'#C25A43',fmtFull);});
+
+  draw('c-hist',()=>{
+    const sals=valOf(f), mn=Math.min(...sals), mx=Math.max(...sals);
+    const step=niceStep(Math.max(mx-mn,1),10);
+    const start=Math.floor(mn/step)*step;
+    const bins=[];
+    for(let b=start;b<=mx;b+=step) bins.push({lo:b,hi:b+step,c:0});
+    if(!bins.length)bins.push({lo:start,hi:start+step,c:0});
+    for(const v of sals){let i=Math.floor((v-start)/step); if(i<0)i=0; if(i>=bins.length)i=bins.length-1; bins[i].c++;}
+    chart('c-hist').setOption({
+      grid:Object.assign({},baseGrid,{bottom:30}),
+      tooltip:tip({trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${esc(p[0].name)}<br><b>${p[0].value}</b> ${p[0].value===1?'employee':'employees'}`}),
+      xAxis:{type:'category',data:bins.map(b=>fmtCompact(b.lo)+'–'+fmtCompact(b.hi)),axisLabel:Object.assign({},axisLabel,{rotate:30,interval:0,fontSize:10}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false}},
+      yAxis:{type:'value',splitLine,axisLine:{show:false},axisTick:{show:false},axisLabel,minInterval:1},
+      series:[{type:'bar',data:bins.map(b=>b.c),itemStyle:{color:C.tealDark,borderRadius:[3,3,0,0]},barCategoryGap:'8%'}]
+    },true);
+  });
+
+  draw('c-band',()=>{
+    const bandAgg=BANDS.map(b=>{const rows=f.filter(r=>r.salary>=b.min&&r.salary<b.max);return{label:b.label,cost:sum(valOf(rows)),n:rows.length};});
+    const many=bandAgg.length>6;
+    chart('c-band').setOption({
+      grid:Object.assign({},baseGrid,{right:46,bottom:many?54:30}),
+      tooltip:tip({trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{let s=esc(p[0].name);p.forEach(x=>{s+=`<br>${x.marker}${x.seriesName}: <b>${x.seriesName==='Headcount'?x.value:fmtFull(x.value)}</b>`;});return s;}}),
+      legend:{data:['Total cost','Headcount'],bottom:0,textStyle:{color:C.muted,fontSize:11},itemWidth:14,itemHeight:8},
+      xAxis:{type:'category',data:bandAgg.map(b=>b.label),axisLabel:Object.assign({},axisLabel,{rotate:many?28:0,interval:0,fontSize:many?10:11}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false}},
+      yAxis:[Object.assign({type:'value',name:'Cost',nameTextStyle:{color:C.faint,fontSize:10},splitLine,axisLine:{show:false},axisTick:{show:false}},rupeeAxis),
+             {type:'value',name:'Headcount',nameTextStyle:{color:C.faint,fontSize:10},splitLine:{show:false},axisLine:{show:false},axisTick:{show:false},axisLabel,minInterval:1}],
+      series:[
+        {name:'Total cost',type:'bar',data:bandAgg.map(b=>b.cost),itemStyle:{color:(p)=>CAT[p.dataIndex%CAT.length],borderRadius:[4,4,0,0]},barMaxWidth:48},
+        {name:'Headcount',type:'line',yAxisIndex:1,data:bandAgg.map(b=>b.n),smooth:true,symbol:'circle',symbolSize:7,lineStyle:{color:C.gold,width:2.5},itemStyle:{color:C.gold}}
+      ]
+    },true);
+  });
+
+  draw('c-depthc',()=>dualHCvsCost('c-depthc',dCost.map(x=>x.d),dCost.map(x=>x.cost),dCost.map(x=>x.n),'Headcount'));
+  draw('c-mgrhc',()=>{
+    const mCost=[...groupBy(f,'mgr')].map(([m,rows])=>({m,cost:sum(valOf(rows)),n:rows.length})).sort((a,b)=>b.cost-a.cost);
+    dualHCvsCost('c-mgrhc',mCost.map(x=>x.m),mCost.map(x=>x.cost),mCost.map(x=>x.n),'Team size');
+  });
+}
+
+function dualHCvsCost(id,cats,cost,hc,hcName){
+  chart(id).setOption({
+    grid:Object.assign({},baseGrid,{right:46,bottom:cats.length>6?44:24}),
+    tooltip:tip({trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{let s=esc(p[0].name);p.forEach(x=>{s+=`<br>${x.marker}${x.seriesName}: <b>${x.seriesName===hcName?x.value:fmtFull(x.value)}</b>`;});return s;}}),
+    legend:{data:['Total cost',hcName],bottom:0,textStyle:{color:C.muted,fontSize:11},itemWidth:14,itemHeight:8},
+    xAxis:{type:'category',data:cats,axisLabel:Object.assign({},axisLabel,{rotate:cats.length>6?32:0,interval:0,width:90,overflow:'truncate'}),axisLine:{lineStyle:{color:C.line}},axisTick:{show:false}},
+    yAxis:[Object.assign({type:'value',name:'Cost',nameTextStyle:{color:C.faint,fontSize:10},splitLine,axisLine:{show:false},axisTick:{show:false}},rupeeAxis),
+           {type:'value',name:hcName,nameTextStyle:{color:C.faint,fontSize:10},splitLine:{show:false},axisLine:{show:false},axisTick:{show:false},axisLabel,minInterval:1}],
+    series:[
+      {name:'Total cost',type:'bar',data:cost,itemStyle:{color:C.teal,borderRadius:[4,4,0,0]},barMaxWidth:46},
+      {name:hcName,type:'line',yAxisIndex:1,data:hc,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{color:C.gold,width:2.5},itemStyle:{color:C.gold}}
+    ]
+  },true);
+}
+function niceStep(range,target){const raw=range/target,mag=Math.pow(10,Math.floor(Math.log10(raw))),norm=raw/mag;let s;if(norm<1.5)s=1;else if(norm<3)s=2;else if(norm<7)s=5;else s=10;return s*mag;}
+
+/* ================= tables ================= */
+function sortRows(rows,key,dir){
+  return [...rows].sort((a,b)=>{
+    const x=a[key],y=b[key];
+    if(typeof x==='number'&&typeof y==='number')return (x-y)*dir;
+    return String(x).localeCompare(String(y))*dir;
+  });
+}
+function header(cols,sortState){
+  return '<thead><tr>'+cols.map(c=>{
+    const active=sortState&&sortState.key===c.key;
+    const arr=active?(sortState.dir===1?'▲':'▼'):'';
+    return `<th class="${c.num?'num':''} ${c.sortable===false?'no-sort':''}" data-key="${c.key}">${c.label}<span class="arr">${arr}</span></th>`;
+  }).join('')+'</tr></thead>';
+}
+
+function renderBandTable(f){
+  const tot=sum(f.map(r=>r.salary))||1;
+  const rows=BANDS.map(b=>{const rs=f.filter(r=>r.salary>=b.min&&r.salary<b.max);const cost=sum(rs.map(r=>r.salary));return{label:b.label,n:rs.length,share:f.length?rs.length/f.length:0,cost,costShare:cost/tot};});
+  const cols=[{key:'label',label:'Salary band'},{key:'n',label:'Employees',num:1},{key:'share',label:'% of workforce',num:1},{key:'cost',label:'Total salary cost',num:1},{key:'costShare',label:'% of cost',num:1}];
+  $('t-band').innerHTML=header(cols)+'<tbody>'+rows.map((r,i)=>`<tr>
+    <td><span class="tag" style="background:${CAT[i%CAT.length]}1a;color:${CAT[i%CAT.length]}">${r.label}</span></td>
+    <td class="num mono">${r.n}</td>
+    <td class="num mono">${pct(r.share)}</td>
+    <td class="num mono">${fmtFull(r.cost)}</td>
+    <td class="num mono">${pct(r.costShare)}</td></tr>`).join('')+'</tbody>';
+}
+
+function renderDeptTable(f){
+  const tot=sum(f.map(r=>r.salary))||1;
+  let rows=[...groupBy(f,'dept')].map(([d,rs])=>{const v=rs.map(r=>r.salary);const cost=sum(v);return{dept:d,n:rs.length,cost,avg:mean(v),hi:Math.max(...v),lo:Math.min(...v),share:cost/tot};});
+  rows=sortRows(rows,deptSort.key,deptSort.dir);
+  const cols=[{key:'dept',label:'Department'},{key:'n',label:'Employees',num:1},{key:'cost',label:'Total cost',num:1},{key:'avg',label:'Avg salary',num:1},{key:'hi',label:'Highest',num:1},{key:'lo',label:'Lowest',num:1},{key:'share',label:'% of total cost',num:1}];
+  $('dept-count').textContent=rows.length+' departments';
+  $('t-dept').innerHTML=header(cols,deptSort)+'<tbody>'+rows.map(r=>`<tr>
+    <td><b>${esc(r.dept)}</b></td>
+    <td class="num mono">${r.n}</td>
+    <td class="num mono">${fmtFull(r.cost)}</td>
+    <td class="num mono">${fmtFull(r.avg)}</td>
+    <td class="num mono">${fmtFull(r.hi)}</td>
+    <td class="num mono">${fmtFull(r.lo)}</td>
+    <td class="num mono">${pct(r.share)}</td></tr>`).join('')+'</tbody>';
+  wireSort('t-dept',deptSort,()=>renderDeptTable(filtered()));
+}
+
+function renderVertTable(f){
+  const tot=sum(f.map(r=>r.salary))||1;
+  let rows=[...groupBy(f,'vert')].map(([v,rs])=>{const x=rs.map(r=>r.salary);const cost=sum(x);return{vert:v,n:rs.length,cost,avg:mean(x),hi:Math.max(...x),lo:Math.min(...x),share:cost/tot};});
+  rows=sortRows(rows,vertSort.key,vertSort.dir);
+  const cols=[{key:'vert',label:'Vertical'},{key:'n',label:'Employees',num:1},{key:'cost',label:'Total cost',num:1},{key:'avg',label:'Avg salary',num:1},{key:'hi',label:'Highest',num:1},{key:'lo',label:'Lowest',num:1},{key:'share',label:'% of total cost',num:1}];
+  $('vert-count').textContent=rows.length+' verticals';
+  $('t-vert').innerHTML=header(cols,vertSort)+'<tbody>'+rows.map(r=>`<tr>
+    <td><b>${esc(r.vert)}</b></td>
+    <td class="num mono">${r.n}</td>
+    <td class="num mono">${fmtFull(r.cost)}</td>
+    <td class="num mono">${fmtFull(r.avg)}</td>
+    <td class="num mono">${fmtFull(r.hi)}</td>
+    <td class="num mono">${fmtFull(r.lo)}</td>
+    <td class="num mono">${pct(r.share)}</td></tr>`).join('')+'</tbody>';
+  wireSort('t-vert',vertSort,()=>renderVertTable(filtered()));
+}
+
+function renderMgrTable(f){
+  let rows=[...groupBy(f,'mgr')].map(([m,rs])=>{const v=rs.map(r=>r.salary);const hi=rs.reduce((a,b)=>b.salary>a.salary?b:a),lo=rs.reduce((a,b)=>b.salary<a.salary?b:a);return{mgr:m,n:rs.length,cost:sum(v),avg:mean(v),hiN:hi.name,hiV:hi.salary,loN:lo.name,loV:lo.salary};});
+  rows=sortRows(rows,mgrSort.key,mgrSort.dir);
+  const cols=[{key:'mgr',label:'Manager'},{key:'n',label:'Team size',num:1},{key:'cost',label:'Total cost',num:1},{key:'avg',label:'Avg team salary',num:1},{key:'hiV',label:'Highest paid',num:1},{key:'loV',label:'Lowest paid',num:1}];
+  $('mgr-count').textContent=rows.length+' managers';
+  $('t-mgr').innerHTML=header(cols,mgrSort)+'<tbody>'+rows.map(r=>`<tr>
+    <td><b>${esc(r.mgr)}</b></td>
+    <td class="num mono">${r.n}</td>
+    <td class="num mono">${fmtFull(r.cost)}</td>
+    <td class="num mono">${fmtFull(r.avg)}</td>
+    <td class="num"><span class="mono">${fmtFull(r.hiV)}</span><br><span style="font-size:11px;color:var(--faint)">${esc(r.hiN)}</span></td>
+    <td class="num"><span class="mono">${fmtFull(r.loV)}</span><br><span style="font-size:11px;color:var(--faint)">${esc(r.loN)}</span></td></tr>`).join('')+'</tbody>';
+  wireSort('t-mgr',mgrSort,()=>renderMgrTable(filtered()));
+}
+
+function renderEmpTable(f){
+  let rows=f;
+  if(empSearch){const q=empSearch.toLowerCase();rows=rows.filter(r=>(r.name+' '+r.vert+' '+r.dept+' '+r.mgr+' '+r.desig).toLowerCase().includes(q));}
+  rows=sortRows(rows,empSort.key,empSort.dir);
+  const cols=[{key:'name',label:'Employee'},{key:'dept',label:'Department'}]
+    .concat(hasVert?[{key:'vert',label:'Vertical'}]:[])
+    .concat([{key:'mgr',label:'Manager'},{key:'desig',label:'Designation'},{key:'salary',label:'Salary',num:1},{key:'rankDept',label:'Rank (dept)',num:1},{key:'rankOverall',label:'Rank (overall)',num:1}]);
+  $('emp-count').textContent=rows.length+' shown';
+  $('t-emp').innerHTML=header(cols,empSort)+'<tbody>'+rows.map(r=>`<tr>
+    <td><b>${esc(r.name)}</b></td>
+    <td><span class="tag">${esc(r.dept)}</span></td>
+    ${hasVert?`<td><span class="tag">${esc(r.vert)}</span></td>`:''}
+    <td>${esc(r.mgr)}</td>
+    <td>${r.desig?esc(r.desig):'<span style="color:var(--faint)">—</span>'}</td>
+    <td class="num mono">${fmtFull(r.salary)}</td>
+    <td class="num"><span class="rank-pill ${r.rankDept<=3?'top':''}">${r.rankDept}</span></td>
+    <td class="num"><span class="rank-pill ${r.rankOverall<=3?'top':''}">${r.rankOverall}</span></td></tr>`).join('')+'</tbody>';
+  wireSort('t-emp',empSort,()=>renderEmpTable(filtered()));
+}
+function wireSort(tid,state,rerender){
+  $(tid).querySelectorAll('th[data-key]').forEach(th=>{
+    if(th.classList.contains('no-sort'))return;
+    th.onclick=()=>{const k=th.dataset.key; if(state.key===k)state.dir*=-1; else {state.key=k; state.dir=(k==='salary'||k.startsWith('rank')||['n','cost','avg','hi','lo','hiV','loV','share'].includes(k))?-1:1;} if(k.startsWith('rank'))state.dir=Math.abs(state.dir); rerender();};
+  });
+}
+
+/* ================= insights ================= */
+function renderInsights(f){
+  const ul=$('insights');
+  if(!f.length){ ul.innerHTML='<li>No employees match the current filters.</li>'; return; }
+  const sals=f.map(r=>r.salary);
+  const total=sum(sals),avg=mean(sals),med=median(sals),sd=stddev(sals);
+  const out=[];
+  const dg=[...groupBy(f,'dept')].map(([d,rs])=>({d,cost:sum(rs.map(r=>r.salary)),n:rs.length})).sort((a,b)=>b.cost-a.cost);
+  if(dg.length){const t=dg[0];out.push(`<b>${esc(t.d)}</b> carries the highest salary expenditure — ${fmtFull(t.cost)} (${pct(t.cost/total)} of total) across ${t.n} ${t.n===1?'person':'people'}.`);}
+  if(dg.length>=3){const t3=sum(dg.slice(0,3).map(x=>x.cost));out.push(`The top 3 departments concentrate ${pct(t3/total)} of total salary outlay.`);}
+  const hi=f.reduce((a,b)=>b.salary>a.salary?b:a), lo=f.reduce((a,b)=>b.salary<a.salary?b:a);
+  out.push(`Highest compensated is <b>${esc(hi.name)}</b> (${fmtFull(hi.salary)}${hi.desig?', '+esc(hi.desig):''}); lowest is <b>${esc(lo.name)}</b> (${fmtFull(lo.salary)}).`);
+  const ratio=(hi.salary/Math.max(lo.salary,1));
+  if(ratio>5)out.push(`The pay ratio stands at <b>${ratio.toFixed(1)}×</b> between highest and lowest.`);
+  const dev=sd/Math.max(avg,1);
+  if(dev>.5)out.push(`High compensation dispersion (coefficient of variation <b>${(dev*100).toFixed(0)}%</b>) flags significant structural gaps between bands.`);
+  else if(dev<.25)out.push(`Low pay dispersion indicates highly standardized salaries across roles.`);
+  ul.innerHTML=out.map(s=>`<li>${s}</li>`).join('');
+}
+
+function applyVertUI(){
+  ['ctrl-vert','card-vertcost','card-vertavg','sec-vert'].forEach(id=>{ const el=$(id); if(el) el.style.display = hasVert?'':'none'; });
+}
+function render(){
+  const f=filtered();
+  document.body.classList.toggle('no-rows',!f.length);
+  applyVertUI();
+  const stage=(name,fn)=>{ try{ fn(); }catch(e){ if(window.console)console.error('['+name+']',e); } };
+  stage('kpis',()=>renderKPIs(f));
+  stage('charts',()=>renderCharts(f));
+  stage('band',()=>renderBandTable(f));
+  stage('dept',()=>renderDeptTable(f));
+  stage('vert',()=>{ if(hasVert) renderVertTable(f); });
+  stage('mgr',()=>renderMgrTable(f));
+  stage('emp',()=>renderEmpTable(f));
+  stage('insights',()=>renderInsights(f));
+}
+
+/* ================= data quality UI ================= */
+function renderDQ(){
+  const roles=[['name','Employee name'],['vert','Vertical'],['dept','Department'],['mgr','Manager'],['desig','Designation'],['salary','Salary']];
+  $('map-grid').innerHTML=roles.map(([k,lab])=>`
+    <div class="ctrl"><label>${lab}</label>
+      <select data-role="${k}">
+        ${(k==='desig'||k==='vert')?'<option value="">(none)</option>':''}
+        ${FIELDS.map(fn=>`<option value="${esc(fn)}" ${MAP[k]===fn?'selected':''}>${esc(fn)}</option>`).join('')}
+      </select></div>`).join('');
+  $('map-grid').querySelectorAll('select').forEach(sel=>sel.onchange=()=>{
+    MAP[sel.dataset.role]=sel.value||null; buildRecords(); rebuildSlicers(); renderDQ(); render();
+  });
+  const issues=DQ.skipped+DQ.blanks+DQ.dupes.length;
+  const badge=$('dq-badge');
+  badge.className='badge '+(issues===0?'ok':(DQ.skipped>0?'warn':''));
+  badge.textContent=issues===0?'clean':issues+' to review';
+  $('dq-stats').innerHTML=[
+    `Rows in sheet: <b>${DQ.total}</b>`,
+    `Valid employees loaded: <b>${DQ.valid}</b>`,
+    `Skipped (no/invalid salary): <b>${DQ.skipped}</b>${DQ.skipped?` — ${esc(DQ.skippedNames.slice(0,6).join(', '))}${DQ.skippedNames.length>6?'…':''}`:''}`,
+    `Blank names: <b>${DQ.blanks}</b>`,
+    `Duplicate names: <b>${DQ.dupes.length}</b>${DQ.dupes.length?` — ${esc(DQ.dupes.slice(0,6).join(', '))}${DQ.dupes.length>6?'…':''}`:''}`,
+  ].map(s=>`<span>${s}</span>`).join('');
+}
+
+/* ================= load ================= */
+function load(url,attempt){
+  attempt=attempt||1;
+  $('status').style.display='block'; $('app').style.display='none';
+  $('status').innerHTML='<div class="spin"></div><div style="margin-top:14px">Loading compensation data…'+(attempt>1?' &nbsp;<span style="color:var(--faint)">(retry '+attempt+'/3)</span>':'')+'</div>';
+  $('loadinfo').textContent='loading…';
+  Papa.parse(url,{download:true,header:true,skipEmptyLines:'greedy',
+    complete:res=>{
+      RAW=res.data; FIELDS=(res.meta&&res.meta.fields)?res.meta.fields.filter(f=>f&&f.trim()):Object.keys(RAW[0]||{});
+      if(!FIELDS.length||!RAW.length){ if(attempt<3)return setTimeout(()=>load(url,attempt+1),900); return fail('The sheet loaded but no rows/columns were found. Check that the published tab contains data.'); }
+      MAP=autoMap(FIELDS);
+      if(!MAP.salary){return fail('Could not find a salary column. Open the “Data quality &amp; column mapping” panel and pick it manually — or rename the column to include “Salary”/“CTC”.', true);}
+      buildRecords();
+      if(!RECORDS.length){return fail('No rows had a readable salary value. Check the salary column formatting (numbers, not text).', true);}
+      $('status').style.display='none'; $('app').style.display='block';
+      $('loadinfo').textContent=`${DQ.valid} employees · loaded ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
+      filters={vert:'',dept:'',mgr:'',emp:''};
+      renderDQ(); rebuildSlicers(); render();
+      // hardening: force charts to size to their now-visible containers
+      setTimeout(()=>Object.values(charts).forEach(c=>c.resize()),60);
+      setTimeout(()=>Object.values(charts).forEach(c=>c.resize()),300);
+    },
+    error:err=>{
+      if(attempt<3){ return setTimeout(()=>load(url,attempt+1),900); }
+      var local = (location.protocol==='file:');
+      var why = local
+        ? 'You’re opening this file directly from your computer (a <code>file://</code> address). Browsers block a local file from fetching data off the web for security — so the live pull can’t run here. This is a hard block, not a temporary glitch, which is why retrying doesn’t clear it.'
+        : 'Could not reach the sheet after 3 tries. The sheet may no longer be published to the web, or the network/CORS blocked the request.';
+      fail(why);
+    }
+  });
+}
+function fail(msg,showApp){
+  if(showApp){ // partial: show app shell so the mapping panel is usable
+    $('status').style.display='none'; $('app').style.display='block';
+    FIELDS=FIELDS.length?FIELDS:[]; renderDQ();
+    document.querySelector('.dq').classList.add('open');
+    $('dq-stats').innerHTML='<span style="color:var(--neg)">'+msg+'</span>';
+    return;
+  }
+  $('status').innerHTML='<div class="err"><b>Couldn’t load the data.</b><br><br>'+msg+
+    '<br><br><b>Two ways to fix it:</b>'+
+    '<br>1.&nbsp; <b>Host the file</b> — push it to Cloudflare Pages (your usual flow). On a real web address (https), the live fetch works exactly as before.'+
+    '<br>2.&nbsp; <b>Embed the data</b> — download the sheet as CSV (<b>File → Download → Comma-separated values</b>) and send it over. I’ll bake every row into the file so it loads instantly, offline, from anywhere — no live fetch at all. (Best option for salary data: nothing leaves the file.)</div>';
+}
+
+/* ================= events ================= */
+$('f-vert').onchange=e=>{filters.vert=e.target.value; filters.mgr=''; filters.emp=''; rebuildSlicers(); render();};
+$('f-dept').onchange=e=>{filters.dept=e.target.value; filters.mgr=''; filters.emp=''; rebuildSlicers(); render();};
+$('f-mgr').onchange=e=>{filters.mgr=e.target.value; filters.emp=''; rebuildSlicers(); render();};
+$('f-emp').onchange=e=>{filters.emp=e.target.value; render();};
+$('reset').onclick=()=>{filters={vert:'',dept:'',mgr:'',emp:''}; rebuildSlicers(); render();};
+$('reload').onclick=()=>load(DEFAULT_CSV);
+document.querySelectorAll('#mode-toggle .seg-btn').forEach(b=>b.onclick=()=>{
+  MODE=b.dataset.mode;
+  document.querySelectorAll('#mode-toggle .seg-btn').forEach(x=>x.classList.toggle('active', x===b));
+  applyScale(); render();
+});
+$('emp-search').oninput=e=>{empSearch=e.target.value; renderEmpTable(filtered());};
+$('dq-head').onclick=()=>document.querySelector('.dq').classList.toggle('open');
+window.addEventListener('resize',()=>Object.values(charts).forEach(c=>c.resize()));
+
+/* ================= boot ================= */
+// Ensure ECharts + PapaParse are present; if a CDN was blocked, inject a fallback, then start.
+(function boot(){
+  let started=false;
+  const start=()=>{ if(started)return; started=true; load(DEFAULT_CSV); };
+  function need(){ return (typeof echarts==='undefined'?['https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js']:[])
+                        .concat(typeof Papa==='undefined'?['https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js']:[]); }
+  const missing=need();
+  if(!missing.length){ return start(); }
+  if(window.console)console.warn('Primary CDN missing libs, loading fallback:',missing);
+  let done=0;
+  missing.forEach(src=>{
+    const s=document.createElement('script'); s.src=src;
+    s.onload=s.onerror=()=>{ if(++done===missing.length) start(); };
+    document.head.appendChild(s);
+  });
+  setTimeout(start,6000); // start regardless after 6s; charts show their own notice if engine truly absent
+  // Custom check to inject iframe body hide when embedded
+  if (window.self !== window.top) {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      header { display: none !important; }
+      main { padding-top: 10px !important; }
+    `;
+    document.head.appendChild(style);
+  }
+})();
+</script>
+</body>
+</html>

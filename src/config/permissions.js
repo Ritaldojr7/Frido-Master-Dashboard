@@ -53,6 +53,13 @@ export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES];
 
+/** Users allowed to access the Salary Analysis dashboard. Strictly limited to these emails. */
+export const SALARY_ANALYSIS_EMAILS = [
+    'ritwik.m@myfrido.com',
+    'saiyed.a@myfrido.com',
+    'juned.m@myfrido.com'
+];
+
 /**
  * @param {string | { role?: string, roles?: string[] } | null | undefined} userOrRole
  * @returns {string[]}
@@ -111,6 +118,7 @@ export const routePermissions = {
     '/isd-nm': ISD_NM_ROLES,
     '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
     '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
+    '/isd/salary-analysis': [], // Strict email check handles this, empty role list fallback
     '/orm': ORM_ROLES,
     'https://www.referrush.com/myfrido/dashboard': ADMIN_ONLY,
 };
@@ -144,6 +152,13 @@ export function hasAccess(userOrRole, path) {
     
     // Normalize path: strip query/hash and trailing slashes
     const cleanPath = String(path).trim().split(/[?#]/)[0].replace(/\/+$/, '');
+
+    // Strictly check Salary Analysis email list
+    if (cleanPath === '/isd/salary-analysis') {
+        if (!userOrRole || typeof userOrRole !== 'object') return false;
+        const email = String(userOrRole.email || '').trim().toLowerCase();
+        return SALARY_ANALYSIS_EMAILS.map(e => e.toLowerCase()).includes(email);
+    }
 
     // 1. Direct match (original path or clean normalized path)
     let allowed = routePermissions[path] || routePermissions[cleanPath];
