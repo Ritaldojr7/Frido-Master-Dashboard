@@ -43,8 +43,21 @@ const sidebarSections = [
                 children: [
                     { path: 'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I/edit?gid=0#gid=0', label: 'Team Structure', icon: ICONS.document, isExternal: true },
                     { path: 'https://whimsical.com/PCns3cFh6JdKE69XtYkenY', label: 'Team Organogram', icon: ICONS.globe, isExternal: true },
+                    {
+                        label: 'Expense Management',
+                        icon: ICONS.folder,
+                        children: [
+                            { path: '#', label: 'Expense Tracker', icon: ICONS.document, isExternal: true },
+                        ],
+                    },
                 ],
             },
+        ],
+    },
+    {
+        label: 'Training and Development',
+        items: [
+            { path: '#', label: 'Training Portal', icon: ICONS.document, isExternal: true },
         ],
     },
     {
@@ -74,6 +87,15 @@ const sidebarSections = [
                     { path: 'https://dashboard.tangoeye.ai/auth/login', label: 'TangoEye AI', icon: ICONS.chart, isExternal: true },
                     { path: 'https://pilot.goyoyo.ai/', label: 'YoYo AI', icon: ICONS.chart, isExternal: true },
                     { path: 'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk/edit?gid=0#gid=0', label: 'NSO List', icon: ICONS.document, isExternal: true },
+                    {
+                        label: 'Retail Store Visit',
+                        icon: ICONS.folder,
+                        children: [
+                            { path: 'https://illustrious-bubblegum-509fc4.netlify.app', label: 'frontend', icon: ICONS.globe, isExternal: true },
+                            { path: 'https://illustrious-bubblegum-509fc4.netlify.app/dashboard.html', label: 'Dashboard', icon: ICONS.chart, isExternal: true },
+                            { path: 'https://docs.google.com/spreadsheets/d/13nrONpvuSQ1_OpEHhsY44p-k2TqfC_jFZjXvGVLoFlA/edit?usp=sharing', label: 'Response Sheet', icon: ICONS.document, isExternal: true },
+                        ],
+                    },
                 ],
             },
             {
@@ -90,6 +112,18 @@ const sidebarSections = [
                 children: [
                     { path: 'https://cx.locobuzz.com/login', label: 'Locobuzz', icon: ICONS.globe, isExternal: true },
                     { path: '/orm', label: 'ORM Dashboard', icon: ICONS.globe },
+                ],
+            },
+        ],
+    },
+    {
+        label: 'DOP',
+        items: [
+            {
+                label: 'ReferRush',
+                icon: ICONS.folder,
+                children: [
+                    { path: 'https://www.referrush.com/myfrido/dashboard', label: 'ReferRush Dashboard', icon: ICONS.globe, isExternal: true },
                 ],
             },
         ],
@@ -124,10 +158,76 @@ function SidebarIcon({ d }) {
     );
 }
 
+function SidebarNestedSubGroup({ item, user, isCompactNav, onMobileClose }) {
+    const [open, setOpen] = useState(true);
+
+    const visibleChildren = item.children.filter((c) => {
+        if (c.children) {
+            return c.children.some((subc) => hasAccess(user, subc.path));
+        }
+        return hasAccess(user, c.path);
+    });
+    if (visibleChildren.length === 0) return null;
+
+    return (
+        <div className={`sidebar__sub-subgroup ${open ? 'sidebar__sub-subgroup--open' : ''}`}>
+            <button
+                type="button"
+                className={`sidebar__link sidebar__link--subparent ${open ? 'sidebar__link--subparent-open' : ''}`}
+                onClick={() => setOpen((o) => !o)}
+            >
+                <SidebarIcon d={item.icon} />
+                <span className="sidebar__link-label">{item.label}</span>
+                <svg className="sidebar__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={ICONS.chevDown} />
+                </svg>
+            </button>
+            {open && (
+                <div className="sidebar__sub-subgroup-children">
+                    {visibleChildren.map((child) => {
+                        if (child.isExternal) {
+                            return (
+                                <a
+                                    key={child.path}
+                                    href={child.path}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="sidebar__link sidebar__link--subchild"
+                                >
+                                    <SidebarIcon d={child.icon} />
+                                    <span className="sidebar__link-label">{child.label}</span>
+                                </a>
+                            );
+                        }
+                        return (
+                            <NavLink
+                                key={child.path}
+                                to={child.path}
+                                className={({ isActive }) =>
+                                    `sidebar__link sidebar__link--subchild ${isActive ? 'sidebar__link--active' : ''}`
+                                }
+                                onClick={() => { if (isCompactNav) onMobileClose(); }}
+                            >
+                                <SidebarIcon d={child.icon} />
+                                <span className="sidebar__link-label">{child.label}</span>
+                            </NavLink>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function SidebarSubGroup({ item, user, isCompactNav, onMobileClose }) {
     const [open, setOpen] = useState(true);
 
-    const visibleChildren = item.children.filter((c) => hasAccess(user, c.path));
+    const visibleChildren = item.children.filter((c) => {
+        if (c.children) {
+            return c.children.some((subc) => hasAccess(user, subc.path));
+        }
+        return hasAccess(user, c.path);
+    });
     if (visibleChildren.length === 0) return null;
 
     return (
@@ -146,6 +246,17 @@ function SidebarSubGroup({ item, user, isCompactNav, onMobileClose }) {
             {open && (
                 <div className="sidebar__subgroup-children">
                     {visibleChildren.map((child) => {
+                        if (child.children) {
+                            return (
+                                <SidebarNestedSubGroup
+                                    key={child.label}
+                                    item={child}
+                                    user={user}
+                                    isCompactNav={isCompactNav}
+                                    onMobileClose={onMobileClose}
+                                />
+                            );
+                        }
                         if (child.isExternal) {
                             return (
                                 <a
@@ -280,7 +391,12 @@ export default function Layout({ children }) {
                             // Filter items & sub-items by access
                             const visibleItems = section.items.filter((item) => {
                                 if (item.children) {
-                                    return item.children.some((c) => hasAccess(user, c.path));
+                                    return item.children.some((c) => {
+                                        if (c.children) {
+                                            return c.children.some((subc) => hasAccess(user, subc.path));
+                                        }
+                                        return hasAccess(user, c.path);
+                                    });
                                 }
                                 return hasAccess(user, item.path);
                             });
