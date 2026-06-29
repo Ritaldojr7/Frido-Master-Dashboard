@@ -26,7 +26,6 @@ const ROLE_LABEL = {
     feedback: 'Feedback Department',
     executive: 'Executive',
     team_lead: 'Team Lead',
-    viewer: 'Viewer',
 };
 
 function escapeHtml(text) {

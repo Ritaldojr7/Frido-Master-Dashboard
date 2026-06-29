@@ -1,7 +1,6 @@
 /** Assignable roles for admin user management (order = dropdown list). */
 export const ROLE_OPTIONS = [
     { value: 'staff', label: 'Staff' },
-    { value: 'viewer', label: 'Viewer' },
     { value: 'feedback', label: 'Feedback' },
     { value: 'executive', label: 'Executive' },
     { value: 'team_lead', label: 'Team Lead' },

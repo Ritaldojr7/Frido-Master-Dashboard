@@ -43,7 +43,6 @@ export default function UserMenu() {
         admin: { label: 'Admin', className: 'user-menu__role--admin' },
         manager: { label: 'Manager', className: 'user-menu__role--manager' },
         staff: { label: 'Staff', className: 'user-menu__role--viewer' },
-        viewer: { label: 'Viewer', className: 'user-menu__role--viewer' },
     }[user.role] || { label: user.role, className: '' };
 
     const handleNav = (path) => {

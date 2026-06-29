@@ -41,26 +41,23 @@ describe('ROLES', () => {
         expect(ROLES.TEAM_LEAD).toBe('team_lead');
     });
 
-    it('keeps viewer as a legacy alias', () => {
-        expect(ROLES.VIEWER).toBe('viewer');
-    });
 });
 
 describe('role arrays', () => {
-    it('ALL_ROLES includes admin, staff, viewer, executive, team_lead', () => {
+    it('ALL_ROLES includes admin, staff, executive, team_lead', () => {
         expect(ALL_ROLES).toContain('admin');
         expect(ALL_ROLES).toContain('staff');
-        expect(ALL_ROLES).toContain('viewer');
+        expect(ALL_ROLES).not.toContain('viewer');
         expect(ALL_ROLES).toContain('executive');
         expect(ALL_ROLES).toContain('team_lead');
     });
 
-    it('ISD_NM_ROLES lists admins, executives, team leads, and data analysts', () => {
-        expect(ISD_NM_ROLES).toEqual(['admin', 'executive', 'team_lead', 'data_analyst']);
+    it('ISD_NM_ROLES lists admins, executives, team leads', () => {
+        expect(ISD_NM_ROLES).toEqual(['admin', 'executive', 'team_lead']);
     });
 
     it('RETAIL_STAFF_ACCESS_ROLES excludes ISD-only roles', () => {
-        expect(RETAIL_STAFF_ACCESS_ROLES).toEqual(['admin', 'staff', 'viewer']);
+        expect(RETAIL_STAFF_ACCESS_ROLES).toEqual(['admin', 'staff']);
         expect(RETAIL_STAFF_ACCESS_ROLES).not.toContain('executive');
         expect(RETAIL_STAFF_ACCESS_ROLES).not.toContain('team_lead');
     });
@@ -82,19 +79,19 @@ describe('routePermissions', () => {
         expect(routePermissions['/admin']).toEqual(ADMIN_ONLY);
     });
 
-    it('allows admin, staff, and viewer on retail-staff (not executive / team_lead)', () => {
+    it('allows admin and staff on retail-staff (not executive / team_lead)', () => {
         expect(routePermissions['/retail-staff']).toEqual(RETAIL_STAFF_ACCESS_ROLES);
     });
 
-    it('allows all roles to access profile including feedback', () => {
+    it('allows all roles to access profile', () => {
         expect(routePermissions['/profile']).toEqual(PROFILE_ROLES);
     });
 
-    it('locks business analytics to admins', () => {
+    it('locks business analytics to admins & data analysts', () => {
         expect(routePermissions['/business-analytics']).toEqual(BUSINESS_ANALYTICS_ROLES);
     });
 
-    it('allows ISD NM to executives, team leads, admins, and data analysts', () => {
+    it('allows ISD NM to executives, team leads, and admins', () => {
         expect(routePermissions['/isd-nm']).toEqual(ISD_NM_ROLES);
     });
 });
@@ -107,11 +104,11 @@ describe('sidebarPermissions', () => {
         expect(sidebarPermissions['/retail-admin']).toEqual(ADMIN_ONLY);
     });
 
-    it('shows retail-staff only to admin, staff, and viewer', () => {
+    it('shows retail-staff only to admin and staff', () => {
         expect(sidebarPermissions['/retail-staff']).toEqual(RETAIL_STAFF_ACCESS_ROLES);
     });
 
-    it('shows feedback department to admins and feedback users', () => {
+    it('shows feedback department to admins, feedback users, and data analysts', () => {
         expect(sidebarPermissions['/feedback-department']).toEqual(FEEDBACK_DEPARTMENT_ROLES);
     });
 
@@ -242,9 +239,8 @@ describe('defaultHomePath', () => {
         expect(defaultHomePath({ role: 'feedback', roles: ['feedback'] })).toBe('/feedback-department');
     });
 
-    it('routes retail staff and viewers to Retail Staff', () => {
+    it('routes retail staff to Retail Staff', () => {
         expect(defaultHomePath({ role: 'staff', roles: ['staff'] })).toBe('/retail-staff');
-        expect(defaultHomePath({ role: 'viewer', roles: ['viewer'] })).toBe('/retail-staff');
     });
 
     it('routes data analysts to Business Analytics', () => {

@@ -19,9 +19,9 @@ import {
 describe('VALID_ROLES', () => {
     it('contains core dashboard roles', () => {
         expect(VALID_ROLES).toEqual(
-            expect.arrayContaining(['admin', 'staff', 'viewer', 'feedback', 'executive', 'team_lead', 'data_analyst'])
+            expect.arrayContaining(['admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst'])
         );
-        expect(VALID_ROLES).toHaveLength(7);
+        expect(VALID_ROLES).toHaveLength(6);
     });
 
     it('does not contain manager', () => {
@@ -69,7 +69,7 @@ describe('normalizeRole', () => {
         expect(normalizeRole('Executive')).toBe('executive');
         expect(normalizeRole('TEAM_LEAD')).toBe('team_lead');
         expect(normalizeRole('Data Analyst')).toBe('data_analyst');
-        expect(normalizeRole('viewer')).toBe('viewer');
+        expect(normalizeRole('viewer')).toBe('staff');
     });
 
     it('accepts spaced or labelled variants used in spreadsheets', () => {

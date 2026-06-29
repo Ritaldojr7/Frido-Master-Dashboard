@@ -24,7 +24,7 @@ describe('normalizeRolesArray', () => {
 
 describe('parseRolesFromStorage', () => {
     it('reads JSON roles column', () => {
-        expect(parseRolesFromStorage('["staff","feedback"]', 'viewer')).toEqual(['staff', 'feedback']);
+        expect(parseRolesFromStorage('["staff","feedback"]', 'staff')).toEqual(['staff', 'feedback']);
     });
 
     it('falls back to legacy role column', () => {
