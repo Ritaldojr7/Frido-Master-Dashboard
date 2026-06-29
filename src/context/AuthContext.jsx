@@ -285,7 +285,7 @@ function ClerkAuthProvider({ children }) {
         }
         fetchMe();
         return () => { isMounted = false; };
-    }, [isSignedIn]);
+    }, [isSignedIn, signOut]);
 
     /** Keep DB avatar_url aligned with Clerk (header uses Clerk URL; Admin user list reads DB). */
     useEffect(() => {

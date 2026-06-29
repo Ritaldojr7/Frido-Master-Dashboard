@@ -5,7 +5,7 @@
  */
 import { createClerkClient, verifyToken as clerkVerifyToken } from '@clerk/express';
 import db, { now } from '../db.js';
-import { normalizeEmail, normalizeRole, isAllowedCompanyEmail } from '../utils/security.js';
+import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
 import { getUserRoles, parseRolesFromStorage, primaryRoleFromRoles } from '../utils/roles.js';
 
 const clerkClient = createClerkClient({
@@ -38,10 +38,7 @@ export async function verifyToken(req, res, next) {
             // Fetch their full profile from Clerk to get the authoritative role and email.
             try {
                 const clerkUser = await clerkClient.users.getUser(userId);
-                const roleFromClerk = normalizeRole(clerkUser.publicMetadata?.role || 'staff');
                 const email = normalizeEmail(clerkUser.emailAddresses[0]?.emailAddress || '');
-                const name =
-                    `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'User';
 
                 if (!email) {
                     return res.status(403).json({ error: 'Access denied: Email address is required.' });
