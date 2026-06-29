@@ -30,7 +30,18 @@ if (!clerkPublishableKey && import.meta.env.PROD) {
             {DEMO_MODE ? (
                 app
             ) : (
-                <ClerkProvider afterSignOutUrl="/" publishableKey={clerkPublishableKey}>
+                <ClerkProvider 
+                    afterSignOutUrl="/" 
+                    publishableKey={clerkPublishableKey}
+                    signInForceRedirectUrl={typeof window !== 'undefined' ? window.location.origin : undefined}
+                    signUpForceRedirectUrl={typeof window !== 'undefined' ? window.location.origin : undefined}
+                    allowedRedirectOrigins={[
+                        'https://frido-master-dashboard.onrender.com',
+                        'http://localhost:3000',
+                        'http://localhost:4000',
+                        'http://localhost:5173'
+                    ]}
+                >
                     {app}
                 </ClerkProvider>
             )}
