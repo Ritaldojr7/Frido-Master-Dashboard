@@ -53,12 +53,14 @@ export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES];
 
-/** Users allowed to access the Salary Analysis dashboard. Strictly limited to these emails. */
-export const SALARY_ANALYSIS_EMAILS = [
+/** Users allowed to access the ISD dashboards (Executive Performance, Performance & Profitability, Salary Analysis). Strictly limited to these emails. */
+export const ISD_DASHBOARD_EMAILS = [
     'ritwik.m@myfrido.com',
     'saiyed.a@myfrido.com',
     'juned.m@myfrido.com'
 ];
+
+export const SALARY_ANALYSIS_EMAILS = ISD_DASHBOARD_EMAILS;
 
 /**
  * @param {string | { role?: string, roles?: string[] } | null | undefined} userOrRole
@@ -153,11 +155,15 @@ export function hasAccess(userOrRole, path) {
     // Normalize path: strip query/hash and trailing slashes
     const cleanPath = String(path).trim().split(/[?#]/)[0].replace(/\/+$/, '');
 
-    // Strictly check Salary Analysis email list
-    if (cleanPath === '/isd/salary-analysis') {
+    // Strictly check ISD dashboards email list (Executive Performance, Performance & Profitability, Salary Analysis)
+    const isIsdDashboard = cleanPath === '/isd/salary-analysis' ||
+                           cleanPath === '/isd/executive-performance' ||
+                           cleanPath === '/isd/performance-profitability';
+
+    if (isIsdDashboard) {
         if (!userOrRole || typeof userOrRole !== 'object') return false;
         const email = String(userOrRole.email || '').trim().toLowerCase();
-        return SALARY_ANALYSIS_EMAILS.map(e => e.toLowerCase()).includes(email);
+        return ISD_DASHBOARD_EMAILS.map(e => e.toLowerCase()).includes(email);
     }
 
     // 1. Direct match (original path or clean normalized path)

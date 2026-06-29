@@ -31,7 +31,7 @@ import {
     ORDER_DISPUTE_ROLES,
     PROFILE_ROLES,
     RETAIL_STAFF_ACCESS_ROLES,
-    SALARY_ANALYSIS_EMAILS,
+    ISD_DASHBOARD_EMAILS,
     defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
@@ -126,7 +126,7 @@ function App() {
                                     <Route
                                         path="/isd/executive-performance"
                                         element={
-                                            <RoleGuard roles={ISD_EXEC_PERF_ROLES}>
+                                            <RoleGuard allowedEmails={ISD_DASHBOARD_EMAILS}>
                                                 <ExecPerformanceDashboard />
                                             </RoleGuard>
                                         }
@@ -134,7 +134,7 @@ function App() {
                                     <Route
                                         path="/isd/performance-profitability"
                                         element={
-                                            <RoleGuard roles={ISD_PROFITABILITY_ROLES}>
+                                            <RoleGuard allowedEmails={ISD_DASHBOARD_EMAILS}>
                                                 <PerformanceProfitabilityDashboard />
                                             </RoleGuard>
                                         }
@@ -142,7 +142,7 @@ function App() {
                                     <Route
                                         path="/isd/salary-analysis"
                                         element={
-                                            <RoleGuard allowedEmails={SALARY_ANALYSIS_EMAILS}>
+                                            <RoleGuard allowedEmails={ISD_DASHBOARD_EMAILS}>
                                                 <SalaryAnalysisDashboard />
                                             </RoleGuard>
                                         }
