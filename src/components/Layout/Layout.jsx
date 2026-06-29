@@ -43,6 +43,7 @@ const sidebarSections = [
                 children: [
                     { path: 'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I/edit?gid=0#gid=0', label: 'Team Structure', icon: ICONS.document, isExternal: true },
                     { path: 'https://whimsical.com/PCns3cFh6JdKE69XtYkenY', label: 'Team Organogram', icon: ICONS.globe, isExternal: true },
+                    { path: 'https://employee.dice.tech/', label: 'Greythr Login', icon: ICONS.globe, isExternal: true },
                     {
                         label: 'Expense Management',
                         icon: ICONS.folder,
