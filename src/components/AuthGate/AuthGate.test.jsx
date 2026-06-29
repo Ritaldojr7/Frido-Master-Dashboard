@@ -38,10 +38,10 @@ describe('AuthGate', () => {
     expect(screen.getByText(/analytics, feedback & admin/i)).toBeInTheDocument();
   });
 
-  it('renders myfrido.com footer link', () => {
+  it('renders contact admin email link', () => {
     render(<AuthGate><span>Child</span></AuthGate>);
     const link = screen.getByRole('link', { name: /contact admin/i });
-    expect(link).toHaveAttribute('href', 'https://www.myfrido.com');
+    expect(link).toHaveAttribute('href', 'mailto:ritwik.m@myfrido.com');
   });
 
   it('sign in button is always enabled (Clerk handles validation)', () => {
