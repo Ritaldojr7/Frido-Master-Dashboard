@@ -212,11 +212,7 @@ describe('defaultHomePath', () => {
         ).toBe('/business-analytics');
     });
 
-    it('routes pratham.t@myfrido.com to ISD NM', () => {
-        expect(
-            defaultHomePath({ email: 'pratham.t@myfrido.com', role: 'executive', roles: ['executive'] })
-        ).toBe('/isd-nm');
-    });
+
 
     it('routes rhythm.j@myfrido.com to Feedback', () => {
         expect(

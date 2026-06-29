@@ -93,6 +93,7 @@ export const routePermissions = {
     'https://dashboard.tangoeye.ai': BUSINESS_ANALYTICS_ROLES,
     'https://pilot.goyoyo.ai': BUSINESS_ANALYTICS_ROLES,
     'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk': BUSINESS_ANALYTICS_ROLES,
+    'https://docs.google.com/spreadsheets/d/13nrONpvuSQ1_OpEHhsY44p-k2TqfC_jFZjXvGVLoFlA': BUSINESS_ANALYTICS_ROLES,
     'https://darling-pithivier-0b906d.netlify.app': BUSINESS_ANALYTICS_ROLES,
     'https://illustrious-bubblegum-509fc4.netlify.app': BUSINESS_ANALYTICS_ROLES,
     'https://analytics-dashboard-frontend-x2da.onrender.com': BUSINESS_ANALYTICS_ROLES,
@@ -101,6 +102,8 @@ export const routePermissions = {
     'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I': ADMIN_ONLY,
     'https://whimsical.com/PCns3cFh6JdKE69XtYkenY': ADMIN_ONLY,
     'https://employee.dice.tech/': ADMIN_ONLY,
+    '/training-portal': ADMIN_ONLY,
+    '/expense-tracker': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
@@ -137,7 +140,26 @@ export function canSeeIsdResource(userOrRole, minRole) {
  * @param {string | { role?: string, roles?: string[] }} userOrRole
  */
 export function hasAccess(userOrRole, path) {
-    const allowed = routePermissions[path];
+    if (!path) return true;
+    
+    // Normalize path: strip query/hash and trailing slashes
+    const cleanPath = String(path).trim().split(/[?#]/)[0].replace(/\/+$/, '');
+
+    // 1. Direct match (original path or clean normalized path)
+    let allowed = routePermissions[path] || routePermissions[cleanPath];
+
+    // 2. Prefix match for external/dynamic URLs
+    if (!allowed) {
+        const matchingKey = Object.keys(routePermissions).find((key) => {
+            if (key === '/' || !key) return false;
+            // E.g. cleanPath "https://dashboard.tangoeye.ai/auth/login" starts with "https://dashboard.tangoeye.ai"
+            return cleanPath.startsWith(key.replace(/\/+$/, ''));
+        });
+        if (matchingKey) {
+            allowed = routePermissions[matchingKey];
+        }
+    }
+
     if (!allowed) return true;
     return hasAnyRole(userOrRole, allowed);
 }
@@ -145,7 +167,6 @@ export function hasAccess(userOrRole, path) {
 /** Per-user landing page overrides (email → path). Checked before role-based defaults. */
 const HOME_PATH_BY_EMAIL = {
     'saiyed.a@myfrido.com': '/business-analytics',
-    'pratham.t@myfrido.com': '/isd-nm',
     'rhythm.j@myfrido.com': '/feedback-department',
 };
 
