@@ -88,6 +88,7 @@ const sidebarSections = [
                     { path: 'https://dashboard.tangoeye.ai/auth/login', label: 'TangoEye AI', icon: ICONS.chart, isExternal: true },
                     { path: 'https://pilot.goyoyo.ai/', label: 'YoYo AI', icon: ICONS.chart, isExternal: true },
                     { path: 'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk/edit?gid=0#gid=0', label: 'NSO List', icon: ICONS.document, isExternal: true },
+                    { path: 'https://darling-pithivier-0b906d.netlify.app', label: 'Weekly Manpower Roster', icon: ICONS.globe, isExternal: true },
                     {
                         label: 'Retail Store Visit',
                         icon: ICONS.folder,
