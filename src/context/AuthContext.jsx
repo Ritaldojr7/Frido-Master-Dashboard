@@ -271,6 +271,10 @@ function ClerkAuthProvider({ children }) {
                     );
                 } else {
                     console.error('Failed to fetch backend user:', err);
+                    if (err.message && err.message.includes('Access denied')) {
+                        alert(err.message);
+                        signOut();
+                    }
                 }
             } finally {
                 clearTimeout(tid);
@@ -281,7 +285,7 @@ function ClerkAuthProvider({ children }) {
         }
         fetchMe();
         return () => { isMounted = false; };
-    }, [isSignedIn]);
+    }, [isSignedIn, signOut]);
 
     /** Keep DB avatar_url aligned with Clerk (header uses Clerk URL; Admin user list reads DB). */
     useEffect(() => {

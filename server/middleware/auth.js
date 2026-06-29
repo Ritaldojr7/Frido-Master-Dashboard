@@ -5,7 +5,7 @@
  */
 import { createClerkClient, verifyToken as clerkVerifyToken } from '@clerk/express';
 import db, { now } from '../db.js';
-import { normalizeEmail, normalizeRole } from '../utils/security.js';
+import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
 import { getUserRoles, parseRolesFromStorage, primaryRoleFromRoles } from '../utils/roles.js';
 
 const clerkClient = createClerkClient({
@@ -31,51 +31,56 @@ export async function verifyToken(req, res, next) {
         });
         
         const userId = payload.sub;
-        let userRow = await db.get('SELECT id, role, roles, email, name FROM users WHERE id = ?', [userId]);
+        let userRow = await db.get('SELECT id, role, roles, email, name, status FROM users WHERE id = ?', [userId]);
 
         if (!userRow) {
             // User not yet synced to SQLite under this Clerk ID.
             // Fetch their full profile from Clerk to get the authoritative role and email.
             try {
                 const clerkUser = await clerkClient.users.getUser(userId);
-                const roleFromClerk = normalizeRole(clerkUser.publicMetadata?.role || 'staff');
                 const email = normalizeEmail(clerkUser.emailAddresses[0]?.emailAddress || '');
-                const name =
-                    `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'User';
 
                 if (!email) {
-                    userRow = { id: userId, role: 'staff', email: '', name: 'User' };
-                } else {
-                    const existingByEmail = await db.get(
-                        'SELECT id, role, roles, email, name FROM users WHERE email = ?',
-                        [email]
-                    );
+                    return res.status(403).json({ error: 'Access denied: Email address is required.' });
+                }
 
-                    if (existingByEmail) {
-                        // Linked Clerk ID after invite — preserve DB role/department/etc.; Clerk sync often lagged or broken during invite (placeholder id).
-                        await db.run(
-                            `UPDATE users SET id = ?, status = 'active', last_login = ?, updated_at = ? WHERE email = ?`,
-                            [userId, now(), now(), email]
-                        );
-                        userRow = await db.get(
-                            'SELECT id, role, roles, email, name FROM users WHERE id = ?',
-                            [userId]
-                        );
-                    } else {
-                        const rolesJson = JSON.stringify([roleFromClerk]);
-                        await db.run(
-                            `INSERT INTO users (id, email, name, password_hash, role, roles, status, updated_at)
-                             VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
-                            [userId, email, name, '', roleFromClerk, rolesJson, now()]
-                        );
-                        userRow = { id: userId, role: roleFromClerk, roles: rolesJson, email, name };
+                if (!isAllowedCompanyEmail(email)) {
+                    return res.status(403).json({ error: 'Access denied: Only @myfrido.com domains are allowed.' });
+                }
+
+                const existingByEmail = await db.get(
+                    'SELECT id, role, roles, email, name, status FROM users WHERE email = ?',
+                    [email]
+                );
+
+                if (existingByEmail) {
+                    if (existingByEmail.status === 'disabled') {
+                        return res.status(403).json({ error: 'Access denied: Your account has been disabled.' });
                     }
+                    // Linked Clerk ID after invite — preserve DB role/department/etc.
+                    await db.run(
+                        `UPDATE users SET id = ?, status = 'active', last_login = ?, updated_at = ? WHERE email = ?`,
+                        [userId, now(), now(), email]
+                    );
+                    userRow = await db.get(
+                        'SELECT id, role, roles, email, name, status FROM users WHERE id = ?',
+                        [userId]
+                    );
+                } else {
+                    // Under invite-only flow, a user MUST have a record in the database already (status = 'invited' or 'import_pending').
+                    return res.status(403).json({ error: 'Access denied: You must be invited by an admin.' });
                 }
             } catch (clerkErr) {
                 console.error('Failed to fetch user from Clerk:', clerkErr.message);
-                userRow = { id: userId, role: 'staff', email: '', name: 'User' }; // Safe fallback
+                return res.status(401).json({ error: 'Authentication failed' });
             }
         } else {
+            if (userRow.status === 'disabled') {
+                return res.status(403).json({ error: 'Access denied: Your account has been disabled.' });
+            }
+            if (!isAllowedCompanyEmail(userRow.email)) {
+                return res.status(403).json({ error: 'Access denied: Only @myfrido.com domains are allowed.' });
+            }
             // User exists, just update last login
             await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
         }
