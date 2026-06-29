@@ -48,7 +48,7 @@ const sidebarSections = [
                         label: 'Expense Management',
                         icon: ICONS.folder,
                         children: [
-                            { path: '#', label: 'Expense Tracker', icon: ICONS.document, isExternal: true },
+                            { path: '/expense-tracker', label: 'Expense Tracker', icon: ICONS.document },
                         ],
                     },
                 ],
@@ -58,7 +58,7 @@ const sidebarSections = [
     {
         label: 'Training and Development',
         items: [
-            { path: '#', label: 'Training Portal', icon: ICONS.document, isExternal: true },
+            { path: '/training-portal', label: 'Training Portal', icon: ICONS.document },
         ],
     },
     {
