@@ -40,7 +40,7 @@ router.post('/sync/cron', async (req, res) => {
 });
 
 router.use(verifyToken);
-router.use(requireRole(['admin', 'staff', 'viewer', 'executive', 'team_lead']));
+router.use(requireRole(['admin']));
 
 router.get('/status', async (_req, res) => {
     try {

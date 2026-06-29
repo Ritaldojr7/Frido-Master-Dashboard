@@ -3,7 +3,7 @@ import { getUserRoles } from '../utils/roles.js';
 export const NOTICE_AUDIENCE_RETAIL = 'retail_staff';
 export const NOTICE_AUDIENCE_ISD_NM = 'isd_nm';
 
-const RETAIL_NOTICE_ROLES = ['staff', 'viewer'];
+const RETAIL_NOTICE_ROLES = ['staff'];
 const ISD_NOTICE_ROLES = ['executive', 'team_lead'];
 
 /** Normalise POST body audience; defaults to retail staff. */

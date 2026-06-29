@@ -17,42 +17,41 @@
 export const ROLES = {
     ADMIN: 'admin',
     STAFF: 'staff',
-    VIEWER: 'viewer', // legacy alias for older local/demo data
     FEEDBACK: 'feedback',
     EXECUTIVE: 'executive',
     TEAM_LEAD: 'team_lead',
     DATA_ANALYST: 'data_analyst',
 };
 
-export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST];
+export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST];
 export const ADMIN_ONLY = [ROLES.ADMIN];
 export const BUSINESS_ANALYTICS_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
-export const STAFF_ONLY = [ROLES.STAFF, ROLES.VIEWER];
+export const STAFF_ONLY = [ROLES.STAFF];
 
-/** Retail – Staff dashboard: not available to ISD-only roles (executive / team_lead). */
-export const RETAIL_STAFF_ACCESS_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.VIEWER];
+/** Retail – Staff dashboard: staff and admins. */
+export const RETAIL_STAFF_ACCESS_ROLES = [ROLES.ADMIN, ROLES.STAFF];
 
 /** ISD NM hub: executives, team leads, and admins */
-export const ISD_NM_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST];
+export const ISD_NM_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
 
 /** Who may open the Feedback Department page (admins retain full access). */
-export const FEEDBACK_DEPARTMENT_ROLES = [ROLES.ADMIN, ROLES.FEEDBACK];
+export const FEEDBACK_DEPARTMENT_ROLES = [ROLES.ADMIN, ROLES.FEEDBACK, ROLES.DATA_ANALYST];
 
-/** Order Dispute (Google Sheets) — adjust when rollout is defined. */
-export const ORDER_DISPUTE_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.TEAM_LEAD, ROLES.EXECUTIVE];
+/** Order Dispute (Google Sheets) — only admin */
+export const ORDER_DISPUTE_ROLES = [ROLES.ADMIN];
 
-/** AI Calling (Feedback) — same access as Feedback Department for now. */
+/** AI Calling (Feedback) — same access as Feedback Department. */
 export const AI_CALLING_FEEDBACK_ROLES = FEEDBACK_DEPARTMENT_ROLES;
 
 /** ISD sub-dashboards — Executive Performance and Performance Profitability. */
 export const ISD_EXEC_PERF_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 export const ISD_PROFITABILITY_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 
-/** ORM — blank placeholder for now, admin-only. */
-export const ORM_ROLES = [ROLES.ADMIN];
+/** ORM — blank placeholder for now, admin and data_analyst. */
+export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 
 /** Any authenticated dashboard role that may edit their profile. */
-export const PROFILE_ROLES = [...ALL_ROLES, ROLES.FEEDBACK];
+export const PROFILE_ROLES = [...ALL_ROLES];
 
 /**
  * @param {string | { role?: string, roles?: string[] } | null | undefined} userOrRole
@@ -94,11 +93,14 @@ export const routePermissions = {
     'https://dashboard.tangoeye.ai': BUSINESS_ANALYTICS_ROLES,
     'https://pilot.goyoyo.ai': BUSINESS_ANALYTICS_ROLES,
     'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk': BUSINESS_ANALYTICS_ROLES,
+    'https://darling-pithivier-0b906d.netlify.app': BUSINESS_ANALYTICS_ROLES,
+    'https://illustrious-bubblegum-509fc4.netlify.app': BUSINESS_ANALYTICS_ROLES,
     'https://analytics-dashboard-frontend-x2da.onrender.com': BUSINESS_ANALYTICS_ROLES,
     'https://discount-manager-frontend.onrender.com': BUSINESS_ANALYTICS_ROLES,
     'https://cx.locobuzz.com': ORM_ROLES,
-    'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I': ISD_NM_ROLES,
-    'https://whimsical.com/PCns3cFh6JdKE69XtYkenY': ISD_NM_ROLES,
+    'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I': ADMIN_ONLY,
+    'https://whimsical.com/PCns3cFh6JdKE69XtYkenY': ADMIN_ONLY,
+    'https://employee.dice.tech/': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
@@ -107,32 +109,13 @@ export const routePermissions = {
     '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
     '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
     '/orm': ORM_ROLES,
+    'https://www.referrush.com/myfrido/dashboard': ADMIN_ONLY,
 };
 
 /**
  * Sidebar nav items — each with role visibility.
  */
-export const sidebarPermissions = {
-    '/admin': ADMIN_ONLY,
-    '/retail-admin': ADMIN_ONLY,
-    '/business-analytics': BUSINESS_ANALYTICS_ROLES,
-    'https://dashboard.tangoeye.ai': BUSINESS_ANALYTICS_ROLES,
-    'https://pilot.goyoyo.ai': BUSINESS_ANALYTICS_ROLES,
-    'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk': BUSINESS_ANALYTICS_ROLES,
-    'https://analytics-dashboard-frontend-x2da.onrender.com': BUSINESS_ANALYTICS_ROLES,
-    'https://discount-manager-frontend.onrender.com': BUSINESS_ANALYTICS_ROLES,
-    'https://cx.locobuzz.com': ORM_ROLES,
-    'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I': ISD_NM_ROLES,
-    'https://whimsical.com/PCns3cFh6JdKE69XtYkenY': ISD_NM_ROLES,
-    '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
-    '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
-    '/order-dispute': ORDER_DISPUTE_ROLES,
-    '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
-    '/isd-nm': ISD_NM_ROLES,
-    '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
-    '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
-    '/orm': ORM_ROLES,
-};
+export const sidebarPermissions = { ...routePermissions };
 
 /**
  * ISD NM link visibility by minimum role tier.
@@ -178,6 +161,6 @@ export function defaultHomePath(userOrRole) {
     if (roles.includes(ROLES.DATA_ANALYST)) return '/business-analytics';
     if (roles.includes(ROLES.EXECUTIVE) || roles.includes(ROLES.TEAM_LEAD)) return '/isd-nm';
     if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
-    if (roles.includes(ROLES.STAFF) || roles.includes(ROLES.VIEWER)) return '/retail-staff';
+    if (roles.includes(ROLES.STAFF)) return '/retail-staff';
     return '/retail-staff';
 }

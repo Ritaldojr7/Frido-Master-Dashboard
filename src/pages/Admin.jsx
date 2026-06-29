@@ -1192,7 +1192,7 @@ export default function Admin() {
                         </div>
                         <form onSubmit={handleSubmitNotice} className="admin__modal-body">
                             <p className="admin__modal-desc">
-                                The selected audience sees this as a popup after login. A copy is emailed to active users in that audience (same Graph setup as invites). Retail staff = store staff &amp; viewers; ISD NM = executives &amp; team leads only.
+                                The selected audience sees this as a popup after login. A copy is emailed to active users in that audience (same Graph setup as invites). Retail staff = store staff; ISD NM = executives &amp; team leads only.
                                 {editingNoticeId ? (
                                     <>
                                         {' '}

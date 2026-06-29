@@ -24,7 +24,6 @@ export default function Profile() {
         admin: { label: 'Administrator', color: 'amber' },
         manager: { label: 'Manager', color: 'purple' },
         staff: { label: 'Staff', color: 'blue' },
-        viewer: { label: 'Viewer', color: 'blue' },
         feedback: { label: 'Feedback Department', color: 'emerald' },
     }[user.role] || { label: user.role, color: 'blue' };
 
