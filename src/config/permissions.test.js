@@ -156,16 +156,21 @@ describe('hasAccess', () => {
         expect(hasAccess('admin', '/isd-nm')).toBe(true);
     });
 
-    it('restricts ISD sub-dashboards to admin and data_analyst', () => {
-        expect(hasAccess('admin', '/isd/executive-performance')).toBe(true);
-        expect(hasAccess('admin', '/isd/performance-profitability')).toBe(true);
-        expect(hasAccess('data_analyst', '/isd/executive-performance')).toBe(true);
-        expect(hasAccess('data_analyst', '/isd/performance-profitability')).toBe(true);
+    it('restricts ISD dashboards to specific whitelisted email addresses', () => {
+        // Whitelisted emails should be allowed regardless of role
+        expect(hasAccess({ email: 'ritwik.m@myfrido.com', role: 'admin' }, '/isd/executive-performance')).toBe(true);
+        expect(hasAccess({ email: 'saiyed.a@myfrido.com', role: 'admin' }, '/isd/performance-profitability')).toBe(true);
+        expect(hasAccess({ email: 'juned.m@myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(true);
 
-        expect(hasAccess('executive', '/isd/executive-performance')).toBe(false);
-        expect(hasAccess('executive', '/isd/performance-profitability')).toBe(false);
-        expect(hasAccess('team_lead', '/isd/executive-performance')).toBe(false);
-        expect(hasAccess('team_lead', '/isd/performance-profitability')).toBe(false);
+        // Non-whitelisted emails should be denied even if they are admins or data analysts
+        expect(hasAccess({ email: 'other@myfrido.com', role: 'admin' }, '/isd/executive-performance')).toBe(false);
+        expect(hasAccess({ email: 'other@myfrido.com', role: 'data_analyst' }, '/isd/performance-profitability')).toBe(false);
+        expect(hasAccess({ email: 'other@myfrido.com', role: 'admin' }, '/isd/salary-analysis')).toBe(false);
+
+        // String roles (no email) should be denied
+        expect(hasAccess('admin', '/isd/executive-performance')).toBe(false);
+        expect(hasAccess('admin', '/isd/performance-profitability')).toBe(false);
+        expect(hasAccess('admin', '/isd/salary-analysis')).toBe(false);
     });
 
     it('denies staff access to admin-only routes', () => {
