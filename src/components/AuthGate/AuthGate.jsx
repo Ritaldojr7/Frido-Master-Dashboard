@@ -159,7 +159,7 @@ export default function AuthGate({ children }) {
 
                             <div className="login__divider"><span>Secured by Clerk</span></div>
                             <div className="login__form-footer">
-                                <p>Need help?{' '}<a href="https://www.myfrido.com" target="_blank" rel="noopener noreferrer" className="login__link">Contact Admin</a></p>
+                                <p>Need help?{' '}<a href="mailto:ritwik.m@myfrido.com" className="login__link">Contact Admin</a></p>
                             </div>
                         </div>
                     </div>
