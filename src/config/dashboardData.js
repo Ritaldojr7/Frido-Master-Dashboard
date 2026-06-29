@@ -782,13 +782,7 @@ export const isdNmData = {
                     icon: 'table',
                     isdAccess: 'executive',
                 },
-                {
-                    title: 'SIM Card Sheet',
-                    url: 'https://docs.google.com/spreadsheets/d/1d6cJTvNOG14AggVAtuix3B6VP108dv64h6B8zgOw6Uw/edit?gid=0#gid=0',
-                    variant: 'dark',
-                    icon: 'table',
-                    isdAccess: 'executive',
-                },
+
                 {
                     title: 'ISD SIM Tracker',
                     url: 'https://docs.google.com/spreadsheets/d/1RzfvGjSb8TQpHAhUY5nCWFcBhK_Z4OniPp6ySV6hhdk/edit?gid=644693214#gid=644693214',
