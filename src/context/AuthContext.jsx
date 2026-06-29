@@ -149,17 +149,40 @@ function DemoAuthProvider({ children }) {
         return DEMO_ROLE;
     });
 
+    const [userEmail, setUserEmail] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const getEmailFromUrl = () => {
+                let params = new URLSearchParams(window.location.search);
+                let e = params.get('email');
+                if (e) return e;
+
+                const hash = window.location.hash;
+                const qIndex = hash.indexOf('?');
+                if (qIndex !== -1) {
+                    params = new URLSearchParams(hash.substring(qIndex));
+                    e = params.get('email');
+                    if (e) return e;
+                }
+                return null;
+            };
+            return getEmailFromUrl() || `${DEMO_ROLE}@myfrido.com`;
+        }
+        return `${DEMO_ROLE}@myfrido.com`;
+    });
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const handleUrlChange = () => {
                 let params = new URLSearchParams(window.location.search);
                 let r = params.get('role');
-                if (!r) {
+                let e = params.get('email');
+                if (!r || !e) {
                     const hash = window.location.hash;
                     const qIndex = hash.indexOf('?');
                     if (qIndex !== -1) {
                         params = new URLSearchParams(hash.substring(qIndex));
-                        r = params.get('role');
+                        if (!r) r = params.get('role');
+                        if (!e) e = params.get('email');
                     }
                 }
 
@@ -168,6 +191,9 @@ function DemoAuthProvider({ children }) {
                     if (r === 'isd' || r === 'isd_nm') nextRole = 'executive';
                     else if (r === 'analyst' || r === 'analytics') nextRole = 'data_analyst';
                     setUserRole(nextRole);
+                }
+                if (e) {
+                    setUserEmail(e);
                 }
             };
             window.addEventListener('popstate', handleUrlChange);
@@ -187,7 +213,7 @@ function DemoAuthProvider({ children }) {
         }
         return {
             id: `demo-${userRole}`,
-            email: `${userRole}@myfrido.com`,
+            email: userEmail,
             name: name,
             role: userRole,
             roles: roles,
@@ -195,7 +221,7 @@ function DemoAuthProvider({ children }) {
             avatar_url: '',
             status: 'active',
         };
-    }, [userRole]);
+    }, [userRole, userEmail]);
 
     const logout = useCallback(() => {}, []);
     const updateProfile = useCallback(async (updates) => ({ ...user, ...updates }), [user]);

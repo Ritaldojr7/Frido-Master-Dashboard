@@ -17,6 +17,7 @@ import OrderDispute from './pages/OrderDispute';
 import AiCallingFeedback from './pages/AiCallingFeedback';
 import ExecPerformanceDashboard from './pages/ExecPerformanceDashboard';
 import PerformanceProfitabilityDashboard from './pages/PerformanceProfitabilityDashboard';
+import SalaryAnalysisDashboard from './pages/SalaryAnalysisDashboard';
 import OrmDashboard from './pages/OrmDashboard';
 import {
     ADMIN_ONLY,
@@ -30,6 +31,7 @@ import {
     ORDER_DISPUTE_ROLES,
     PROFILE_ROLES,
     RETAIL_STAFF_ACCESS_ROLES,
+    SALARY_ANALYSIS_EMAILS,
     defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
@@ -134,6 +136,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={ISD_PROFITABILITY_ROLES}>
                                                 <PerformanceProfitabilityDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/isd/salary-analysis"
+                                        element={
+                                            <RoleGuard allowedEmails={SALARY_ANALYSIS_EMAILS}>
+                                                <SalaryAnalysisDashboard />
                                             </RoleGuard>
                                         }
                                     />
