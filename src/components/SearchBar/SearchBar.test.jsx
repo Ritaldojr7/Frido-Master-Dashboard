@@ -5,7 +5,27 @@ import { DashboardDataProvider } from '../../context/DashboardDataContext';
 import SearchBar from './SearchBar';
 
 vi.mock('../../context/AuthContext', () => ({
-  apiFetch: vi.fn().mockResolvedValue({ dashboards: {} }),
+  apiFetch: vi.fn().mockResolvedValue({
+    dashboards: {
+      staff_experience_store: {
+        title: 'Staff Experience Store',
+        backRoute: '/',
+        sections: [
+          {
+            id: 'after-sales',
+            title: 'After Sales Support',
+            icon: 'table',
+            links: [
+              {
+                title: 'Raise a GST Bill',
+                url: 'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk',
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }),
   useAuth: vi.fn(() => ({
     user: null,
     isAuthenticated: true,

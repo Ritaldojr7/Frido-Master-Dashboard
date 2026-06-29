@@ -22,6 +22,9 @@ function mergeDashboard(slugKey, remote) {
     if (fromApi && typeof fromApi === 'object' && Array.isArray(fromApi.sections)) {
         return fromApi;
     }
+    if (!DEMO_MODE) {
+        return { title: '', backRoute: '', sections: [] };
+    }
     return STATIC[slugKey] || { title: '', backRoute: '', sections: [] };
 }
 
