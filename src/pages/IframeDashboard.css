@@ -11,6 +11,33 @@
 
 .iframe-dashboard__header {
     margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.iframe-dashboard__header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.iframe-dashboard__header-right {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    margin-bottom: 4px;
+}
+
+.iframe-dashboard__ref-link {
+    font-weight: 600;
+    color: var(--brand-yellow-strong);
+    text-decoration: underline;
+    transition: color var(--transition-fast);
+}
+
+.iframe-dashboard__ref-link:hover {
+    color: var(--brand-yellow);
 }
 
 .iframe-dashboard__title {

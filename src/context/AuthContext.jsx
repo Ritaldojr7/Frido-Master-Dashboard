@@ -11,10 +11,16 @@ export const AuthContext = createContext();
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 const DEMO_ROLE = import.meta.env.VITE_DEMO_ROLE || 'staff';
+const EMAIL_NAME_MAP = {
+    'ritwik.m@myfrido.com': 'Ritwik',
+    'juned.m@myfrido.com': 'Juned',
+    'saiyed.a@myfrido.com': 'Saiyed',
+};
+
 const DEMO_USER = {
     id: 'demo-staff',
-    email: 'staff@myfrido.com',
-    name: 'Staff',
+    email: 'ritwik.m@myfrido.com',
+    name: 'Ritwik',
     role: DEMO_ROLE,
     roles: [DEMO_ROLE],
     department: 'Retail',
@@ -165,9 +171,9 @@ function DemoAuthProvider({ children }) {
                 }
                 return null;
             };
-            return getEmailFromUrl() || `${DEMO_ROLE}@myfrido.com`;
+            return getEmailFromUrl() || 'ritwik.m@myfrido.com';
         }
-        return `${DEMO_ROLE}@myfrido.com`;
+        return 'ritwik.m@myfrido.com';
     });
 
     useEffect(() => {
@@ -206,7 +212,9 @@ function DemoAuthProvider({ children }) {
     }, []);
 
     const user = useMemo(() => {
-        const name = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+        const emailLower = userEmail?.toLowerCase();
+        const mappedName = EMAIL_NAME_MAP[emailLower];
+        const name = mappedName || (userRole.charAt(0).toUpperCase() + userRole.slice(1));
         const roles = [userRole];
         if (userRole === 'executive') {
             roles.push('team_lead');
