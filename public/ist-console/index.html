@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Frido IST · Performance &amp; Profitability Console</title>
-<style>
-/* When embedded inside the master dashboard iframe, show sidebar nav but hide duplicate branding */
-.rail .brand { display: none !important; }
-.rail { padding-top: 12px !important; }
-</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -219,9 +214,10 @@ footer.appfoot{padding:18px 26px 30px;color:var(--muted-2);font-size:11px;border
 </style><style>
 /* ---- enhancement-layer styles (additive; inherits existing tokens) ---- */
 .grid{display:grid;gap:14px}
-.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:1100px){.g3,.g4,.g5{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:1100px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr}}
+@media(max-width:720px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
 .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;line-height:1.3;white-space:nowrap}
 .pill.gp{background:var(--green-wash);color:var(--green)}.pill.ap{background:var(--amber-wash);color:#9a6500}.pill.rp{background:var(--red-wash);color:var(--red)}.pill.np{background:var(--teal-wash);color:var(--teal-deep)}.pill.gy{background:#EEF2F3;color:var(--muted)}
 .grade{font-family:"Space Grotesk";font-weight:700;width:34px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;font-size:13px}
@@ -360,12 +356,15 @@ function csvToRecords(rows,headers){
   if(missing.length)return{error:'Sheet missing column(s) for: '+missing.join(', ')+'. Found: '+headers.join(' | ')};
   const g=(row,f)=>idx[f]!=null?row[idx[f]]:undefined;const out=[];
   for(const row of rows){const idv=g(row,'id');if(idv==null||String(idv).trim()==='')continue;
-    const mp=_parseMonth(g(row,'mon'));const ni=_num(g(row,'ni')),sal=_num(g(row,'sal'));
+    const mp=_parseMonth(g(row,'mon'));const ni=_num(g(row,'ni'));
+    const gsal=_num(g(row,'sal'));const mgv=_num(g(row,'mg')),attv=_num(g(row,'att'));
+    const daysInMonth=mp?new Date(mp.yr,(mp.idx%12)+1,0).getDate():30;
+    const sal=mgv>0?(daysInMonth>0?mgv*attv/daysInMonth:0):gsal; // Salary = Monthly Gross × Attendance ÷ days-in-month; if Monthly Gross absent, fall back to Gross Salary (already attendance-adjusted) to avoid double-proration
     out.push({id:String(idv).trim(),name:String(g(row,'name')!=null?g(row,'name'):idv).trim(),
       vert:(String(g(row,'vert')||'').trim())||'Unknown',mon:mp?mp.label:String(g(row,'mon')||'').trim(),
-      yr:mp?mp.yr:null,qtr:mp?mp.qtr:'',midx:mp?mp.idx:0,
+      yr:mp?mp.yr:null,qtr:mp?mp.qtr:'',midx:mp?mp.idx:0,days:daysInMonth,
       gs:_num(g(row,'gs')),vwd:_num(g(row,'vwd')),ns:_num(g(row,'ns')),gi:_num(g(row,'gi')),lb:_num(g(row,'lb')),
-      ni:ni,nip:_num(g(row,'nip')),sal:sal,mg:_num(g(row,'mg')),att:_num(g(row,'att')),
+      ni:ni,nip:_num(g(row,'nip')),sal:sal,gsal:gsal,mg:mgv,att:attv,
       rr:_rate(g(row,'rr')),disc:_rate(g(row,'disc')),cod:_rate(g(row,'cod')),pre:_rate(g(row,'pre')),pcod:_rate(g(row,'pcod')),
       p_cush:_num(g(row,'p_cush')),p_chair:_num(g(row,'p_chair')),p_ins:_num(g(row,'p_ins')),p_matt:_num(g(row,'p_matt')),p_orth:_num(g(row,'p_orth')),p_foot:_num(g(row,'p_foot'))});}
   return{records:out};
@@ -375,6 +374,8 @@ function csvToRecords(rows,headers){
 const N0=v=>(v==null||isNaN(v))?0:v;
 const fmtINR=v=>{v=N0(v);const s=v<0?'-':'';v=Math.abs(v);if(v>=1e7)return s+'₹'+(v/1e7).toFixed(2)+' Cr';if(v>=1e5)return s+'₹'+(v/1e5).toFixed(2)+' L';if(v>=1e3)return s+'₹'+(v/1e3).toFixed(1)+'K';return s+'₹'+Math.round(v);};
 const fmtFull=v=>'₹'+Math.round(N0(v)).toLocaleString('en-IN');
+const salDisp=v=>state.confidential?'•••':fmtINR(v);
+const salDispFull=v=>state.confidential?'•••':fmtFull(v);
 const fmtPct=v=>(N0(v)*100).toFixed(1)+'%';
 const fmtX=v=>N0(v).toFixed(2)+'×';
 const uniq=a=>[...new Set(a)];
@@ -386,7 +387,7 @@ const pctile=(arr,p)=>{if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b)
 function pctRanker(vals){const s=[...vals].sort((a,b)=>a-b);return v=>{if(!s.length)return 0;let c=0;for(const x of s){if(x<=v)c++;}return c/s.length;};}
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 let RAW=[], monthsOrder=[];
-const state={vert:'(All)',month:'(All)',year:'(All)',qtr:'(All)',view:'overview',evalId:null,scatter:'sal_ns',scSort:{k:'ns',dir:-1},scQ:'',
+const state={vert:'(All)',month:'(All)',year:'(All)',qtr:'(All)',view:'overview',evalId:null,scatter:'sal_ns',scSort:{k:'ns',dir:-1},scQ:'',confidential:load('frido_conf',{on:true}).on,
   override:load('frido_ov',{}),exclude:load('frido_ex',{})};
 function isExcluded(id){return !!state.exclude[id];}
 function vertOf(id,fallback){return state.override[id]||fallback;}
@@ -403,19 +404,25 @@ function buildAgents(rows){
       ns:0,gs:0,vwd:0,gi:0,lb:0,ni:0,nip:0,sal:0,att:0,wd:0,wDisc:0,wRet:0,
       cat:{p_cush:0,p_chair:0,p_ins:0,p_matt:0,p_orth:0,p_foot:0},monthly:{}};m.set(r.id,a);}
     a.ns+=N0(r.ns);a.gs+=N0(r.gs);a.vwd+=N0(r.vwd);a.gi+=N0(r.gi);a.lb+=N0(r.lb);
-    a.ni+=N0(r.ni);a.nip+=N0(r.nip);a.sal+=N0(r.sal);a.att+=N0(r.att);
-    a.wd+=monthWD[r.mon]||0;a.wDisc+=N0(r.disc)*N0(r.ns);a.wRet+=N0(r.rr)*N0(r.ns);
+    a.ni+=N0(r.ni);a.nip+=N0(r.nip);a.wDisc+=N0(r.disc)*N0(r.ns);a.wRet+=N0(r.rr)*N0(r.ns);
     a.vByNs[r.vert]=(a.vByNs[r.vert]||0)+N0(r.ns);a.months.add(r.mon);
     CATS.forEach(([k])=>a.cat[k]+=N0(r[k])*N0(r.ns));
-    const mm=a.monthly[r.midx]||(a.monthly[r.midx]={ns:0,nip:0,att:0,mon:r.mon});
-    mm.ns+=N0(r.ns);mm.nip+=N0(r.nip);mm.att+=N0(r.att);
+    // salary & attendance are agent-MONTH attributes (repeated across vertical rows) -> dedupe per month
+    const yr=Math.floor(r.midx/12),mo=r.midx%12,days=(new Date(yr,mo+1,0).getDate())||30;
+    const mm=a.monthly[r.midx]||(a.monthly[r.midx]={ns:0,nip:0,att:0,salRaw:0,days:days,mon:r.mon});
+    mm.ns+=N0(r.ns);mm.nip+=N0(r.nip);
+    mm.att=Math.max(mm.att,N0(r.att));mm.salRaw=Math.max(mm.salRaw,N0(r.sal));
   });
   let out=[...m.values()];
   out.forEach(a=>{
     a.vert=state.override[a.id]||(Object.entries(a.vByNs).sort((x,y)=>y[1]-x[1])[0]||['Unknown'])[0];
     a.primary=(Object.entries(a.vByNs).sort((x,y)=>y[1]-x[1])[0]||['Unknown'])[0];
     a.nMonths=a.months.size;
+    // CONFIDENTIAL attendance-prorated salary (internal only): Σ monthGross × att ÷ daysInMonth
+    a.att=0;a.wd=0;a.sal=0;
+    Object.values(a.monthly).forEach(mm=>{a.att+=mm.att;a.wd+=(monthWD[mm.mon]||0);a.sal+=mm.salRaw;});
     a.cost=a.sal+a.nip;a.profit=a.ns-a.cost;
+    a.salRecov=a.sal>0?a.ns/a.sal:0; a.revAboveSal=a.ns-a.sal; a.costRatio=a.ns>0?a.cost/a.ns:0;
     a.netROI=a.cost>0?a.ns/a.cost:0;a.grossROI=a.sal>0?a.gs/a.sal:0;
     a.attPct=a.wd>0?a.att/a.wd:0;a.leave=Math.max(0,a.wd-a.att);
     a.revWD=a.wd>0?a.ns/a.wd:0;a.revAtt=a.att>0?a.ns/a.att:0;
@@ -592,6 +599,43 @@ function render(){
 }
 
 /* ============================== EXECUTIVE SUMMARY ============================== */
+/* ---- vertical profitability engine (aggregate; individual salary never exposed) ---- */
+function vertProfit(active){
+  const m={};
+  active.forEach(a=>{const v=a.vert;const o=m[v]||(m[v]={v,ns:0,sal:0,nip:0,gs:0,n:0});o.ns+=a.ns;o.sal+=a.sal;o.nip+=a.nip;o.gs+=a.gs;o.n++;});
+  const rows=Object.values(m).map(o=>{o.cost=o.sal+o.nip;o.profit=o.ns-o.cost;o.salPct=o.ns>0?o.sal/o.ns:0;o.incPct=o.ns>0?o.nip/o.ns:0;o.totPct=o.ns>0?o.cost/o.ns:0;o.netROI=o.cost>0?o.ns/o.cost:0;o.salRecov=o.sal>0?o.ns/o.sal:0;return o;}).sort((a,b)=>b.ns-a.ns);
+  const T={v:'Total',ns:sum(rows,r=>r.ns),sal:sum(rows,r=>r.sal),nip:sum(rows,r=>r.nip),gs:sum(rows,r=>r.gs),n:sum(rows,r=>r.n)};
+  T.cost=T.sal+T.nip;T.profit=T.ns-T.cost;T.salPct=T.ns>0?T.sal/T.ns:0;T.incPct=T.ns>0?T.nip/T.ns:0;T.totPct=T.ns>0?T.cost/T.ns:0;T.netROI=T.cost>0?T.ns/T.cost:0;T.salRecov=T.sal>0?T.ns/T.sal:0;
+  return {rows,tot:T};
+}
+// green(low cost) -> amber -> red(high cost)
+function heatCost(v,min,max){const t=max>min?(v-min)/(max-min):0;const hue=140-140*t;return `background:hsl(${hue},62%,90%);color:hsl(${hue},55%,26%);font-weight:600`;}
+function vertMatrixCard(vp){
+  const cols=[['salPct','Salary / Net Sales'],['incPct','Incentive / Net Sales'],['totPct','(Salary + Incentive) / Net Sales']];
+  const ranges={};cols.forEach(([k])=>{const vs=vp.rows.map(r=>r[k]);ranges[k]=[Math.min(...vs),Math.max(...vs)];});
+  const body=vp.rows.map(r=>`<tr><td>${esc(r.v)}</td>`+cols.map(([k])=>`<td style="text-align:right;${heatCost(r[k],ranges[k][0],ranges[k][1])}">${(r[k]*100).toFixed(1)}%</td>`).join('')+`</tr>`).join('');
+  const tot=`<tr style="font-weight:700;background:var(--line-2)"><td>Total</td>`+cols.map(([k])=>`<td style="text-align:right">${(vp.tot[k]*100).toFixed(1)}%</td>`).join('')+`</tr>`;
+  return cardEl('Vertical Profitability Analysis','people-cost as % of net sales · attendance-prorated salary · green = leanest, red = highest cost',
+    `<div class="note" style="margin-bottom:10px">Cost-to-sales ratios (aggregate, never individual). Lower is leaner. Conditional shading is per column across verticals.</div><div class="tablewrap"><table class="dt"><thead><tr><th style="text-align:left">Vertical</th><th>Salary / Net Sales</th><th>Incentive / Net Sales</th><th>(Salary + Incentive) / Net Sales</th></tr></thead><tbody>${body}${tot}</tbody></table></div>`,'margin-bottom:16px');
+}
+function vertInsightsCard(vp){
+  const R=vp.rows; if(!R.length)return '';
+  const by=(k,desc=true)=>[...R].sort((a,b)=>desc?b[k]-a[k]:a[k]-b[k])[0];
+  const withInc=R.filter(r=>r.nip>0);
+  const ins=[
+    ['Best performing vertical by profitability',by('profit'),x=>fmtINR(x.profit)+' profit'],
+    ['Most efficient (lowest total cost / sales)',by('totPct',false),x=>(x.totPct*100).toFixed(1)+'% cost-to-sales'],
+    ['Highest people-cost vertical (watch)',by('totPct'),x=>(x.totPct*100).toFixed(1)+'% cost-to-sales'],
+    ['Highest salary cost as % of sales',by('salPct'),x=>(x.salPct*100).toFixed(1)+'%'],
+    ['Lowest incentive cost as % of sales',by('incPct',false),x=>(x.incPct*100).toFixed(1)+'%'],
+    ['Highest ROI vertical',by('netROI'),x=>fmtX(x.netROI)],
+    ['Lowest ROI vertical',by('netROI',false),x=>fmtX(x.netROI)],
+    ['Highest salary recovery multiple',by('salRecov'),x=>fmtX(x.salRecov)],
+    ['Best incentive efficiency (sales per ₹ incentive)',(withInc.length?[...withInc].sort((a,b)=>(b.ns/b.nip)-(a.ns/a.nip))[0]:null),x=>x?fmtX(x.ns/x.nip)+' ×':'–']
+  ];
+  const li=ins.filter(([l,a])=>a).map(([l,a,f])=>`<li><b>${l}</b><span class="kv">${esc(a.v)} · ${f(a)}</span></li>`).join('');
+  return cardEl('Vertical insights','auto-generated from the cost-to-sales matrix',`<ul class="reasons">${li}</ul>`,'margin-bottom:16px');
+}
 function renderOverview(rows,agents,active){
   const k={agents:active.length,ns:sum(active,a=>a.ns),sal:sum(active,a=>a.sal),nip:sum(active,a=>a.nip),gs:sum(active,a=>a.gs)};
   k.cost=k.sal+k.nip;k.netROI=k.cost>0?k.ns/k.cost:0;k.grossROI=k.sal>0?k.gs/k.sal:0;
@@ -611,9 +655,30 @@ function renderOverview(rows,agents,active){
   const recOrder=['Promotion Ready','High Performer','Retain','Salary Revision Recommended','Coaching Required','Department / Vertical Change','Salary Revision','Performance Improvement Plan','Critical Salary Mismatch','Termination Review'];
   const recRow=recOrder.filter(t=>recCount[t]).map(t=>`<span class="pill ${REC_TONE[t]}">${t} · ${recCount[t]}</span>`).join(' ');
   const lead=(lab,a,extra)=>a?`<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line-2)"><span style="font-size:11px;color:var(--muted);width:150px">${lab}</span><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b><span style="margin-left:auto;color:var(--muted)">${extra}</span></div>`:'';
+  // aggregate cost KPIs (#5) + vertical superlatives — aggregate salary cost is allowed; individual is not
+  k.salPct=k.ns>0?k.sal/k.ns:0;k.incPct=k.ns>0?k.nip/k.ns:0;k.commPct=k.ns>0?(k.sal+k.nip)/k.ns:0;
+  const vp=vertProfit(active);
+  const vBest=[...vp.rows].sort((a,b)=>b.ns-a.ns)[0];
+  const vLeanest=[...vp.rows].sort((a,b)=>a.totPct-b.totPct)[0];
+  const vProfit=[...vp.rows].sort((a,b)=>b.profit-a.profit)[0];
+  const vRecov=[...vp.rows].sort((a,b)=>b.salRecov-a.salRecov)[0];
+  const costCards=[kpiEl('Total salary cost',fmtINR(k.sal),'attendance-prorated · aggregate'),
+    kpiEl('Total incentive cost',fmtINR(k.nip),'net payable'),
+    kpiEl('Salary % of net sales',(k.salPct*100).toFixed(1)+'%',''),
+    kpiEl('Incentive % of net sales',(k.incPct*100).toFixed(1)+'%',''),
+    kpiEl('Total commission cost %',(k.commPct*100).toFixed(1)+'%','(salary + incentive) / net sales')];
+  const vCards=[kpiEl('Highest-performing vertical',vBest?esc(vBest.v):'–',vBest?fmtINR(vBest.ns)+' net sales':''),
+    kpiEl('Lowest-cost vertical',vLeanest?esc(vLeanest.v):'–',vLeanest?(vLeanest.totPct*100).toFixed(1)+'% cost-to-sales':''),
+    kpiEl('Highest-profitability vertical',vProfit?esc(vProfit.v):'–',vProfit?fmtINR(vProfit.profit)+' profit':''),
+    kpiEl('Highest salary-recovery vertical',vRecov?esc(vRecov.v):'–',vRecov?fmtX(vRecov.salRecov):'')];
   document.getElementById('view-overview').innerHTML=
     `<div class="grid g3" style="margin-bottom:16px">${cards.join('')}</div>`+
     cardEl('Recommendation distribution','click a recommendation type in HR Recommendations to drill down',`<div style="display:flex;flex-wrap:wrap;gap:7px">${recRow}</div>`,'margin-bottom:16px')+
+    `<div style="font-family:'Space Grotesk';font-weight:600;font-size:15px;margin:4px 0 12px">Vertical Profitability Analysis</div>`+
+    `<div class="grid g5" style="margin-bottom:16px">${costCards.join('')}</div>`+
+    `<div class="grid g4" style="margin-bottom:16px">${vCards.join('')}</div>`+
+    vertMatrixCard(vp)+
+    vertInsightsCard(vp)+
     `<div class="grid g2">`+
       cardEl('Standouts','',lead('Highest net sales',best,fmtINR(best&&best.ns))+lead('Highest Net ROI',hiroi,fmtX(hiroi&&hiroi.netROI))+lead('Highest productivity',hiprod,fmtINR(hiprod&&hiprod.revAtt)+'/day')+lead('Most consistent',hicons,'CoV '+((hicons&&hicons.cov_var*100)||0).toFixed(0)+'%')+lead('Top product expertise',hiexp,((hiexp&&hiexp.expertise*100)||0).toFixed(0)+'/100'))+
       cardEl('Attention required','',lead('Lowest Net ROI',worstRoi,fmtX(worstRoi&&worstRoi.netROI))+lead('High salary, weak score',hiSalPoor,(hiSalPoor&&hiSalPoor.score.toFixed(1)))+`<div style="margin-top:10px"><canvas id="ovChart" height="150"></canvas></div>`)+
@@ -636,11 +701,11 @@ function renderEval(rows,agents,active){
     <select id="evalVert">${verts.map(v=>`<option value="${v}" ${v===a.vert?'selected':''}>${v}</option>`).join('')}</select>
     <button class="btn sec" id="evalExcl">${isExcluded(a.id)?'Re-include in analysis':'Exclude from analysis'}</button>
   </div>`;
-  const prof=[['Employee',esc(a.name)],['Employee ID',a.id],['Vertical (current)',esc(a.vert)+(state.override[a.id]?' · overridden':'')],['Primary vertical (by sales)',esc(a.primary)],['Months active',a.nMonths],['Working days (ref)',Math.round(a.wd)],['Attendance days',Math.round(a.att)],['Leave days',Math.round(a.leave)],['Gross salary (period)',fmtFull(a.sal)],['Incentive earned',fmtFull(a.nip)],['Total cost (CTC)',fmtFull(a.cost)]];
+  const prof=[['Employee',esc(a.name)],['Employee ID',a.id],['Vertical (current)',esc(a.vert)+(state.override[a.id]?' · overridden':'')],['Primary vertical (by sales)',esc(a.primary)],['Months active',a.nMonths],['Working days (ref)',Math.round(a.wd)],['Attendance days',Math.round(a.att)],['Leave days',Math.round(a.leave)],['Salary (period · prorated)',fmtFull(a.sal)],['Incentive earned',fmtFull(a.nip)],['Salary recovery (Net sales÷Salary)',fmtX(a.salRecov)],['Total cost (Salary+Incentive)',fmtFull(a.cost)]];
   const profHTML=`<table class="dt"><tbody>${prof.map(([l,v])=>`<tr><td style="color:var(--muted)">${l}</td><td style="text-align:right;font-weight:600">${v}</td></tr>`).join('')}</tbody></table>`;
   const kpis=[kpiEl('Net sales',fmtINR(a.ns),'rank #'+(a.rank_ns||'–')),kpiEl('Gross sales',fmtINR(a.gs),''),kpiEl('Net ROI',fmtX(a.netROI),'rank #'+(a.rank_netROI||'–')),kpiEl('Gross ROI',fmtX(a.grossROI),''),kpiEl('Rev / attendance day',fmtINR(a.revAtt),'rank #'+(a.rank_revAtt||'–')),kpiEl('Rev / working day',fmtINR(a.revWD),''),kpiEl('Attendance',fmtPct(a.attPct),Math.round(a.att)+'/'+Math.round(a.wd)+' days'),kpiEl('Weighted discount',fmtPct(a.discPct),'leakage '+fmtINR(a.discLeak)),kpiEl('Return rate',fmtPct(a.retPct),''),kpiEl('Consistency (CoV)',(a.cov_var*100).toFixed(0)+'%',a.consistency>=0.6?'stable':'volatile'),kpiEl('Sales growth',(a.growth*100).toFixed(0)+'%','first→last month'),kpiEl('Product expertise',(a.expertise*100).toFixed(0)+'/100','top: '+a.topCat[0])];
   // salary justification flow
-  const sj=`<div class="flow" style="margin-bottom:10px"><span class="node">Salary ${fmtINR(a.sal)}</span><span class="ar">→</span><span class="node">Net sales ${fmtINR(a.ns)}</span><span class="ar">→</span><span class="node">Profit ${fmtINR(a.profit)}</span><span class="ar">→</span><span class="node">Net ROI ${fmtX(a.netROI)}</span><span class="ar">→</span><span class="node">Net payable ${fmtFull(a.nip)}</span><span class="ar">→</span><span class="pill ${a.salJustified?'gp':'rp'}">${a.salJustified?'✅ Salary justified':'❌ Salary requires review'}</span></div>`;
+  const sj=`<div class="flow" style="margin-bottom:10px"><span class="node">Salary ${fmtINR(a.sal)}</span><span class="ar">→</span><span class="node">Net sales ${fmtINR(a.ns)}</span><span class="ar">→</span><span class="node">Salary recovery ${fmtX(a.salRecov)}</span><span class="ar">→</span><span class="node">Profit ${fmtINR(a.profit)}</span><span class="ar">→</span><span class="node">Net ROI ${fmtX(a.netROI)}</span><span class="ar">→</span><span class="node">Net payable ${fmtFull(a.nip)}</span><span class="ar">→</span><span class="pill ${a.salJustified?'gp':'rp'}">${a.salJustified?'✅ Salary justified':'❌ Salary requires review'}</span></div>`;
   const inc=[['Gross incentive',fmtFull(a.gi)],['Load-bearing deduction','− '+fmtFull(a.lb)],['Net incentive',fmtFull(a.ni)],['Net incentive payable',fmtFull(a.nip)],['Incentive as % of salary',fmtPct(a.incPctSal)],['Incentive as % of net sales',fmtPct(a.incPctNs)],['Salary coverage (inc/sal)',fmtX(a.cov)]];
   const incHTML=`<table class="dt"><tbody>${inc.map(([l,v])=>`<tr><td style="color:var(--muted)">${l}</td><td style="text-align:right;font-weight:600">${v}</td></tr>`).join('')}</tbody></table><div style="margin-top:10px"><span class="pill ${a.eligible?'gp':'rp'}">${a.eligible?'✅ Incentive eligible':'❌ Not incentive eligible'}</span> ${a.zeroStreak?`<span class="pill ap">${a.zeroStreak} consecutive zero-incentive month(s)</span>`:''}</div>`;
   const reasonsHTML=`<ul class="reasons">${a.rec.reasons.filter(Boolean).map(([t,v])=>`<li><b>${t}</b><span class="kv">${v}</span></li>`).join('')}</ul>`;
@@ -692,15 +757,15 @@ function renderROI(rows,agents,active){
   const host=document.getElementById('view-roi');
   const sorted=[...active].sort((a,b)=>b.netROI-a.netROI);
   const lowNet=[...active].filter(a=>a.grossROI>0).map(a=>({a,gap:a.grossROI-a.netROI})).sort((x,y)=>y.gap-x.gap).slice(0,8);
-  const cols=[['name','Agent'],['vert','Vertical'],['sal','Salary'],['ns','Net sales'],['grossROI','Gross ROI'],['netROI','Net ROI'],['roiPct','ROI pctile'],['discPct','Disc%'],['retPct','Ret%']];
-  const fmt={vert:v=>esc(v),sal:fmtINR,ns:fmtINR,grossROI:fmtX,netROI:fmtX,roiPct:v=>'P'+Math.round(v*100),discPct:fmtPct,retPct:fmtPct};
+  const cols=[['name','Agent'],['vert','Vertical'],['sal','Salary'],['ns','Net sales'],['salRecov','Salary recov.'],['grossROI','Gross ROI'],['netROI','Net ROI'],['roiPct','Net ROI pctile'],['costRatio','Cost/Sales'],['discPct','Disc%']];
+  const fmt={vert:v=>esc(v),sal:fmtINR,ns:fmtINR,salRecov:fmtX,grossROI:fmtX,netROI:fmtX,roiPct:v=>'P'+Math.round(v*100),costRatio:fmtPct,discPct:fmtPct};
   host.innerHTML=`<div class="note" style="margin-bottom:14px"><b>Gross ROI</b> = Gross sales ÷ Salary. <b>Net ROI</b> = Net sales ÷ (Salary + Net incentive payable). A large gap flags revenue eroded by discounts, returns, or incentive cost.</div>`+
     `<div class="grid g2" style="margin-bottom:16px">`+
-      cardEl('Salary vs Net sales','bubble size = Net ROI',`<canvas id="roiScatter" height="170"></canvas>`)+
+      cardEl('Salary vs Net sales','bubble size = Net ROI · attendance-prorated salary',`<canvas id="roiScatter" height="170"></canvas>`)+
       cardEl('Largest Gross→Net ROI erosion','',`<table class="dt"><thead><tr><th style="text-align:left">Agent</th><th>Gross</th><th>Net</th><th>Disc%</th><th>Ret%</th></tr></thead><tbody>${lowNet.map(({a})=>`<tr><td><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b></td><td style="text-align:right">${fmtX(a.grossROI)}</td><td style="text-align:right">${fmtX(a.netROI)}</td><td style="text-align:right">${fmtPct(a.discPct)}</td><td style="text-align:right">${fmtPct(a.retPct)}</td></tr>`).join('')}</tbody></table>`)+
     `</div>`+
     cardEl('ROI leaderboard','',dtable(cols,sorted,fmt));
-  chart('roiScatter',{type:'bubble',data:{datasets:[{data:active.map(a=>({x:a.monSal,y:a.ns,r:Math.max(3,Math.min(20,a.netROI))})),backgroundColor:'rgba(14,158,150,.5)',borderColor:COL.teal}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?`${a.name}: ${fmtINR(a.ns)} @ ${fmtINR(a.monSal)}/mo, ${fmtX(a.netROI)}`:'';}}}},scales:{x:{title:{display:true,text:'Avg monthly salary'},ticks:{callback:v=>fmtINR(v)}},y:{title:{display:true,text:'Net sales'},ticks:{callback:v=>fmtINR(v)}}}}});
+  chart('roiScatter',{type:'bubble',data:{datasets:[{data:active.map(a=>({x:a.monSal,y:a.ns,r:Math.max(3,Math.min(20,a.netROI))})),backgroundColor:'rgba(14,158,150,.5)',borderColor:COL.teal}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?`${a.name}: ${fmtINR(a.ns)} @ ${fmtINR(a.monSal)}/mo, ROI ${fmtX(a.netROI)}`:'';}}}},scales:{x:{title:{display:true,text:'Avg monthly salary'},ticks:{callback:v=>fmtINR(v)}},y:{title:{display:true,text:'Net sales'},ticks:{callback:v=>fmtINR(v)}}}}});
 }
 /* PRODUCTIVITY & ATTENDANCE */
 function renderProd(rows,agents,active){
@@ -743,7 +808,11 @@ function renderBench(rows,agents,active){
   const company={ns:mean(active.map(a=>a.ns)),netROI:mean(active.map(a=>a.netROI)),revAtt:mean(active.map(a=>a.revAtt)),disc:mean(active.map(a=>a.discPct))};
   const byVert={};active.forEach(a=>{(byVert[a.vert]=byVert[a.vert]||[]).push(a);});
   const vrows=Object.entries(byVert).map(([v,as])=>({v,n:as.length,ns:mean(as.map(a=>a.ns)),netROI:mean(as.map(a=>a.netROI)),revAtt:mean(as.map(a=>a.revAtt)),disc:mean(as.map(a=>a.discPct))})).sort((a,b)=>b.netROI-a.netROI);
+  const costRows=Object.entries(byVert).map(([v,as])=>{const ns=sum(as,a=>a.ns),sal=sum(as,a=>a.sal),nip=sum(as,a=>a.nip);return{v,salPct:ns>0?sal/ns:0,incPct:ns>0?nip/ns:0,totPct:ns>0?(sal+nip)/ns:0};}).sort((a,b)=>a.totPct-b.totPct);
+  const tNs=sum(active,a=>a.ns),tSal=sum(active,a=>a.sal),tNip=sum(active,a=>a.nip);
+  const costTable=`<table class="dt"><thead><tr><th style="text-align:left">Vertical</th><th>Salary / Net sales</th><th>Incentive / Net sales</th><th>(Salary+Incentive) / Net sales</th></tr></thead><tbody>`+costRows.map(r=>`<tr><td>${esc(r.v)}</td><td style="text-align:right">${fmtPct(r.salPct)}</td><td style="text-align:right">${fmtPct(r.incPct)}</td><td style="text-align:right">${fmtPct(r.totPct)}</td></tr>`).join('')+`<tr style="font-weight:700;background:var(--line-2)"><td>Total</td><td style="text-align:right">${fmtPct(tNs>0?tSal/tNs:0)}</td><td style="text-align:right">${fmtPct(tNs>0?tNip/tNs:0)}</td><td style="text-align:right">${fmtPct(tNs>0?(tSal+tNip)/tNs:0)}</td></tr></tbody></table>`;
   host.innerHTML=`<div class="grid g4" style="margin-bottom:16px">${kpiEl('Company avg net sales',fmtINR(company.ns))}${kpiEl('Company avg Net ROI',fmtX(company.netROI))}${kpiEl('Company avg rev/att day',fmtINR(company.revAtt))}${kpiEl('Company avg discount',fmtPct(company.disc))}</div>`+
+    cardEl('Cost efficiency by vertical','Salary, Incentive & total commission as % of net sales — lower is leaner · attendance-prorated salary',`<div class="note" style="margin-bottom:10px">Cost-to-sales ratios (attendance-prorated salary) — lower is leaner.</div>${costTable}`,'margin-bottom:16px')+
     cardEl('Vertical benchmarks','averages per vertical (respects vertical overrides)',`<table class="dt"><thead><tr><th style="text-align:left">Vertical</th><th>Agents</th><th>Avg net sales</th><th>Avg Net ROI</th><th>Avg rev/att day</th><th>Avg discount</th></tr></thead><tbody>${vrows.map(r=>`<tr><td>${esc(r.v)}</td><td style="text-align:right">${r.n}</td><td style="text-align:right">${fmtINR(r.ns)}</td><td style="text-align:right">${fmtX(r.netROI)}</td><td style="text-align:right">${fmtINR(r.revAtt)}</td><td style="text-align:right">${fmtPct(r.disc)}</td></tr>`).join('')}</tbody></table>`,'margin-bottom:16px')+
     cardEl('Vertical Net ROI','',`<canvas id="benchBar" height="120"></canvas>`);
   chart('benchBar',{type:'bar',data:{labels:vrows.map(r=>r.v),datasets:[{data:vrows.map(r=>r.netROI),backgroundColor:COL.teal,borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'×'}}}}});
@@ -752,12 +821,12 @@ function renderBench(rows,agents,active){
 function iqrOut(active,key){const v=active.map(a=>a[key]);const q1=pctile(v,.25),q3=pctile(v,.75),iqr=q3-q1;const lo=q1-1.5*iqr,hi=q3+1.5*iqr;return active.filter(a=>a[key]<lo||a[key]>hi).map(a=>({a,v:a[key],hi:a[key]>hi}));}
 function renderOutliers(rows,agents,active){
   const host=document.getElementById('view-outliers');
-  const defs=[['monSal','Salary'],['netROI','Net ROI'],['ns','Revenue'],['discPct','Discount'],['attPct','Attendance'],['score','Performance']];
+  const defs=[['monSal','Salary (avg/mo)'],['netROI','Net ROI'],['ns','Revenue'],['discPct','Discount'],['attPct','Attendance'],['score','Performance']];
   const blocks=defs.map(([k,lab])=>{const o=iqrOut(active,k);return cardEl(lab+' outliers',o.length+' flagged (1.5×IQR)',o.length?`<table class="dt"><tbody>${o.sort((x,y)=>y.v-x.v).map(({a,v,hi})=>`<tr><td><b style="cursor:pointer;color:var(--teal-deep)" onclick="openEval('${a.id}')">${esc(a.name)}</b></td><td style="text-align:right">${k==='netROI'?fmtX(v):k==='discPct'||k==='attPct'?fmtPct(v):k==='score'?v.toFixed(1):fmtINR(v)}</td><td style="text-align:right"><span class="pill ${hi?'gp':'rp'}">${hi?'high':'low'}</span></td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--muted);font-size:12px">None.</div>');}).join('');
   const opts=[['sal_ns','Salary vs Net sales'],['sal_roi','Salary vs Net ROI'],['sal_inc','Salary vs Incentive'],['att_ns','Attendance vs Net sales'],['disc_ns','Discount vs Net sales']];
   host.innerHTML=cardEl('Correlation explorer','',`<div class="selrow"><select id="scatSel">${opts.map(o=>`<option value="${o[0]}" ${o[0]===state.scatter?'selected':''}>${o[1]}</option>`).join('')}</select></div><canvas id="corrScatter" height="120"></canvas>`,'margin-bottom:16px')+`<div class="grid g3">${blocks}</div>`;
   document.getElementById('scatSel').addEventListener('change',e=>{state.scatter=e.target.value;render();});
-  const map={sal_ns:[a=>a.monSal,a=>a.ns,'Salary','Net sales',fmtINR,fmtINR],sal_roi:[a=>a.monSal,a=>a.netROI,'Salary','Net ROI',fmtINR,v=>v.toFixed(1)],sal_inc:[a=>a.monSal,a=>a.nip,'Salary','Incentive',fmtINR,fmtINR],att_ns:[a=>a.attPct*100,a=>a.ns,'Attendance %','Net sales',v=>v+'%',fmtINR],disc_ns:[a=>a.discPct*100,a=>a.ns,'Discount %','Net sales',v=>v+'%',fmtINR]}[state.scatter];
+  const map={sal_ns:[a=>a.monSal,a=>a.ns,'Avg monthly salary','Net sales',fmtINR,fmtINR],sal_roi:[a=>a.monSal,a=>a.netROI,'Avg monthly salary','Net ROI',fmtINR,v=>v.toFixed(1)+'×'],sal_inc:[a=>a.monSal,a=>a.nip,'Avg monthly salary','Incentive',fmtINR,fmtINR],att_ns:[a=>a.attPct*100,a=>a.ns,'Attendance %','Net sales',v=>v+'%',fmtINR],disc_ns:[a=>a.discPct*100,a=>a.ns,'Discount %','Net sales',v=>v+'%',fmtINR]}[state.scatter];
   chart('corrScatter',{type:'scatter',data:{datasets:[{data:active.map(a=>({x:map[0](a),y:map[1](a)})),backgroundColor:'rgba(14,158,150,.5)'}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=active[c.dataIndex];return a?a.name:'';}}}},scales:{x:{title:{display:true,text:map[2]},ticks:{callback:map[4]}},y:{title:{display:true,text:map[3]},ticks:{callback:map[5]}}}}});
 }
 /* ============================== SETTINGS & METHODOLOGY ============================== */
@@ -770,7 +839,10 @@ function renderSettings(rows,agents,active){
   const grows=Object.keys(DEF_G).map(k=>`<div class="cfg"><label>${k.replace('p','+')} grade · score ≥</label><input type="number" min="0" max="100" step="1" data-g="${k}" value="${GRADES[k]}"></div>`).join('');
   const trows=Object.keys(DEF_T).map(k=>`<div class="cfg"><label>${TLAB[k]}</label><input type="number" step="${k==='zeroStreak'?1:0.05}" data-t="${k}" value="${THRESH[k]}"></div>`).join('');
   const excl=Object.keys(state.exclude);const ov=Object.entries(state.override);
-  host.innerHTML=`<div class="grid g2" style="margin-bottom:16px">`+
+  const confCard=cardEl('Salary methodology','attendance-prorated salary, shown throughout',
+    `<div class="note" style="font-size:13px">Salary is calculated as <b>(Monthly Gross × Attendance ÷ days-in-month)</b> and is <b>visible across the dashboard</b>. This attendance-prorated salary — not raw Gross Salary — drives every calculation: ROI, cost, profitability, coverage, recovery multiple, and the vertical cost-to-sales matrix.</div>`);
+  host.innerHTML=confCard.replace('class="card"','class="card" style="margin-bottom:16px"')+
+    `<div class="grid g2" style="margin-bottom:16px">`+
     cardEl('Scorecard weights','must be relative; auto-normalized (now sums to '+wsum+')',wrows+`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="saveW">Apply weights</button><button class="btn sec" id="resetW">Reset</button></div>`)+
     cardEl('Grade bands','final score thresholds',grows+`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="saveG">Apply grades</button><button class="btn sec" id="resetG">Reset</button></div>`)+
   `</div>`+
@@ -781,7 +853,7 @@ function renderSettings(rows,agents,active){
     cardEl('Methodology & data coverage','what is measured, and what was intentionally excluded',
       `<div style="font-size:12.5px;line-height:1.6;color:var(--ink-2)">
        <p style="margin:0 0 8px"><b>Final score</b> = weighted average of eight percentile-ranked pillars (above), computed within the active cohort. Grades and the recommendation cascade read only these scores and the thresholds above — no subjective input.</p>
-       <p style="margin:0 0 6px"><b>Included & computed from your data:</b> net/gross sales, gross→net incentive (with load-bearing deduction), net incentive payable, gross salary, attendance days, return rate, discount %, payment mix (COD/prepaid/partial), six product-category revenue shares, and month/vertical — at agent×month×vertical grain.</p>
+       <p style="margin:0 0 6px"><b>Included & computed from your data:</b> net/gross sales, gross→net incentive (with load-bearing deduction), net incentive payable, attendance-prorated salary, attendance days, return rate, discount %, payment mix (COD/prepaid/partial), six product-category revenue shares, and month/vertical — at agent×month×vertical grain.</p>
        <p style="margin:0 0 6px"><b>Intentionally excluded (not present in the source data), to avoid fabricated metrics in HR decisions:</b></p>
        <ul style="margin:0 0 8px 18px;padding:0">
          <li>Order count, units sold, AOV, revenue-per-order, orders-per-day — no order/unit columns exist.</li>
@@ -790,7 +862,7 @@ function renderSettings(rows,agents,active){
          <li>Customer quality beyond return rate (repeat/new customers, refunds, complaints, replacements) — not captured.</li>
          <li>Per-category discount / selling price, weekly/daily consistency — granularity not available.</li>
        </ul>
-       <p style="margin:0"><b>Working days</b> is a proxy (max attendance logged that month) since true roster days aren't in the data. <b>Salary justification</b> follows your rule: net payable &gt; ₹0 → justified; = ₹0 → requires review.</p>
+       <p style="margin:0"><b>Working days</b> is a proxy (max attendance logged that month) since true roster days aren't in the data. <b>Salary</b> is computed as <b>(Monthly Gross × Attendance) ÷ days-in-month</b> — the attendance-prorated pay — and replaces raw Gross Salary in every calculation (ROI, cost, coverage, cost-ratios). The attendance-prorated salary is shown throughout the dashboard and replaces raw Gross Salary in every calculation. The one agent-month split across two verticals (EMP438, Dec 2025) has salary and attendance de-duplicated so it isn't double-counted. <b>Salary justification</b> follows your rule: net payable &gt; ₹0 → justified; = ₹0 → requires review.</p>
        </div>`);
   // wire
   const collect=attr=>{const o={};host.querySelectorAll(`[data-${attr}]`).forEach(i=>o[i.dataset[attr==='w'?'w':attr==='g'?'g':'t']]=parseFloat(i.value)||0);return o;};
@@ -800,6 +872,7 @@ function renderSettings(rows,agents,active){
   document.getElementById('resetG').onclick=()=>{GRADES=Object.assign({},DEF_G);save('frido_g',GRADES);render();};
   document.getElementById('saveT').onclick=()=>{THRESH=collect('t');save('frido_t',THRESH);render();};
   document.getElementById('resetT').onclick=()=>{THRESH=Object.assign({},DEF_T);save('frido_t',THRESH);render();};
+  
 }
 
 /* ============================== AGENT SCORECARD (ranked table) ============================== */
@@ -808,7 +881,7 @@ window.scSortClick=scSortClick;
 function renderScorecard(rows,agents,active){
   const host=document.getElementById('view-scorecard');
   const cols=[
-    ['name','Agent',null,'l'],['nMonths','Mo.',v=>Math.round(v)],['sal','Salary',fmtINR],
+    ['name','Agent',null,'l'],['nMonths','Mo.',v=>Math.round(v)],['sal','Salary',fmtINR],['salRecov','Salary recov.',fmtX],
     ['ns','Net sales',fmtINR,'heat'],['gi','Gross inc.',fmtINR],['nip','Net inc. pay.',fmtINR],
     ['attPct','Attend.',fmtPct,'green'],['retPct','Return',fmtPct,'red'],['discPct','Discount',fmtPct,'red'],
     ['revWD','Rev/work day',fmtINR],['revAtt','Rev/att day',fmtINR],['profit','Profit contrib.',fmtINR],

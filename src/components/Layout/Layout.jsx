@@ -56,9 +56,16 @@ const sidebarSections = [
         ],
     },
     {
-        label: 'Training and Development',
+        label: 'TRAINING AND DEVELOPMENT',
         items: [
-            { path: '/training-portal', label: 'Training Portal', icon: ICONS.document },
+            {
+                label: 'LMS',
+                icon: ICONS.folder,
+                children: [
+                    { path: 'https://academy.myfrido.com/login', label: 'LMS Login', icon: ICONS.globe, isExternal: true },
+                    { path: '/lms-dashboard', label: 'LMS Dashboard', icon: ICONS.document },
+                ],
+            },
         ],
     },
     {
@@ -95,8 +102,6 @@ const sidebarSections = [
                         icon: ICONS.folder,
                         children: [
                             { path: 'https://illustrious-bubblegum-509fc4.netlify.app', label: 'frontend', icon: ICONS.globe, isExternal: true },
-                            { path: 'https://illustrious-bubblegum-509fc4.netlify.app/dashboard.html', label: 'Dashboard', icon: ICONS.chart, isExternal: true },
-                            { path: 'https://docs.google.com/spreadsheets/d/13nrONpvuSQ1_OpEHhsY44p-k2TqfC_jFZjXvGVLoFlA/edit?usp=sharing', label: 'Response Sheet', icon: ICONS.document, isExternal: true },
                         ],
                     },
                 ],
@@ -305,6 +310,7 @@ export default function Layout({ children }) {
     const { staffRetail } = useDashboardData();
 
     const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
+    const isIframeRoute = location.pathname.startsWith('/isd/') || location.pathname === '/orm';
 
     const staffStats = useMemo(() => {
         const sections = staffRetail.sections || [];
@@ -554,10 +560,10 @@ export default function Layout({ children }) {
                 </header>
 
                 {/* Page Content */}
-                <main className={`main-content ${location.pathname.startsWith('/isd/') ? 'main-content--iframe' : ''}`}>
+                <main className={`main-content ${isIframeRoute ? 'main-content--iframe' : ''}`}>
                     {children}
                 </main>
-                {!location.pathname.startsWith('/isd') && <Footer />}
+                {!isIframeRoute && <Footer />}
             </div>
         </div>
     );
