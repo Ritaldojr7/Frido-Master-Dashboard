@@ -19,9 +19,9 @@ import {
 describe('VALID_ROLES', () => {
     it('contains core dashboard roles', () => {
         expect(VALID_ROLES).toEqual(
-            expect.arrayContaining(['admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst'])
+            expect.arrayContaining(['admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst', 'orm_lead'])
         );
-        expect(VALID_ROLES).toHaveLength(6);
+        expect(VALID_ROLES).toHaveLength(7);
     });
 
     it('does not contain manager', () => {

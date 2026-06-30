@@ -15,6 +15,9 @@ const EMAIL_NAME_MAP = {
     'ritwik.m@myfrido.com': 'Ritwik',
     'juned.m@myfrido.com': 'Juned',
     'saiyed.a@myfrido.com': 'Saiyed',
+    'shravani.p@myfrido.com': 'Shravani',
+    'rupali.b@myfrido.com': 'Rupali',
+    'aaysha.k@myfrido.com': 'Aaysha',
 };
 
 const DEMO_USER = {

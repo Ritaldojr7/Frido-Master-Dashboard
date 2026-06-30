@@ -21,9 +21,10 @@ export const ROLES = {
     EXECUTIVE: 'executive',
     TEAM_LEAD: 'team_lead',
     DATA_ANALYST: 'data_analyst',
+    ORM_LEAD: 'orm_lead',
 };
 
-export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST];
+export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 export const ADMIN_ONLY = [ROLES.ADMIN];
 export const BUSINESS_ANALYTICS_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 export const STAFF_ONLY = [ROLES.STAFF];
@@ -48,7 +49,7 @@ export const ISD_EXEC_PERF_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 export const ISD_PROFITABILITY_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 
 /** ORM — blank placeholder for now, admin and data_analyst. */
-export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
+export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES];
@@ -122,8 +123,8 @@ export const routePermissions = {
     '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
     '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
     '/isd/salary-analysis': [], // Strict email check handles this, empty role list fallback
-    '/orm': ADMIN_ONLY,
-    'https://harshikamyfrido-prog.github.io/ORM-Dashboard/': ADMIN_ONLY,
+    '/orm': ORM_ROLES,
+    'https://harshikamyfrido-prog.github.io/ORM-Dashboard/': ORM_ROLES,
     'https://www.referrush.com/myfrido/dashboard': ADMIN_ONLY,
 };
 
@@ -205,6 +206,7 @@ export function defaultHomePath(userOrRole) {
     if (roles.includes(ROLES.DATA_ANALYST)) return '/business-analytics';
     if (roles.includes(ROLES.EXECUTIVE) || roles.includes(ROLES.TEAM_LEAD)) return '/isd-nm';
     if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
+    if (roles.includes(ROLES.ORM_LEAD)) return '/orm';
     if (roles.includes(ROLES.STAFF)) return '/retail-staff';
     return '/retail-staff';
 }
