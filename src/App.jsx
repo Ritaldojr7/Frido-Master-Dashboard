@@ -19,6 +19,7 @@ import ExecPerformanceDashboard from './pages/ExecPerformanceDashboard';
 import PerformanceProfitabilityDashboard from './pages/PerformanceProfitabilityDashboard';
 import SalaryAnalysisDashboard from './pages/SalaryAnalysisDashboard';
 import OrmDashboard from './pages/OrmDashboard';
+import LmsDashboard from './pages/LmsDashboard';
 import {
     ADMIN_ONLY,
     AI_CALLING_FEEDBACK_ROLES,
@@ -150,8 +151,16 @@ function App() {
                                     <Route
                                         path="/orm"
                                         element={
-                                            <RoleGuard roles={ORM_ROLES}>
+                                            <RoleGuard roles={ADMIN_ONLY}>
                                                 <OrmDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/lms-dashboard"
+                                        element={
+                                            <RoleGuard roles={ADMIN_ONLY}>
+                                                <LmsDashboard />
                                             </RoleGuard>
                                         }
                                     />

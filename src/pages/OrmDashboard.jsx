@@ -2,16 +2,20 @@ import './IframeDashboard.css';
 
 export default function OrmDashboard() {
     return (
-        <div className="blank-dashboard animate-fade-in">
-            <header className="blank-dashboard__header">
-                <h1 className="blank-dashboard__title">Online Reputation Management</h1>
-                <p className="blank-dashboard__subtitle">
+        <div className="iframe-dashboard animate-fade-in">
+            <header className="iframe-dashboard__header">
+                <h1 className="iframe-dashboard__title">Online Reputation Management</h1>
+                <p className="iframe-dashboard__subtitle">
                     Reputation management tools, tracking sheets, and reporting resources.
                 </p>
             </header>
-            <div className="blank-dashboard__empty glass">
-                <span className="blank-dashboard__empty-icon">📊</span>
-                <p>This section is being set up. Content will appear here soon.</p>
+            <div className="iframe-dashboard__frame-wrap">
+                <iframe
+                    className="iframe-dashboard__frame"
+                    src="https://harshikamyfrido-prog.github.io/ORM-Dashboard/"
+                    title="ORM Dashboard"
+                    allow="clipboard-write"
+                />
             </div>
         </div>
     );
