@@ -5,6 +5,7 @@ export const ROLE_OPTIONS = [
     { value: 'executive', label: 'Executive' },
     { value: 'team_lead', label: 'Team Lead' },
     { value: 'data_analyst', label: 'Data Analyst' },
+    { value: 'orm_lead', label: 'ORM Lead' },
     { value: 'admin', label: 'Admin' },
 ];
 
