@@ -1111,6 +1111,7 @@ export default function Admin() {
                                     <option value="executive">Executive — ISD NM only</option>
                                     <option value="team_lead">Team Lead — ISD NM only</option>
                                     <option value="data_analyst">Data Analyst — Business Analytics</option>
+                                    <option value="orm_lead">ORM Lead — ORM Dashboard & Locobuzz</option>
                                     <option value="admin">Admin — Full access + user management</option>
                                 </select>
                             </div>
