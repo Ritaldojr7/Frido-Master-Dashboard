@@ -839,12 +839,7 @@ export default function Admin() {
                                                             type="checkbox"
                                                             className="admin__row-checkbox"
                                                             checked={Boolean(selectedIds[u.id])}
-                                                            onChange={(e) => {
-                                                                setSelectedIds((prev) => ({
-                                                                    ...prev,
-                                                                    [u.id]: e.target.checked,
-                                                                }));
-                                                            }}
+                                                            onChange={() => toggleSelectUser(u.id)}
                                                         />
                                                     </td>
                                                     <td>
