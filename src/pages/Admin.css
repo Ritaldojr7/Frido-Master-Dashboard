@@ -582,6 +582,15 @@
     background: rgba(16, 185, 129, 0.1);
 }
 
+.admin__action-btn--invite {
+    color: var(--text-tertiary);
+}
+
+.admin__action-btn--invite:hover {
+    color: var(--accent-blue, #3b82f6);
+    background: rgba(59, 130, 246, 0.1);
+}
+
 .admin__section-header {
     display: flex;
     align-items: center;

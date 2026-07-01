@@ -254,7 +254,7 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
             user: formatUserRow(user),
             message: emailWarning ? 'Invitation created' : 'Invitation sent successfully',
             warning: emailWarning,
-            inviteLink: emailWarning ? inviteLink : undefined,
+            inviteLink: inviteLink,
         });
     } catch (err) {
         console.error('Invite error:', err);
@@ -425,7 +425,7 @@ router.post('/bulk-invite', requireRole(['admin']), async (req, res) => {
                 ok: true,
                 email: normalizedEmail,
                 warning: emailWarning || undefined,
-                inviteLink: emailWarning ? clerkOut.inviteLink : undefined,
+                inviteLink: clerkOut.inviteLink,
             });
 
             await new Promise((r) => setTimeout(r, DELAY_MS));
