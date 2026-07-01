@@ -247,4 +247,8 @@ describe('defaultHomePath', () => {
     it('routes data analysts to Business Analytics', () => {
         expect(defaultHomePath({ role: 'data_analyst', roles: ['data_analyst'] })).toBe('/business-analytics');
     });
+
+    it('routes orm leads to ORM', () => {
+        expect(defaultHomePath({ role: 'orm_lead', roles: ['orm_lead'] })).toBe('/orm');
+    });
 });
