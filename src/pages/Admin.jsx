@@ -170,11 +170,11 @@ export default function Admin() {
                 setInviteMessage('');
             } else {
                 setInviteMessage('Invitation sent successfully!');
+                setInviteLink(data.inviteLink || '');
                 setInviteEmail('');
                 setInviteName('');
                 setInviteRole('staff');
                 setInviteStoreName('');
-                setTimeout(() => { setShowInviteModal(false); setInviteMessage(''); }, 1500);
             }
         } catch (err) {
             setInviteMessage(err.message || 'Failed to send invitation');
@@ -887,6 +887,27 @@ export default function Admin() {
                                                     </td>
                                                     <td>
                                                         <div className="admin__action-row">
+                                                            {u.status === 'invited' && (
+                                                                <button 
+                                                                    className="admin__action-btn admin__action-btn--invite" 
+                                                                    onClick={() => {
+                                                                        setInviteName(u.name || '');
+                                                                        setInviteEmail(u.email || '');
+                                                                        setInviteRole(u.role || 'staff');
+                                                                        setInviteStoreName(u.store_name || '');
+                                                                        setInviteWarning('');
+                                                                        setInviteLink('');
+                                                                        setInviteMessage('');
+                                                                        setShowInviteModal(true);
+                                                                    }} 
+                                                                    title="Resend invitation / Copy direct link"
+                                                                >
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                                                        <polyline points="22,6 12,13 2,6" />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
                                                             {u.status === 'disabled' ? (
                                                                 <button className="admin__action-btn admin__action-btn--activate" onClick={() => handleReactivate(u.id)} title="Reactivate">
                                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1298,30 +1319,32 @@ export default function Admin() {
                                     {inviteMessage}
                                 </div>
                             )}
-                            {inviteWarning && (
-                                <div className="admin__invite-warning">
-                                    <strong>Heads up:</strong> {inviteWarning}
-                                    {inviteLink && (
-                                        <div className="admin__invite-link-row">
-                                            <input
-                                                type="text"
-                                                readOnly
-                                                value={inviteLink}
-                                                onFocus={(e) => e.target.select()}
-                                                className="admin__invite-link-input"
-                                            />
-                                            <button type="button" className="profile__btn profile__btn--ghost" onClick={copyInviteLink}>
-                                                Copy link
-                                            </button>
-                                        </div>
+                            {inviteLink && (
+                                <div className="admin__invite-warning" style={{ borderLeftColor: inviteWarning ? 'var(--warning-border, #eab308)' : '#22c55e' }}>
+                                    {inviteWarning ? (
+                                        <><strong>Heads up:</strong> {inviteWarning}</>
+                                    ) : (
+                                        <><strong>Direct Invitation Link:</strong> If the user does not receive the automated email, they can sign up directly using this link:</>
                                     )}
+                                    <div className="admin__invite-link-row">
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={inviteLink}
+                                            onFocus={(e) => e.target.select()}
+                                            className="admin__invite-link-input"
+                                        />
+                                        <button type="button" className="profile__btn profile__btn--ghost" onClick={copyInviteLink}>
+                                            Copy link
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                             <div className="admin__modal-actions">
                                 <button type="button" className="profile__btn profile__btn--ghost" onClick={() => { setShowInviteModal(false); setInviteWarning(''); setInviteLink(''); setInviteMessage(''); }}>
-                                    {inviteWarning ? 'Close' : 'Cancel'}
+                                    {inviteWarning || inviteLink ? 'Close' : 'Cancel'}
                                 </button>
-                                {!inviteWarning && (
+                                {!(inviteWarning || inviteLink) && (
                                     <button type="submit" className="profile__btn profile__btn--primary" disabled={inviteLoading}>
                                         {inviteLoading ? 'Sending...' : 'Send Invitation'}
                                     </button>

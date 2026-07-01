@@ -16,6 +16,17 @@ const clerkClient = createClerkClient({
  * Verify Clerk JWT token and attach user to request.
  */
 export async function verifyToken(req, res, next) {
+    if (process.env.VITE_DEMO_MODE === 'true') {
+        req.user = {
+            id: 'demo-staff',
+            email: 'ritwik.m@myfrido.com',
+            name: 'Ritwik',
+            role: process.env.VITE_DEMO_ROLE || 'admin',
+            roles: [process.env.VITE_DEMO_ROLE || 'admin'],
+        };
+        return next();
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

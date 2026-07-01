@@ -102,17 +102,7 @@ export async function createClerkInvitationFlow({
     }
 
     if (invitation?.url) {
-        try {
-            const urlObj = new URL(invitation.url);
-            const ticket = urlObj.searchParams.get('ticket') || urlObj.searchParams.get('__clerk_ticket');
-            if (ticket) {
-                inviteLink = `${origin}/?__clerk_ticket=${ticket}`;
-            } else {
-                inviteLink = invitation.url;
-            }
-        } catch {
-            inviteLink = invitation.url;
-        }
+        inviteLink = invitation.url;
     }
 
     return {
