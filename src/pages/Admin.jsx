@@ -22,6 +22,13 @@ export default function Admin() {
     const [error, setError] = useState('');
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [showNoticeModal, setShowNoticeModal] = useState(false);
+    
+    // Access Requests tab state
+    const [requests, setRequests] = useState([]);
+    const [requestsLoading, setRequestsLoading] = useState(false);
+    const [requestsError, setRequestsError] = useState('');
+    const [activeTab, setActiveTab] = useState('users');
+    const [requestsMessage, setRequestsMessage] = useState('');
 
     // Invite form
     const [inviteEmail, setInviteEmail] = useState('');
@@ -80,10 +87,58 @@ export default function Admin() {
         }
     }, []);
 
+    const fetchRequests = useCallback(async () => {
+        setRequestsLoading(true);
+        setRequestsError('');
+        try {
+            const data = await apiFetch('/api/users/requests');
+            setRequests(data.requests || []);
+        } catch (err) {
+            setRequestsError(err.message || 'Failed to fetch access requests.');
+        } finally {
+            setRequestsLoading(false);
+        }
+    }, []);
+
+    const handleApproveRequest = async (id) => {
+        setRequestsMessage('');
+        try {
+            const data = await apiFetch(`/api/users/requests/${id}/approve`, {
+                method: 'POST',
+            });
+            setRequestsMessage(data.message || 'Request approved successfully!');
+            fetchRequests();
+            fetchUsers(); // Refresh the user list
+            setTimeout(() => setRequestsMessage(''), 3000);
+        } catch (err) {
+            setRequestsError(err.message || 'Failed to approve request.');
+        }
+    };
+
+    const handleRejectRequest = async (id) => {
+        setRequestsMessage('');
+        try {
+            const data = await apiFetch(`/api/users/requests/${id}/reject`, {
+                method: 'POST',
+            });
+            setRequestsMessage(data.message || 'Request rejected.');
+            fetchRequests();
+            setTimeout(() => setRequestsMessage(''), 3000);
+        } catch (err) {
+            setRequestsError(err.message || 'Failed to reject request.');
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchNotices();
     }, [fetchUsers, fetchNotices]);
+
+    useEffect(() => {
+        if (activeTab === 'requests') {
+            fetchRequests();
+        }
+    }, [activeTab, fetchRequests]);
 
     useEffect(() => {
         if (user?.name) {
@@ -609,222 +664,448 @@ export default function Admin() {
                     <h1 className="admin__title">User Management</h1>
                     <p className="admin__subtitle">Manage team members, roles, and access permissions</p>
                 </div>
-                <div className="admin__header-actions">
-                    <button
-                        type="button"
-                        className="admin__invite-btn"
-                        onClick={openImportModal}
-                        title="Import many users from CSV or Excel — then send invites in bulk."
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                        </svg>
-                        Import users
-                    </button>
-                    <button
-                        type="button"
-                        className="admin__invite-btn"
-                        onClick={() => setShowInviteModal(true)}
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                            <circle cx="8.5" cy="7" r="4" />
-                            <line x1="20" y1="8" x2="20" y2="14" />
-                            <line x1="23" y1="11" x2="17" y2="11" />
-                        </svg>
-                        Invite user
-                    </button>
-                </div>
+                {activeTab === 'users' && (
+                    <div className="admin__header-actions">
+                        <button
+                            type="button"
+                            className="admin__invite-btn"
+                            onClick={openImportModal}
+                            title="Import many users from CSV or Excel — then send invites in bulk."
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                            </svg>
+                            Import users
+                        </button>
+                        <button
+                            type="button"
+                            className="admin__invite-btn"
+                            onClick={() => setShowInviteModal(true)}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                            </svg>
+                            Invite user
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {/* Stats */}
-            <div className="admin__stats">
-                <div className="admin__stat">
-                    <span className="admin__stat-number">{listedUsers.length}</span>
-                    <span className="admin__stat-label">Total Users</span>
-                </div>
-                <div className="admin__stat">
-                    <span className="admin__stat-number">{listedUsers.filter((u) => u.status === 'active').length}</span>
-                    <span className="admin__stat-label">Active</span>
-                </div>
-                <div className="admin__stat">
-                    <span className="admin__stat-number">{listedUsers.filter((u) => u.role === 'admin').length}</span>
-                    <span className="admin__stat-label">Admins</span>
-                </div>
-                <div className="admin__stat">
-                    <span className="admin__stat-number">{listedUsers.filter((u) => u.status === 'invited' || u.status === 'import_pending').length}</span>
-                    <span className="admin__stat-label">Pending</span>
-                </div>
+            {/* Tab navigation */}
+            <div className="admin__tabs">
+                <button
+                    type="button"
+                    className={`admin__tab ${activeTab === 'users' ? 'admin__tab--active' : ''}`}
+                    onClick={() => setActiveTab('users')}
+                >
+                    Team Roster
+                </button>
+                <button
+                    type="button"
+                    className={`admin__tab ${activeTab === 'requests' ? 'admin__tab--active' : ''}`}
+                    onClick={() => setActiveTab('requests')}
+                >
+                    Access Requests
+                </button>
+                <button
+                    type="button"
+                    className={`admin__tab ${activeTab === 'notices' ? 'admin__tab--active' : ''}`}
+                    onClick={() => setActiveTab('notices')}
+                >
+                    Staff Notices
+                </button>
             </div>
 
             {/* Error */}
             {error && <div className="admin__error">{error}</div>}
 
-            {(selectedCount > 0 || bulkInviteMessage || bulkDeleteMessage) && (
-                <div className="admin__bulk-bar">
-                    {selectedCount > 0 ? (
+            {activeTab === 'users' && (
+                <>
+                    {/* Stats */}
+                    <div className="admin__stats">
+                        <div className="admin__stat">
+                            <span className="admin__stat-number">{listedUsers.length}</span>
+                            <span className="admin__stat-label">Total Users</span>
+                        </div>
+                        <div className="admin__stat">
+                            <span className="admin__stat-number">{listedUsers.filter((u) => u.status === 'active').length}</span>
+                            <span className="admin__stat-label">Active</span>
+                        </div>
+                        <div className="admin__stat">
+                            <span className="admin__stat-number">{listedUsers.filter((u) => u.role === 'admin').length}</span>
+                            <span className="admin__stat-label">Admins</span>
+                        </div>
+                        <div className="admin__stat">
+                            <span className="admin__stat-number">{listedUsers.filter((u) => u.status === 'invited' || u.status === 'import_pending').length}</span>
+                            <span className="admin__stat-label">Pending</span>
+                        </div>
+                    </div>
+
+                    {(selectedCount > 0 || bulkInviteMessage || bulkDeleteMessage) && (
+                        <div className="admin__bulk-bar">
+                            {selectedCount > 0 ? (
+                                <>
+                                    <span className="admin__bulk-bar-text">{selectedCount} selected</span>
+                                    <button
+                                        type="button"
+                                        className="admin__bulk-bar-btn admin__bulk-bar-btn--primary"
+                                        disabled={
+                                            bulkInviteLoading || bulkDeleteLoading || selectedPendingCount === 0
+                                        }
+                                        title={
+                                            selectedPendingCount === 0
+                                                ? 'Select at least one user with status “Import pending”'
+                                                : undefined
+                                        }
+                                        onClick={() => handleBulkInvite()}
+                                    >
+                                        {bulkInviteLoading ? 'Sending…' : 'Send invitation emails'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="admin__bulk-bar-btn admin__bulk-bar-btn--danger"
+                                        disabled={bulkDeleteLoading || bulkInviteLoading}
+                                        onClick={() => handleBulkDelete()}
+                                    >
+                                        {bulkDeleteLoading ? 'Deleting…' : 'Mass delete selected'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="admin__bulk-bar-btn"
+                                        disabled={bulkInviteLoading || bulkDeleteLoading}
+                                        onClick={() => setSelectedIds({})}
+                                    >
+                                        Clear selection
+                                    </button>
+                                </>
+                            ) : null}
+                            {bulkInviteMessage ? (
+                                <span className="admin__bulk-bar-msg">{bulkInviteMessage}</span>
+                            ) : null}
+                            {bulkDeleteMessage ? (
+                                <span className="admin__bulk-bar-msg">{bulkDeleteMessage}</span>
+                            ) : null}
+                        </div>
+                    )}
+
+                    {/* Users Table */}
+                    <div className="admin__table-card">
+                        {loading ? (
+                            <div className="admin__loading">Loading users...</div>
+                        ) : (
+                            <div className="admin__table-scroll">
+                                <table className="admin__table">
+                                    <thead>
+                                        <tr>
+                                            <th className="admin__th-checkbox" scope="col">
+                                                <input
+                                                    type="checkbox"
+                                                    className="admin__row-checkbox"
+                                                    checked={allSelectableSelected}
+                                                    disabled={selectableUsers.length === 0}
+                                                    title="Select all users on the roster (all pages)"
+                                                    onChange={(e) => toggleSelectAllSelectable(e.target.checked)}
+                                                />
+                                            </th>
+                                            <th>User</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Department</th>
+                                            <th>Last Login</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {listedUsers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={7}>
+                                                    <span className="admin__empty">No users on the roster.</span>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            pagedListedUsers.map((u) => {
+                                            const nameStr = String(u.name || '').trim();
+                                            const userInitials = nameStr
+                                                ? nameStr.split(/\s+/).map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+                                                : '–';
+                                            const avatarSrc = typeof u.avatar_url === 'string' ? u.avatar_url.trim() : '';
+                                            return (
+                                                <tr key={u.id} className={u.deleted_at ? 'admin__tr-pending-delete' : ''}>
+                                                    <td className="admin__td-checkbox">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="admin__row-checkbox"
+                                                            checked={Boolean(selectedIds[u.id])}
+                                                            onChange={() => toggleSelectUser(u.id)}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin__user-cell">
+                                                            <div className="admin__user-avatar">
+                                                                {avatarSrc ? (
+                                                                    <img src={avatarSrc} alt="" referrerPolicy="no-referrer" />
+                                                                ) : (
+                                                                    <span>{userInitials}</span>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <div className="admin__user-name-row">
+                                                                    <span className="admin__user-name">{u.name}</span>
+                                                                </div>
+                                                                <span className="admin__user-email">{u.email}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <RoleMultiSelect
+                                                            value={u.roles ?? [u.role]}
+                                                            disabled={u.id === user.id || u.status === 'disabled'}
+                                                            onChange={(roles) => handleRolesChange(u.id, roles)}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <span className={`admin__status ${statusClass(u.status)}`}>
+                                                            {formatStatusLabel(u.status)}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                            <span className="admin__dept">{u.department || '—'}</span>
+                                                            {u.designation && <span className="admin__designation" style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>{u.designation}</span>}
+                                                            {u.store_name && <span className="admin__store-tag">{u.store_name}</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className="admin__date">
+                                                            {u.last_login
+                                                                ? new Date(u.last_login).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                                                : 'Never'}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin__action-row">
+                                                            {u.status === 'disabled' ? (
+                                                                <button className="admin__action-btn admin__action-btn--activate" onClick={() => handleReactivate(u.id)} title="Reactivate">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+                                                                    </svg>
+                                                                </button>
+                                                            ) : (
+                                                                <button className="admin__action-btn admin__action-btn--disable" onClick={() => handleDisable(u.id, u.name)} title="Disable user">
+                                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <circle cx="12" cy="12" r="10" />
+                                                                        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                            <button className="admin__action-btn admin__action-btn--delete" onClick={() => handleDeleteAccount(u.id, u.name)} title="Delete account (removed from this list; purged from DB after 30 days)">
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <polyline points="3 6 5 6 21 6" />
+                                                                    <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6" />
+                                                                    <path d="M10 11v6" />
+                                                                    <path d="M14 11v6" />
+                                                                    <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                        )}
+                                    </tbody>
+                                </table>
+                                {listedUsers.length > 0 ? (
+                                    <div className="pagination">
+                                        {Array.from({ length: userTableTotalPages }, (_, i) => i + 1).map((page) => (
+                                            <button
+                                                key={page}
+                                                type="button"
+                                                className={`pagination__btn ${userTablePage === page ? 'pagination__btn--active' : ''}`}
+                                                onClick={() => setUserTablePage(page)}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
+
+            {/* Access Requests Tab */}
+            {activeTab === 'requests' && (
+                <div className="admin__table-card">
+                    {requestsLoading ? (
+                        <div className="admin__loading">Loading access requests...</div>
+                    ) : requestsError ? (
+                        <div className="admin__error">{requestsError}</div>
+                    ) : (
                         <>
-                            <span className="admin__bulk-bar-text">{selectedCount} selected</span>
-                            <button
-                                type="button"
-                                className="admin__bulk-bar-btn admin__bulk-bar-btn--primary"
-                                disabled={
-                                    bulkInviteLoading || bulkDeleteLoading || selectedPendingCount === 0
-                                }
-                                title={
-                                    selectedPendingCount === 0
-                                        ? 'Select at least one user with status “Import pending”'
-                                        : undefined
-                                }
-                                onClick={() => handleBulkInvite()}
-                            >
-                                {bulkInviteLoading ? 'Sending…' : 'Send invitation emails'}
-                            </button>
-                            <button
-                                type="button"
-                                className="admin__bulk-bar-btn admin__bulk-bar-btn--danger"
-                                disabled={bulkDeleteLoading || bulkInviteLoading}
-                                onClick={() => handleBulkDelete()}
-                            >
-                                {bulkDeleteLoading ? 'Deleting…' : 'Mass delete selected'}
-                            </button>
-                            <button
-                                type="button"
-                                className="admin__bulk-bar-btn"
-                                disabled={bulkInviteLoading || bulkDeleteLoading}
-                                onClick={() => setSelectedIds({})}
-                            >
-                                Clear selection
-                            </button>
+                            {requestsMessage && <div className="admin__success" style={{ margin: '16px', padding: '10px 14px', borderRadius: '6px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981' }}>{requestsMessage}</div>}
+                            <div className="admin__table-scroll">
+                                <table className="admin__table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Designation</th>
+                                            <th>Department</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Submitted At</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {requests.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={8}>
+                                                    <span className="admin__empty">No access requests found.</span>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            requests.map((req) => (
+                                                <tr key={req.id}>
+                                                    <td><strong>{req.name}</strong></td>
+                                                    <td>{req.email}</td>
+                                                    <td>{req.designation}</td>
+                                                    <td>{req.department}</td>
+                                                    <td>
+                                                        <span className="user-menu__role" style={{ fontSize: '12px', padding: '2px 6px', borderRadius: '4px', background: req.role === 'executive' ? 'rgba(245,158,11,0.1)' : 'rgba(59,130,246,0.1)', color: req.role === 'executive' ? '#f59e0b' : '#3b82f6', border: '1px solid currentColor' }}>
+                                                            {req.role}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`admin__status admin__status--${req.status}`} style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '12px', textTransform: 'capitalize', background: req.status === 'approved' ? 'rgba(16,185,129,0.1)' : req.status === 'rejected' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)', color: req.status === 'approved' ? '#10b981' : req.status === 'rejected' ? '#ef4444' : '#f59e0b', border: '1px solid currentColor' }}>
+                                                            {req.status}
+                                                        </span>
+                                                    </td>
+                                                    <td>{new Date(req.created_at).toLocaleDateString()}</td>
+                                                    <td>
+                                                        {req.status === 'pending' ? (
+                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin__req-btn admin__req-btn--approve"
+                                                                    onClick={() => handleApproveRequest(req.id)}
+                                                                >
+                                                                    Approve
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin__req-btn admin__req-btn--reject"
+                                                                    onClick={() => handleRejectRequest(req.id)}
+                                                                >
+                                                                    Reject
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '13px' }}>Reviewed</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </>
-                    ) : null}
-                    {bulkInviteMessage ? (
-                        <span className="admin__bulk-bar-msg">{bulkInviteMessage}</span>
-                    ) : null}
-                    {bulkDeleteMessage ? (
-                        <span className="admin__bulk-bar-msg">{bulkDeleteMessage}</span>
-                    ) : null}
+                    )}
                 </div>
             )}
 
-            {/* Users Table */}
-            <div className="admin__table-card">
-                {loading ? (
-                    <div className="admin__loading">Loading users...</div>
-                ) : (
-                    <div className="admin__table-scroll">
-                        <table className="admin__table">
-                            <thead>
-                                <tr>
-                                    <th className="admin__th-checkbox" scope="col">
-                                        <input
-                                            type="checkbox"
-                                            className="admin__row-checkbox"
-                                            checked={allSelectableSelected}
-                                            disabled={selectableUsers.length === 0}
-                                            title="Select all users on the roster (all pages)"
-                                            onChange={(e) => toggleSelectAllSelectable(e.target.checked)}
-                                        />
-                                    </th>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Department</th>
-                                    <th>Last Login</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {listedUsers.length === 0 ? (
+            {/* Notices Tab */}
+            {activeTab === 'notices' && (
+                <>
+                    {/* Notice History */}
+                    <div className="admin__section-header">
+                        <div>
+                            <h2>Staff notices</h2>
+                            <p>Publish popups for retail staff or ISD NM (executives &amp; team leads). Email copies go to that audience.</p>
+                        </div>
+                        <button type="button" className="admin__invite-btn" onClick={openNoticeModalForCreate}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 01-3.46 0" />
+                            </svg>
+                            New notice
+                        </button>
+                    </div>
+
+                    <div className="admin__table-card admin__notice-card">
+                        <div className="admin__table-scroll">
+                            <table className="admin__table">
+                                <thead>
                                     <tr>
-                                        <td colSpan={7}>
-                                            <span className="admin__empty">No users on the roster.</span>
-                                        </td>
+                                        <th>Notice</th>
+                                        <th>Audience</th>
+                                        <th>Priority</th>
+                                        <th>Seen</th>
+                                        <th>Acknowledged</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
-                                ) : (
-                                    pagedListedUsers.map((u) => {
-                                    const nameStr = String(u.name || '').trim();
-                                    const userInitials = nameStr
-                                        ? nameStr.split(/\s+/).map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-                                        : '–';
-                                    const avatarSrc = typeof u.avatar_url === 'string' ? u.avatar_url.trim() : '';
-                                    const rowClasses =
-                                        u.status === 'disabled' ? 'admin__row--disabled' : '';
-                                    return (
-                                        <tr key={u.id} className={rowClasses}>
-                                            <td className="admin__td-checkbox">
-                                                {u.id !== user?.id ? (
-                                                    <input
-                                                        type="checkbox"
-                                                        className="admin__row-checkbox"
-                                                        checked={Boolean(selectedIds[u.id])}
-                                                        onChange={() => toggleSelectUser(u.id)}
-                                                        title="Include in bulk invite or mass delete"
-                                                        aria-label={`Select ${nameStr || u.email} for bulk actions`}
-                                                    />
-                                                ) : null}
+                                </thead>
+                                <tbody>
+                                    {notices.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="7">
+                                                <span className="admin__empty">No notices have been published yet.</span>
                                             </td>
+                                        </tr>
+                                    ) : notices.map((notice) => (
+                                        <tr key={notice.id}>
                                             <td>
-                                                <div className="admin__user-cell">
-                                                    <div className="admin__user-avatar">
-                                                        {avatarSrc ? (
-                                                            <img
-                                                                src={avatarSrc}
-                                                                alt={`${nameStr || 'User'} avatar`}
-                                                                referrerPolicy="no-referrer"
-                                                            />
-                                                        ) : (
-                                                            <span>{userInitials}</span>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <span className="admin__user-name">{u.name}</span>
-                                                        <span className="admin__user-email">{u.email}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <RoleMultiSelect
-                                                    value={u.roles ?? [u.role]}
-                                                    disabled={u.status === 'disabled'}
-                                                    onChange={(roles) => handleRolesChange(u.id, roles)}
-                                                />
-                                            </td>
-                                            <td>
-                                                <span className={`admin__status ${statusClass(u.status)}`}>
-                                                    {formatStatusLabel(u.status)}
+                                                <span className="admin__user-name">{notice.title}</span>
+                                                <span className="admin__user-email">
+                                                    From {notice.sender_name || notice.created_by_name || 'Frido Admin'} • {new Date(notice.created_at).toLocaleString()}
                                                 </span>
                                             </td>
                                             <td>
-                                                <div className="admin__dept-cell">
-                                                    <span className="admin__dept">{u.department || '—'}</span>
-                                                    {u.store_name && <span className="admin__store-tag">{u.store_name}</span>}
-                                                </div>
+                                                <span className={`admin__status ${notice.audience === 'isd_nm' ? 'admin__status--invited' : 'admin__status--normal'}`}>
+                                                    {notice.audience === 'isd_nm' ? 'ISD NM' : 'Retail staff'}
+                                                </span>
                                             </td>
                                             <td>
-                                                <span className="admin__date">
-                                                    {u.last_login
-                                                        ? new Date(u.last_login).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                                        : 'Never'}
+                                                <span className={`admin__status admin__status--${notice.priority}`}>
+                                                    {notice.priority}
+                                                </span>
+                                            </td>
+                                            <td>{notice.seen_count || 0}</td>
+                                            <td>{notice.acknowledged_count || 0}</td>
+                                            <td>
+                                                <span className={`admin__status ${notice.active ? 'admin__status--active' : 'admin__status--disabled'}`}>
+                                                    {notice.active ? 'active' : 'inactive'}
                                                 </span>
                                             </td>
                                             <td>
                                                 <div className="admin__action-row">
-                                                    {u.status === 'disabled' ? (
-                                                        <button className="admin__action-btn admin__action-btn--activate" onClick={() => handleReactivate(u.id)} title="Reactivate">
-                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M1 4v6h6" /><path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
-                                                            </svg>
-                                                        </button>
-                                                    ) : (
-                                                        <button className="admin__action-btn admin__action-btn--disable" onClick={() => handleDisable(u.id, u.name)} title="Disable user">
-                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <circle cx="12" cy="12" r="10" />
-                                                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
-                                                    <button className="admin__action-btn admin__action-btn--delete" onClick={() => handleDeleteAccount(u.id, u.name)} title="Delete account (removed from this list; purged from DB after 30 days)">
+                                                    <button
+                                                        type="button"
+                                                        className="admin__action-btn"
+                                                        onClick={() => openNoticeModalForEdit(notice)}
+                                                        title="Edit notice (re-sends email and popup)"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="admin__action-btn admin__action-btn--notice-toggle"
+                                                        onClick={() => handleNoticeStatus(notice.id, !notice.active)}
+                                                        title={notice.active ? 'Deactivate notice' : 'Reactivate notice'}
+                                                    >
+                                                        {notice.active ? 'Off' : 'On'}
+                                                    </button>
+                                                    <button
+                                                        className="admin__action-btn admin__action-btn--delete"
+                                                        onClick={() => handleDeleteNotice(notice.id, notice.title, notice.audience)}
+                                                        title="Delete notice permanently"
+                                                    >
                                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                             <polyline points="3 6 5 6 21 6" />
                                                             <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6" />
@@ -836,128 +1117,13 @@ export default function Admin() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    );
-                                })
-                                )}
-                            </tbody>
-                        </table>
-                        {listedUsers.length > 0 ? (
-                            <div className="pagination">
-                                {Array.from({ length: userTableTotalPages }, (_, i) => i + 1).map((page) => (
-                                    <button
-                                        key={page}
-                                        type="button"
-                                        className={`pagination__btn ${userTablePage === page ? 'pagination__btn--active' : ''}`}
-                                        onClick={() => setUserTablePage(page)}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : null}
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                )}
-            </div>
-
-            {/* Notice History */}
-            <div className="admin__section-header">
-                <div>
-                    <h2>Staff notices</h2>
-                    <p>Publish popups for retail staff or ISD NM (executives &amp; team leads). Email copies go to that audience.</p>
-                </div>
-                <button type="button" className="admin__invite-btn" onClick={openNoticeModalForCreate}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 01-3.46 0" />
-                    </svg>
-                    New notice
-                </button>
-            </div>
-
-            <div className="admin__table-card admin__notice-card">
-                <div className="admin__table-scroll">
-                    <table className="admin__table">
-                        <thead>
-                            <tr>
-                                <th>Notice</th>
-                                <th>Audience</th>
-                                <th>Priority</th>
-                                <th>Seen</th>
-                                <th>Acknowledged</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {notices.length === 0 ? (
-                                <tr>
-                                    <td colSpan="7">
-                                        <span className="admin__empty">No notices have been published yet.</span>
-                                    </td>
-                                </tr>
-                            ) : notices.map((notice) => (
-                                <tr key={notice.id}>
-                                    <td>
-                                        <span className="admin__user-name">{notice.title}</span>
-                                        <span className="admin__user-email">
-                                            From {notice.sender_name || notice.created_by_name || 'Frido Admin'} • {new Date(notice.created_at).toLocaleString()}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`admin__status ${notice.audience === 'isd_nm' ? 'admin__status--invited' : 'admin__status--normal'}`}>
-                                            {notice.audience === 'isd_nm' ? 'ISD NM' : 'Retail staff'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`admin__status admin__status--${notice.priority}`}>
-                                            {notice.priority}
-                                        </span>
-                                    </td>
-                                    <td>{notice.seen_count || 0}</td>
-                                    <td>{notice.acknowledged_count || 0}</td>
-                                    <td>
-                                        <span className={`admin__status ${notice.active ? 'admin__status--active' : 'admin__status--disabled'}`}>
-                                            {notice.active ? 'active' : 'inactive'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="admin__action-row">
-                                            <button
-                                                type="button"
-                                                className="admin__action-btn"
-                                                onClick={() => openNoticeModalForEdit(notice)}
-                                                title="Edit notice (re-sends email and popup)"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                className="admin__action-btn admin__action-btn--notice-toggle"
-                                                onClick={() => handleNoticeStatus(notice.id, !notice.active)}
-                                                title={notice.active ? 'Deactivate notice' : 'Reactivate notice'}
-                                            >
-                                                {notice.active ? 'Off' : 'On'}
-                                            </button>
-                                            <button
-                                                className="admin__action-btn admin__action-btn--delete"
-                                                onClick={() => handleDeleteNotice(notice.id, notice.title, notice.audience)}
-                                                title="Delete notice permanently"
-                                            >
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="3 6 5 6 21 6" />
-                                                    <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6" />
-                                                    <path d="M10 11v6" />
-                                                    <path d="M14 11v6" />
-                                                    <path d="M9 6V4a2 2 0 012-2h2a2 2 0 012 2v2" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                </>
+            )}
 
             {/* ── Import users modal ── */}
             {showImportModal && (
@@ -1111,7 +1277,6 @@ export default function Admin() {
                                     <option value="executive">Executive — ISD NM only</option>
                                     <option value="team_lead">Team Lead — ISD NM only</option>
                                     <option value="data_analyst">Data Analyst — Business Analytics</option>
-                                    <option value="orm_lead">ORM Lead — ORM Dashboard & Locobuzz</option>
                                     <option value="admin">Admin — Full access + user management</option>
                                 </select>
                             </div>

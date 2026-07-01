@@ -151,7 +151,7 @@ function App() {
                                     <Route
                                         path="/orm"
                                         element={
-                                            <RoleGuard roles={ORM_ROLES}>
+                                            <RoleGuard roles={ADMIN_ONLY}>
                                                 <OrmDashboard />
                                             </RoleGuard>
                                         }

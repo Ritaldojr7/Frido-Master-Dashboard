@@ -14,9 +14,82 @@ export default function AuthGate({ children }) {
     const isInvite = typeof window !== 'undefined' && window.location.href.includes('__clerk_ticket');
 
     useEffect(() => {
+        // If the URL has __clerk_ticket in the hash (e.g. from an old invite link),
+        // redirect to the search param format so Clerk's SignUp can read it.
+        if (typeof window !== 'undefined' && window.location.hash.includes('__clerk_ticket')) {
+            const hash = window.location.hash;
+            const match = hash.match(/__clerk_ticket=([^&]+)/);
+            if (match && match[1]) {
+                const ticket = match[1];
+                const url = new URL(window.location.href);
+                url.searchParams.set('__clerk_ticket', ticket);
+                url.hash = ''; // Clear hash
+                window.location.replace(url.toString());
+            }
+        }
+    }, []);
+
+    useEffect(() => {
         const timer = setTimeout(() => setMounted(true), 50);
         return () => clearTimeout(timer);
     }, []);
+
+    const [showRequestForm, setShowRequestForm] = useState(false);
+    const [formName, setFormName] = useState('');
+    const [formEmail, setFormEmail] = useState('');
+    const [formDesignation, setFormDesignation] = useState('');
+    const [formDepartment, setFormDepartment] = useState('');
+    const [formRole, setFormRole] = useState('staff');
+    const [formError, setFormError] = useState('');
+    const [formSuccess, setFormSuccess] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleRequestSubmit = async (e) => {
+        e.preventDefault();
+        setFormError('');
+        setFormSuccess('');
+
+        const name = formName.trim();
+        const email = formEmail.trim().toLowerCase();
+        const designation = formDesignation.trim();
+        const department = formDepartment.trim();
+        const role = formRole;
+
+        if (!name || !email || !designation || !department || !role) {
+            setFormError('All fields are required.');
+            return;
+        }
+
+        if (!email.endsWith('@myfrido.com')) {
+            setFormError('Only company emails ending with @myfrido.com are allowed.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/auth/request-access', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, designation, department, role }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to submit request.');
+            }
+            setFormSuccess(data.message || 'Access request submitted successfully.');
+            setFormName('');
+            setFormEmail('');
+            setFormDesignation('');
+            setFormDepartment('');
+            setFormRole('staff');
+        } catch (err) {
+            setFormError(err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     if (DEMO_MODE) {
         return children;
@@ -130,32 +203,131 @@ export default function AuthGate({ children }) {
                                 <img src={fridoLogo} alt="frido" className="login__brand-logo-img login__brand-logo-img--mobile" />
                             </div>
 
-                            <div className="login__form-header">
-                                <h1 className="login__title" id="login-title">Welcome back</h1>
-                                <p className="login__subtitle">Sign in to your dashboard account</p>
-                            </div>
-
-                            <div className="login__clerk-buttons">
-                                {isInvite ? (
-                                    <div style={{ marginTop: '20px' }}>
-                                        <SignUp routing="hash" />
+                            {!showRequestForm ? (
+                                <>
+                                    <div className="login__form-header">
+                                        <h1 className="login__title" id="login-title">Welcome back</h1>
+                                        <p className="login__subtitle">Sign in to your dashboard account</p>
                                     </div>
-                                ) : (
-                                    <>
-                                        <SignInButton mode="modal">
-                                            <button id="login-submit" type="button" className="login__submit">
-                                                <span>Sign In</span>
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                                </svg>
-                                            </button>
-                                        </SignInButton>
-                                        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-tertiary)', marginTop: '8px' }}>
-                                            Accounts are invite-only.<br />Please check your email for an invitation.
-                                        </p>
-                                    </>
-                                )}
-                            </div>
+
+                                    <div className="login__clerk-buttons">
+                                        {isInvite ? (
+                                            <div style={{ marginTop: '20px' }}>
+                                                <SignUp routing="virtual" />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <SignInButton mode="modal">
+                                                    <button id="login-submit" type="button" className="login__submit">
+                                                        <span>Sign In</span>
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M5 12h14M12 5l7 7-7 7" />
+                                                        </svg>
+                                                    </button>
+                                                </SignInButton>
+                                                <button 
+                                                    type="button" 
+                                                    className="login__request-btn"
+                                                    onClick={() => setShowRequestForm(true)}
+                                                >
+                                                    Request Access
+                                                </button>
+                                                <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-tertiary)', marginTop: '16px' }}>
+                                                    Accounts are invite-only.<br />Please check your email for an invitation.
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="login__form-header">
+                                        <h1 className="login__title">Request Access</h1>
+                                        <p className="login__subtitle">Request access using your company email</p>
+                                    </div>
+
+                                    <form onSubmit={handleRequestSubmit} className="login__request-form">
+                                        {formError && <div className="login__alert login__alert--error">{formError}</div>}
+                                        {formSuccess && <div className="login__alert login__alert--success">{formSuccess}</div>}
+
+                                        <div className="login__form-group">
+                                            <label htmlFor="req-name">Full Name</label>
+                                            <input
+                                                id="req-name"
+                                                type="text"
+                                                required
+                                                placeholder="John Doe"
+                                                value={formName}
+                                                onChange={(e) => setFormName(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="login__form-group">
+                                            <label htmlFor="req-email">Company Email</label>
+                                            <input
+                                                id="req-email"
+                                                type="email"
+                                                required
+                                                placeholder="yourname@myfrido.com"
+                                                value={formEmail}
+                                                onChange={(e) => setFormEmail(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="login__form-group">
+                                            <label htmlFor="req-designation">Designation</label>
+                                            <input
+                                                id="req-designation"
+                                                type="text"
+                                                required
+                                                placeholder="Sales Executive"
+                                                value={formDesignation}
+                                                onChange={(e) => setFormDesignation(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="login__form-group">
+                                            <label htmlFor="req-department">Department</label>
+                                            <input
+                                                id="req-department"
+                                                type="text"
+                                                required
+                                                placeholder="Retail"
+                                                value={formDepartment}
+                                                onChange={(e) => setFormDepartment(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className="login__form-group">
+                                            <label htmlFor="req-role">Role</label>
+                                            <select
+                                                id="req-role"
+                                                value={formRole}
+                                                onChange={(e) => setFormRole(e.target.value)}
+                                            >
+                                                <option value="staff">Staff (Retail Staff)</option>
+                                                <option value="executive">Executive (ISD NM Dashboard)</option>
+                                            </select>
+                                        </div>
+
+                                        <button type="submit" disabled={isSubmitting} className="login__submit login__submit--request">
+                                            <span>{isSubmitting ? 'Submitting...' : 'Submit Request'}</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="login__back-link"
+                                            onClick={() => {
+                                                setShowRequestForm(false);
+                                                setFormError('');
+                                                setFormSuccess('');
+                                            }}
+                                        >
+                                            Back to Sign In
+                                        </button>
+                                    </form>
+                                </>
+                            )}
 
                             <div className="login__divider"><span>Secured by Clerk</span></div>
                             <div className="login__form-footer">
