@@ -6,6 +6,10 @@
  * as a placeholder in case you need to add custom auth-adjacent endpoints.
  */
 import { Router } from 'express';
+import { v4 as uuid } from 'uuid';
+import db from '../db.js';
+import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
+import { sendGraphMail } from '../services/graphEmail.js';
 
 const router = Router();
 
@@ -19,4 +23,77 @@ router.get('/status', (_req, res) => {
     });
 });
 
+/**
+ * POST /api/auth/request-access — guest request dashboard credentials
+ */
+router.post('/request-access', async (req, res) => {
+    try {
+        const { name, email, designation, department, role } = req.body;
+        
+        if (!name || !email || !designation || !department || !role) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        const normalizedEmail = normalizeEmail(email);
+
+        if (!normalizedEmail.endsWith('@myfrido.com') || !isAllowedCompanyEmail(normalizedEmail)) {
+            return res.status(400).json({ error: 'Only emails ending with @myfrido.com are allowed to request access.' });
+        }
+
+        if (role !== 'staff' && role !== 'executive') {
+            return res.status(400).json({ error: 'Invalid role selection.' });
+        }
+
+        // Check if already registered in users
+        const existingUser = await db.get('SELECT id FROM users WHERE email = ? AND deleted_at IS NULL', [normalizedEmail]);
+        if (existingUser) {
+            return res.status(400).json({ error: 'This email is already registered.' });
+        }
+
+        // Check if there is already a pending request
+        const existingRequest = await db.get('SELECT id FROM access_requests WHERE email = ? AND status = ?', [normalizedEmail, 'pending']);
+        if (existingRequest) {
+            return res.status(400).json({ error: 'A pending access request already exists for this email.' });
+        }
+
+        const id = uuid();
+        const nowIso = new Date().toISOString();
+        await db.run(
+            `INSERT INTO access_requests (id, email, name, designation, department, role, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, normalizedEmail, name.trim(), designation.trim(), department.trim(), role, 'pending', nowIso, nowIso]
+        );
+
+        // Send email to admin
+        try {
+            const html = `
+                <h2>New Access Request</h2>
+                <p>A user has requested access to the Frido Master Dashboard:</p>
+                <ul>
+                    <li><strong>Name:</strong> ${name.trim()}</li>
+                    <li><strong>Email:</strong> ${normalizedEmail}</li>
+                    <li><strong>Designation:</strong> ${designation.trim()}</li>
+                    <li><strong>Department:</strong> ${department.trim()}</li>
+                    <li><strong>Requested Role:</strong> ${role}</li>
+                </ul>
+                <p>Please log in to the admin dashboard to review this request.</p>
+            `;
+            await sendGraphMail({
+                toEmail: 'ritwik.m@myfrido.com',
+                toName: 'Ritwik M',
+                subject: `New Dashboard Access Request from ${name.trim()}`,
+                html,
+            });
+        } catch (emailErr) {
+            console.error('Failed to send admin notification email:', emailErr);
+        }
+
+        res.json({ message: 'Access request submitted successfully.' });
+    } catch (err) {
+        console.error('Request access error:', err);
+        res.status(500).json({ error: 'Internal server error while processing access request.' });
+    }
+});
+
 export default router;
+

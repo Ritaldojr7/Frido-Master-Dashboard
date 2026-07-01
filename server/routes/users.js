@@ -78,7 +78,7 @@ router.use(verifyToken);
  */
 router.get('/me', async (req, res) => {
     const user = await db.get(
-        'SELECT id, email, name, role, roles, department, store_name, avatar_url, status, last_login, created_at FROM users WHERE id = ?',
+        'SELECT id, email, name, role, roles, department, designation, store_name, avatar_url, status, last_login, created_at FROM users WHERE id = ?',
         [req.user.id]
     );
 
@@ -158,7 +158,7 @@ router.put('/me', async (req, res) => {
  */
 router.get('/', requireRole(['admin']), async (_req, res) => {
     const users = await db.all(
-        `SELECT id, email, name, role, roles, department, store_name, avatar_url, status, last_login, created_at, deleted_at
+        `SELECT id, email, name, role, roles, department, designation, store_name, avatar_url, status, last_login, created_at, deleted_at
          FROM users
          ORDER BY (deleted_at IS NOT NULL), created_at DESC`
     );
@@ -657,6 +657,142 @@ router.put('/:id/restore', requireRole(['admin']), async (req, res) => {
     );
 
     res.json({ user });
+});
+
+/**
+ * GET /api/users/requests — List all access requests (admin only)
+ */
+router.get('/requests', requireRole(['admin']), async (_req, res) => {
+    try {
+        const requests = await db.all(
+            `SELECT id, email, name, designation, department, role, status, created_at, updated_at
+             FROM access_requests
+             ORDER BY created_at DESC`
+        );
+        res.json({ requests });
+    } catch (err) {
+        console.error('List requests error:', err);
+        res.status(500).json({ error: 'Internal server error while retrieving access requests.' });
+    }
+});
+
+/**
+ * POST /api/users/requests/:id/approve — Approve a request and invite the user (admin only)
+ */
+router.post('/requests/:id/approve', requireRole(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const request = await db.get('SELECT * FROM access_requests WHERE id = ?', [id]);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        if (request.status !== 'pending') {
+            return res.status(400).json({ error: `Request has already been ${request.status}` });
+        }
+
+        const normalizedEmail = normalizeEmail(request.email);
+
+        // Run invitation flow
+        const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
+        
+        // Roles details (role cols and roles list matching request role)
+        const inviteRoles = parseRolesFromRequest({ role: request.role }) ?? normalizeRolesArray([request.role]);
+        const roleCols = rolesToDbColumns(inviteRoles);
+        const userRole = roleCols.role;
+
+        const clerkOut = await createClerkInvitationFlow({
+            normalizedEmail,
+            userRole,
+            storeName: '',
+            department: request.department,
+            origin,
+        });
+
+        if (clerkOut.error) {
+            return res.status(clerkOut.errorStatus || 500).json({ error: clerkOut.error });
+        }
+
+        const { existingClerkUser, inviteLink } = clerkOut;
+        const userId = existingClerkUser ? existingClerkUser.id : uuid();
+
+        // 1. Create or reactivate the user row
+        const existing = await db.get('SELECT id, deleted_at FROM users WHERE email = ?', [normalizedEmail]);
+        if (existing) {
+            if (existing.deleted_at) {
+                await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
+            } else {
+                return res.status(409).json({ error: 'A user with this email already exists' });
+            }
+        }
+
+        await db.run(
+            `INSERT INTO users (id, email, name, password_hash, role, roles, department, designation, store_name, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                userId,
+                normalizedEmail,
+                request.name,
+                '',
+                roleCols.role,
+                roleCols.roles,
+                request.department,
+                request.designation,
+                '',
+                'invited',
+                now(),
+                now(),
+            ]
+        );
+
+        // 2. Deliver the invite email
+        const { emailWarning } = await deliverInviteEmail({
+            normalizedEmail,
+            name: request.name,
+            userRole,
+            inviteLink,
+            inviterId: req.user.id,
+            db,
+        });
+
+        // Update the access request status to approved
+        const nowIso = new Date().toISOString();
+        await db.run(
+            'UPDATE access_requests SET status = ?, updated_at = ? WHERE id = ?',
+            ['approved', nowIso, id]
+        );
+
+        res.json({ message: 'Request approved and invitation sent successfully.', emailWarning });
+    } catch (err) {
+        console.error('Approve request error:', err);
+        res.status(500).json({ error: 'Internal server error while approving access request.' });
+    }
+});
+
+/**
+ * POST /api/users/requests/:id/reject — Reject a request (admin only)
+ */
+router.post('/requests/:id/reject', requireRole(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const request = await db.get('SELECT * FROM access_requests WHERE id = ?', [id]);
+        if (!request) {
+            return res.status(404).json({ error: 'Request not found' });
+        }
+        if (request.status !== 'pending') {
+            return res.status(400).json({ error: `Request has already been ${request.status}` });
+        }
+
+        const nowIso = new Date().toISOString();
+        await db.run(
+            'UPDATE access_requests SET status = ?, updated_at = ? WHERE id = ?',
+            ['rejected', nowIso, id]
+        );
+
+        res.json({ message: 'Request rejected successfully.' });
+    } catch (err) {
+        console.error('Reject request error:', err);
+        res.status(500).json({ error: 'Internal server error while rejecting access request.' });
+    }
 });
 
 export default router;

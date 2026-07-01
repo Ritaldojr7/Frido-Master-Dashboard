@@ -934,3 +934,127 @@ button.login__link {
     opacity: 0.10;
 }
 
+/* ── Request Access Form Styles ── */
+.login__request-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 48px;
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--border-radius-sm, 6px);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    transition: all var(--transition-fast);
+}
+
+.login__request-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--brand-yellow-strong);
+    color: var(--brand-yellow-strong);
+}
+
+[data-theme="dark"] .login__request-btn:hover {
+    color: var(--brand-yellow);
+    border-color: var(--brand-yellow);
+}
+
+.login__request-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.login__form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.login__form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.login__form-group input,
+.login__form-group select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--border-radius-sm, 6px);
+    font-size: 14px;
+    color: var(--text-primary);
+    font-family: var(--font-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+[data-theme="dark"] .login__form-group input,
+[data-theme="dark"] .login__form-group select {
+    background: var(--bg-secondary);
+}
+
+.login__form-group input:focus,
+.login__form-group select:focus {
+    outline: none;
+    border-color: var(--brand-yellow-strong);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
+[data-theme="dark"] .login__form-group input:focus,
+[data-theme="dark"] .login__form-group select:focus {
+    border-color: var(--brand-yellow);
+}
+
+.login__submit--request {
+    margin-top: 10px;
+}
+
+.login__back-link {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--font-primary);
+    align-self: center;
+    transition: color var(--transition-fast);
+}
+
+.login__back-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+.login__alert {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.login__alert--error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.login__alert--success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+

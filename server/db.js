@@ -538,6 +538,7 @@ async function ensurePostgresOptionalColumns() {
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TEXT');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TEXT');
     await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS store_name TEXT');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS designation TEXT');
     await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS roles TEXT NOT NULL DEFAULT '[]'");
     await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
     await pool.query("ALTER TABLE notices ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'retail_staff'");
@@ -583,6 +584,7 @@ if (isPostgres) {
     await ensureColumn('users', 'deleted_at', 'TEXT');
     await ensureColumn('users', 'last_login', 'TEXT');
     await ensureColumn('users', 'store_name', "TEXT DEFAULT ''");
+    await ensureColumn('users', 'designation', "TEXT DEFAULT ''");
     await ensureColumn('users', 'roles', "TEXT NOT NULL DEFAULT '[]'");
     await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
     await ensureColumn('notices', 'audience', 'TEXT NOT NULL DEFAULT \'retail_staff\'');

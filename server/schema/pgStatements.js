@@ -10,6 +10,7 @@ export function schemaStatements() {
             password_hash TEXT DEFAULT '',
             role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst', 'orm_lead')),
             department TEXT DEFAULT '',
+            designation TEXT DEFAULT '',
             store_name TEXT DEFAULT '',
             avatar_url TEXT DEFAULT '',
             status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'disabled', 'import_pending')),
@@ -127,6 +128,16 @@ export function schemaStatements() {
             error_message TEXT DEFAULT '',
             tabs_synced INTEGER NOT NULL DEFAULT 0
         )`,
-        `CREATE INDEX IF NOT EXISTS idx_order_dispute_sync_runs_started ON order_dispute_sync_runs(started_at DESC)`,
+        `CREATE TABLE IF NOT EXISTS access_requests (
+            id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            designation TEXT NOT NULL,
+            department TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('staff', 'executive')),
+            status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
     ];
 }

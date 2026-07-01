@@ -106,7 +106,7 @@ export async function createClerkInvitationFlow({
             const urlObj = new URL(invitation.url);
             const ticket = urlObj.searchParams.get('ticket') || urlObj.searchParams.get('__clerk_ticket');
             if (ticket) {
-                inviteLink = `${origin}/#/sign-up?__clerk_ticket=${ticket}`;
+                inviteLink = `${origin}/?__clerk_ticket=${ticket}`;
             } else {
                 inviteLink = invitation.url;
             }
