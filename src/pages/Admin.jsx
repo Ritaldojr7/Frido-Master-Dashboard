@@ -11,6 +11,7 @@ import {
 } from '../utils/adminImportNormalize';
 import { apiFetch, useAuth } from '../context/AuthContext';
 import RoleMultiSelect from '../components/RoleMultiSelect/RoleMultiSelect';
+import { ROLE_OPTIONS } from '../config/roleOptions';
 import './Admin.css';
 
 const USERS_PAGE_SIZE = 10;
@@ -29,6 +30,10 @@ export default function Admin() {
     const [requestsError, setRequestsError] = useState('');
     const [activeTab, setActiveTab] = useState('users');
     const [requestsMessage, setRequestsMessage] = useState('');
+
+    // Roster Filters
+    const [filterRole, setFilterRole] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
 
     // Invite form
     const [inviteEmail, setInviteEmail] = useState('');
@@ -401,32 +406,62 @@ export default function Admin() {
     /** Users not yet scheduled for deletion — deleted rows disappear from this page after delete. */
     const listedUsers = useMemo(() => users.filter((u) => !u.deleted_at), [users]);
 
+    const filteredUsers = useMemo(() => {
+        return listedUsers.filter((u) => {
+            const matchesRole = !filterRole || u.roles?.includes(filterRole) || u.role === filterRole;
+            const matchesStatus = !filterStatus || u.status === filterStatus;
+            return matchesRole && matchesStatus;
+        });
+    }, [listedUsers, filterRole, filterStatus]);
+
+    const sortedUsers = useMemo(() => {
+        return [...filteredUsers].sort((a, b) => {
+            const aIsAdmin = a.roles?.includes('admin') || a.role === 'admin';
+            const bIsAdmin = b.roles?.includes('admin') || b.role === 'admin';
+            if (aIsAdmin && !bIsAdmin) return -1;
+            if (!aIsAdmin && bIsAdmin) return 1;
+
+            const aHasLogin = !!a.last_login;
+            const bHasLogin = !!b.last_login;
+            if (aHasLogin && !bHasLogin) return -1;
+            if (!aHasLogin && bHasLogin) return 1;
+
+            if (aHasLogin && bHasLogin) {
+                return new Date(b.last_login) - new Date(a.last_login);
+            }
+
+            const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return bTime - aTime;
+        });
+    }, [filteredUsers]);
+
     const userTableTotalPages = useMemo(
-        () => Math.max(1, Math.ceil(listedUsers.length / USERS_PAGE_SIZE)),
-        [listedUsers.length]
+        () => Math.max(1, Math.ceil(sortedUsers.length / USERS_PAGE_SIZE)),
+        [sortedUsers.length]
     );
 
     useEffect(() => {
         setUserTablePage((p) => Math.min(p, userTableTotalPages));
-    }, [listedUsers.length, userTableTotalPages]);
+    }, [sortedUsers.length, userTableTotalPages]);
 
     const pagedListedUsers = useMemo(() => {
         const indexOfLast = userTablePage * USERS_PAGE_SIZE;
         const indexOfFirst = indexOfLast - USERS_PAGE_SIZE;
-        return listedUsers.slice(indexOfFirst, indexOfLast);
-    }, [listedUsers, userTablePage]);
+        return sortedUsers.slice(indexOfFirst, indexOfLast);
+    }, [sortedUsers, userTablePage]);
 
     const selectableUsers = useMemo(
-        () => listedUsers.filter((u) => u.id !== user?.id),
-        [listedUsers, user?.id]
+        () => sortedUsers.filter((u) => u.id !== user?.id),
+        [sortedUsers, user?.id]
     );
     const selectedCount = Object.keys(selectedIds).length;
     const selectedPendingCount = useMemo(
         () =>
             Object.keys(selectedIds).filter((id) =>
-                listedUsers.some((u) => u.id === id && u.status === 'import_pending')
+                sortedUsers.some((u) => u.id === id && u.status === 'import_pending')
             ).length,
-        [selectedIds, listedUsers]
+        [selectedIds, sortedUsers]
     );
 
     const toggleSelectUser = (id) => {
@@ -791,6 +826,56 @@ export default function Admin() {
                         </div>
                     )}
 
+                    {/* Filters Bar */}
+                    <div className="admin__filters">
+                        <div className="admin__filter-item">
+                            <span className="admin__filter-label">Role</span>
+                            <div className="admin__filter-select-wrapper">
+                                <select
+                                    value={filterRole}
+                                    onChange={(e) => {
+                                        setFilterRole(e.target.value);
+                                        setUserTablePage(1);
+                                    }}
+                                    className="admin__filter-select"
+                                >
+                                    <option value="">All Roles</option>
+                                    {ROLE_OPTIONS.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <svg className="admin__filter-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div className="admin__filter-item">
+                            <span className="admin__filter-label">Status</span>
+                            <div className="admin__filter-select-wrapper">
+                                <select
+                                    value={filterStatus}
+                                    onChange={(e) => {
+                                        setFilterStatus(e.target.value);
+                                        setUserTablePage(1);
+                                    }}
+                                    className="admin__filter-select"
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="active">Active</option>
+                                    <option value="invited">Invited</option>
+                                    <option value="import_pending">Import pending</option>
+                                    <option value="disabled">Disabled</option>
+                                </select>
+                                <svg className="admin__filter-select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Users Table */}
                     <div className="admin__table-card">
                         {loading ? (
@@ -819,10 +904,14 @@ export default function Admin() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {listedUsers.length === 0 ? (
+                                        {sortedUsers.length === 0 ? (
                                             <tr>
                                                 <td colSpan={7}>
-                                                    <span className="admin__empty">No users on the roster.</span>
+                                                    <span className="admin__empty">
+                                                        {listedUsers.length === 0 
+                                                            ? "No users on the roster." 
+                                                            : "No users match the selected filters."}
+                                                    </span>
                                                 </td>
                                             </tr>
                                         ) : (
