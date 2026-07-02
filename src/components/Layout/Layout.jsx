@@ -97,13 +97,7 @@ const sidebarSections = [
                     { path: 'https://pilot.goyoyo.ai/', label: 'YoYo AI', icon: ICONS.chart, isExternal: true },
                     { path: 'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk/edit?gid=0#gid=0', label: 'NSO List', icon: ICONS.document, isExternal: true },
                     { path: 'https://darling-pithivier-0b906d.netlify.app', label: 'Weekly Manpower Roster', icon: ICONS.globe, isExternal: true },
-                    {
-                        label: 'Retail Store Visit',
-                        icon: ICONS.folder,
-                        children: [
-                            { path: 'https://illustrious-bubblegum-509fc4.netlify.app', label: 'frontend', icon: ICONS.globe, isExternal: true },
-                        ],
-                    },
+                    { path: 'https://illustrious-bubblegum-509fc4.netlify.app', label: 'Store Visit Reporting', icon: ICONS.globe, isExternal: true },
                 ],
             },
             {
