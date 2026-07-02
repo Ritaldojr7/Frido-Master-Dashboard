@@ -92,8 +92,17 @@ export async function verifyToken(req, res, next) {
             if (!isAllowedCompanyEmail(userRow.email)) {
                 return res.status(403).json({ error: 'Access denied: Only @myfrido.com domains are allowed.' });
             }
-            // User exists, just update last login
-            await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
+            // If the user is logging in but their status is still 'invited' or 'import_pending', update it to 'active' now.
+            if (userRow.status === 'invited' || userRow.status === 'import_pending') {
+                await db.run(
+                    `UPDATE users SET status = 'active', last_login = ?, updated_at = ? WHERE id = ?`,
+                    [now(), now(), userId]
+                );
+                userRow.status = 'active';
+            } else {
+                // User exists and is active, just update last login
+                await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
+            }
         }
 
         const roles = parseRolesFromStorage(userRow.roles, userRow.role);
