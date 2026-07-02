@@ -153,6 +153,30 @@ router.put('/me', async (req, res) => {
 
 // ── Admin: User Management ──────────────────────────────
 
+async function syncAllUserNamesFromClerk() {
+    try {
+        const { data: clerkUsers } = await clerkClient.users.getUserList({ limit: 500 });
+        for (const cu of clerkUsers) {
+            const email = normalizeEmail(cu.emailAddresses[0]?.emailAddress || '');
+            if (!email) continue;
+
+            const firstName = cu.firstName || '';
+            const lastName = cu.lastName || '';
+            const clerkName = [firstName, lastName].filter(Boolean).join(' ').trim();
+            if (!clerkName) continue;
+
+            await db.run(
+                `UPDATE users 
+                 SET name = ?, avatar_url = COALESCE(NULLIF(avatar_url, ''), ?) 
+                 WHERE email = ? AND (name = '' OR name = 'User' OR name IS NULL)`,
+                [clerkName, cu.imageUrl || '', email]
+            );
+        }
+    } catch (err) {
+        console.error('Failed to background-sync names from Clerk:', err);
+    }
+}
+
 /**
  * GET /api/users — List all users (admin only)
  */
@@ -162,6 +186,9 @@ router.get('/', requireRole(['admin']), async (_req, res) => {
          FROM users
          ORDER BY (deleted_at IS NOT NULL), created_at DESC`
     );
+
+    // Sync in background to avoid blocking response
+    syncAllUserNamesFromClerk().catch((err) => console.error('Background user sync failed:', err));
 
     res.json({ users: users.map((u) => formatUserRow(u)) });
 });
