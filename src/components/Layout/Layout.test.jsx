@@ -66,6 +66,7 @@ describe('Layout', () => {
     expect(screen.getByRole('link', { name: /referrush dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /weekly manpower roster/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /store visit reporting/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /frido inventory & liquidation dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^orm$/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /user management/i })).toBeInTheDocument();
   });
