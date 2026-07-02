@@ -305,7 +305,7 @@ export default function Layout({ children }) {
     const { staffRetail } = useDashboardData();
 
     const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
-    const isIframeRoute = location.pathname.startsWith('/isd/') || location.pathname === '/orm';
+    const isIframeRoute = location.pathname.startsWith('/isd/') || location.pathname === '/orm' || location.pathname === '/lms-dashboard';
 
     const staffStats = useMemo(() => {
         const sections = staffRetail.sections || [];
