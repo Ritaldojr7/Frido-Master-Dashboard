@@ -68,10 +68,15 @@ export async function verifyToken(req, res, next) {
                     if (existingByEmail.status === 'disabled') {
                         return res.status(403).json({ error: 'Access denied: Your account has been disabled.' });
                     }
+                    const firstName = clerkUser.firstName || '';
+                    const lastName = clerkUser.lastName || '';
+                    const clerkName = [firstName, lastName].filter(Boolean).join(' ').trim();
+                    const nextName = clerkName || existingByEmail.name || 'User';
+
                     // Linked Clerk ID after invite — preserve DB role/department/etc.
                     await db.run(
-                        `UPDATE users SET id = ?, status = 'active', last_login = ?, updated_at = ? WHERE email = ?`,
-                        [userId, now(), now(), email]
+                        `UPDATE users SET id = ?, name = ?, status = 'active', last_login = ?, updated_at = ? WHERE email = ?`,
+                        [userId, nextName, now(), now(), email]
                     );
                     userRow = await db.get(
                         'SELECT id, role, roles, email, name, status FROM users WHERE id = ?',
@@ -92,11 +97,30 @@ export async function verifyToken(req, res, next) {
             if (!isAllowedCompanyEmail(userRow.email)) {
                 return res.status(403).json({ error: 'Access denied: Only @myfrido.com domains are allowed.' });
             }
+
+            // Sync name if name is default 'User' or empty
+            let nextName = userRow.name;
+            if (!userRow.name || userRow.name === 'User') {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(userId);
+                    const firstName = clerkUser.firstName || '';
+                    const lastName = clerkUser.lastName || '';
+                    const clerkName = [firstName, lastName].filter(Boolean).join(' ').trim();
+                    if (clerkName) {
+                        nextName = clerkName;
+                        await db.run('UPDATE users SET name = ? WHERE id = ?', [clerkName, userId]);
+                        userRow.name = clerkName;
+                    }
+                } catch (clerkErr) {
+                    console.error('Failed to sync name from Clerk on login:', clerkErr.message);
+                }
+            }
+
             // If the user is logging in but their status is still 'invited' or 'import_pending', update it to 'active' now.
             if (userRow.status === 'invited' || userRow.status === 'import_pending') {
                 await db.run(
-                    `UPDATE users SET status = 'active', last_login = ?, updated_at = ? WHERE id = ?`,
-                    [now(), now(), userId]
+                    `UPDATE users SET status = 'active', name = ?, last_login = ?, updated_at = ? WHERE id = ?`,
+                    [nextName, now(), now(), userId]
                 );
                 userRow.status = 'active';
             } else {
