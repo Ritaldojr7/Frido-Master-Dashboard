@@ -559,6 +559,17 @@ async function backfillUsersRolesColumn() {
     }
 }
 
+/** Repair status of users who logged in before the verifyToken fix. */
+async function backfillLoggedInUsersStatus() {
+    const result = await db.run(
+        `UPDATE users SET status = 'active' WHERE last_login IS NOT NULL AND status IN ('invited', 'import_pending')`
+    );
+    const n = result?.changes ?? result?.rowCount ?? 0;
+    if (n > 0) {
+        console.log(`✓ Backfilled status to 'active' for ${n} user(s) who had logged in previously`);
+    }
+}
+
 /** Widen `users.role` CHECK so `feedback` invites persist on existing Postgres databases. */
 async function ensurePostgresUsersRoleConstraint() {
     try {
@@ -595,6 +606,7 @@ if (isPostgres) {
     migrateSqliteUsersRoleOrmLead();
 }
 await backfillUsersRolesColumn();
+await backfillLoggedInUsersStatus();
 await seedDefaultAdmin();
 await purgeExpiredDeletedUsers();
 
