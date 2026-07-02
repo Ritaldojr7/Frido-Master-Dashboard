@@ -64,9 +64,8 @@ describe('Layout', () => {
     expect(screen.getByRole('link', { name: /^lms dashboard$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /referrush/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /referrush dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /retail store visit/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /weekly manpower roster/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^frontend$/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /store visit reporting/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^orm$/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /user management/i })).toBeInTheDocument();
   });
