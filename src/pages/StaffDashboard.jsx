@@ -147,7 +147,7 @@ export default function StaffDashboard() {
     const [notices, setNotices] = useState([]);
 
     const userEmail = user?.email?.toLowerCase();
-    const isStoreManager = STORE_EMAIL_MAP.hasOwnProperty(userEmail);
+    const isStoreManager = Object.prototype.hasOwnProperty.call(STORE_EMAIL_MAP, userEmail);
     const isAdmin = user?.role === 'admin';
     const showNewDashboard = isStoreManager || isAdmin;
 
