@@ -134,7 +134,14 @@ const sidebarSections = [
     {
         label: 'Aggregator',
         items: [
-            { path: '/retail-staff', label: 'Retail Staff', icon: ICONS.building },
+            {
+                label: 'Retail Staff',
+                icon: ICONS.building,
+                children: [
+                    { path: '/retail-staff', label: 'Retail Staff Portal', icon: ICONS.globe },
+                    { path: '/retail-staff/analytics-console', label: 'Store Analytics Console', icon: ICONS.chart },
+                ],
+            },
             { path: '/retail-admin', label: 'Retail Admin', icon: ICONS.users },
             { path: '/isd-nm', label: 'ISD NM Staff', icon: ICONS.folder },
         ],
@@ -282,6 +289,7 @@ function SidebarSubGroup({ item, user, isCompactNav, onMobileClose }) {
                                     `sidebar__link sidebar__link--child ${isActive ? 'sidebar__link--active' : ''}`
                                 }
                                 onClick={() => { if (isCompactNav) onMobileClose(); }}
+                                end={child.path === '/retail-staff'}
                             >
                                 <SidebarIcon d={child.icon} />
                                 <span className="sidebar__link-label">{child.label}</span>
@@ -305,7 +313,11 @@ export default function Layout({ children }) {
     const { staffRetail } = useDashboardData();
 
     const isRetailStaff = location.pathname === '/' || location.pathname === '/retail-staff';
-    const isIframeRoute = location.pathname.startsWith('/isd/') || location.pathname === '/orm' || location.pathname === '/lms-dashboard';
+    const isIframeRoute =
+        location.pathname.startsWith('/isd/') ||
+        location.pathname === '/orm' ||
+        location.pathname === '/lms-dashboard' ||
+        location.pathname === '/retail-staff/analytics-console';
 
     const staffStats = useMemo(() => {
         const sections = staffRetail.sections || [];

@@ -24,6 +24,28 @@ export const ROLES = {
     ORM_LEAD: 'orm_lead',
 };
 
+export const STORE_EMAIL_MAP = {
+    'store.vimannagar@myfrido.com': 'Phoenix Marketcity Vimannagar',
+    'store.amanora@myfrido.com': 'Amanora Experience Store',
+    'store.amartech@myfrido.com': 'Amar Tech Park',
+    'store.elpro@myfrido.com': 'Elpro PCMC',
+    'store.westend@myfrido.com': 'Nexus Westend, Aundh',
+    'store.0006@myfrido.com': 'Kopa Mall',
+    'store.0007@myfrido.com': 'Mall of Asia',
+    'store.0008@myfrido.com': 'Lakeshore Y junction',
+    'store.0009@myfrido.com': 'SkyCity Borivali',
+    'store.0010@myfrido.com': 'Frido Experience Store Gachibowli',
+    'store.0011@myfrido.com': 'Frido Store Banjara Hills',
+    'store.0013@myfrido.com': 'Bhartiya Mall Store',
+    'store.0014@myfrido.com': 'Kompally Store',
+    'store.0015@myfrido.com': 'Vegas Mall',
+    'store.0016@myfrido.com': 'Lulu Mall',
+    'store.0017@myfrido.com': 'Golf Course Road',
+    'store.0018@myfrido.com': 'Omaxe Store',
+    'store.0019@myfrido.com': 'Felix Plaza',
+    'store.0020@myfrido.com': 'PMC Whitefield',
+};
+
 export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 export const ADMIN_ONLY = [ROLES.ADMIN];
 export const BUSINESS_ANALYTICS_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
@@ -119,6 +141,7 @@ export const routePermissions = {
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
     '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
+    '/retail-staff/analytics-console': RETAIL_STAFF_ACCESS_ROLES,
     '/isd-nm': ISD_NM_ROLES,
     '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
     '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
@@ -167,6 +190,15 @@ export function hasAccess(userOrRole, path) {
         if (!userOrRole || typeof userOrRole !== 'object') return false;
         const email = String(userOrRole.email || '').trim().toLowerCase();
         return ISD_DASHBOARD_EMAILS.map(e => e.toLowerCase()).includes(email);
+    }
+
+    // Strictly check Store Analytics Console email list + admins
+    const isStoreAnalyticsConsole = cleanPath === '/retail-staff/analytics-console';
+    if (isStoreAnalyticsConsole) {
+        if (!userOrRole || typeof userOrRole !== 'object') return false;
+        if (userOrRole.role === 'admin') return true;
+        const email = String(userOrRole.email || '').trim().toLowerCase();
+        return Object.prototype.hasOwnProperty.call(STORE_EMAIL_MAP, email);
     }
 
     // 1. Direct match (original path or clean normalized path)
