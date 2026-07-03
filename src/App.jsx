@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import StaffDashboard from './pages/StaffDashboard';
+import StoreAnalyticsConsole from './pages/StoreAnalyticsConsole';
 import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
@@ -69,6 +70,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={RETAIL_STAFF_ACCESS_ROLES}>
                                                 <StaffDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/retail-staff/analytics-console"
+                                        element={
+                                            <RoleGuard roles={RETAIL_STAFF_ACCESS_ROLES}>
+                                                <StoreAnalyticsConsole />
                                             </RoleGuard>
                                         }
                                     />
