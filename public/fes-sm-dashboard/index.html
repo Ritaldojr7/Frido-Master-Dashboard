@@ -101,7 +101,6 @@ a{color:var(--info);text-decoration:none}
 .winctl{position:relative;display:flex;align-items:center}
 .ctl-group{display:flex;align-items:center}
 .ctl-right{display:flex;align-items:center;gap:12px;margin-left:auto}
-#customBtn::after{content:"▾";margin-left:6px;opacity:.45;font-size:9px}
 .popover{position:absolute;top:calc(100% + 8px);left:0;z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 20px 46px -18px rgba(16,24,40,.30);padding:16px 16px 14px;min-width:308px}
 .pop-title{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:12px}
 .pop-row{display:flex;gap:10px}
@@ -114,10 +113,42 @@ a{color:var(--info);text-decoration:none}
 .btn-ghost:hover{color:var(--ink);border-color:#CFD5DC}
 .btn-apply{background:var(--gold);border:0;color:#1A1D21;padding:8px 16px;border-radius:9px;font-size:12.5px;font-weight:600}
 .btn-apply:hover{background:var(--gold2)}
+.dr-trigger{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line2);color:var(--ink);padding:8px 12px;border-radius:10px;font-size:13px;font-weight:600;font-family:var(--f-sans);cursor:pointer}
+.dr-trigger:hover{border-color:#CFD5DC}
+.dr-trigger svg:first-of-type{color:var(--muted)}
+.dr-trigger .caret{opacity:.5;margin-left:2px}
+.dr-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:50;display:flex;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 24px 54px -20px rgba(16,24,40,.34);overflow:hidden}
+.dr-presets{display:flex;flex-direction:column;padding:10px;gap:2px;border-right:1px solid var(--line);min-width:156px;background:var(--bg)}
+.dr-preset{text-align:left;background:transparent;border:0;color:var(--muted);padding:9px 12px;border-radius:9px;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer}
+.dr-preset:hover{background:var(--panel3);color:var(--ink)}
+.dr-preset.on{background:var(--goldsoft);color:var(--brand-ink);font-weight:600}
+.dr-cal{padding:16px}
+.dr-grids{display:flex;gap:24px}
+.dr-mhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;min-height:26px}
+.dr-mhead span{font-size:13.5px;font-weight:700;font-family:var(--f-display);flex:1;text-align:center}
+.dr-nav{background:transparent;border:1px solid var(--line2);color:var(--muted);width:26px;height:26px;border-radius:8px;font-size:15px;line-height:1;display:grid;place-items:center;cursor:pointer}
+.dr-nav:hover{color:var(--ink);border-color:#CFD5DC}
+.dr-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dr-dow{font-size:10px;font-weight:600;color:var(--faint);text-align:center;height:26px;display:grid;place-items:center;text-transform:uppercase}
+.dr-day{width:34px;height:32px;border:0;background:transparent;color:var(--ink);font-size:12.5px;font-family:var(--f-sans);font-variant-numeric:tabular-nums;border-radius:8px;cursor:pointer;padding:0}
+.dr-day.other{visibility:hidden;cursor:default}
+.dr-day:hover:not(.disabled):not(.start):not(.end):not(.sel){background:var(--panel3)}
+.dr-day.disabled{color:var(--faint);opacity:.35;cursor:default}
+.dr-day.today{box-shadow:inset 0 0 0 1px var(--line2)}
+.dr-day.in{background:var(--goldsoft);border-radius:0}
+.dr-day.hover{background:var(--goldsoft)}
+.dr-day.start,.dr-day.end,.dr-day.sel{background:var(--gold);color:#1A1D21;font-weight:700}
+.dr-day.sel{border-radius:8px}
+.dr-day.start{border-radius:8px 0 0 8px}
+.dr-day.end{border-radius:0 8px 8px 0}
+.dr-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.dr-range-lbl{font-size:12.5px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+@media(max-width:760px){.dr-pop{flex-direction:column;max-width:calc(100vw - 26px)}.dr-presets{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);min-width:0}.dr-grids{flex-direction:column;gap:16px}}
 @media(max-width:560px){.popover{min-width:min(88vw,308px)}.ctl-right{margin-left:0;width:100%}}
 
 /* tabs */
-.tabs{display:flex;gap:2px;overflow-x:auto;padding:10px 0 0;margin-top:8px;position:sticky;top:56px;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:2px;overflow-x:auto;padding:8px 4px 0;margin:2px -4px 0;border-bottom:1px solid var(--line)}
+.subhead{position:sticky;top:55px;z-index:20;background:var(--bg);box-shadow:0 1px 0 var(--line),0 6px 12px -10px rgba(16,24,40,.12)}
 .tabs button{border:0;background:transparent;color:var(--muted);padding:10px 16px;font-weight:600;font-size:13.5px;white-space:nowrap;position:relative;transition:.15s;border-radius:8px 8px 0 0}
 .tabs button:hover{color:var(--ink);background:rgba(0,0,0,.02)}
 .tabs button.on{color:var(--ink)}
@@ -281,27 +312,38 @@ tbody tr:hover{background:#FAFBFC}
     </div>
   </div>
 
+  <div class="subhead">
+  <div class="tabs" id="tabs">
+    <button data-page="sales" class="on">📊 Sales Dashboard</button>
+    <button data-page="returns">Returns</button>
+    <button data-page="products">Products</button>
+    <button data-page="health">Store Health</button>
+  </div>
+
   <div class="filterbar">
     <div class="winctl">
       <span class="ctl-label">Period</span>
-      <div class="segbar" id="dateSeg">
+      <div class="segbar" id="periodSeg">
         <button data-p="today" class="on">Today</button>
         <button data-p="yesterday">Yesterday</button>
-        <button data-p="7d">Last 7d</button>
-        <button data-p="30d">Last 30d</button>
-        <button data-p="month">Month</button>
-        <button data-p="year">Year</button>
+        <button data-p="month">MTD</button>
+        <button data-p="7d">Last 7 Days</button>
+        <button data-p="30d">Last 30 Days</button>
         <button data-p="custom" id="customBtn">Custom</button>
       </div>
-      <div class="popover" id="datePop" style="display:none">
-        <div class="pop-title">Custom date range</div>
-        <div class="pop-row">
-          <label class="pop-field"><span>From</span><input type="date" id="fromDate"></label>
-          <label class="pop-field"><span>To</span><input type="date" id="toDate"></label>
-        </div>
-        <div class="pop-actions">
-          <button class="btn-ghost" id="clearDates">Reset</button>
-          <button class="btn-apply" id="applyDates">Apply range</button>
+      <div class="dr-pop" id="drPop" style="display:none">
+        <div class="dr-cal">
+          <div class="dr-grids">
+            <div class="dr-month">
+              <div class="dr-mhead"><button class="dr-nav" id="drPrev" type="button">‹</button><span id="drM1"></span></div>
+              <div class="dr-grid" id="drGrid1"></div>
+            </div>
+            <div class="dr-month">
+              <div class="dr-mhead"><span id="drM2"></span><button class="dr-nav" id="drNext" type="button">›</button></div>
+              <div class="dr-grid" id="drGrid2"></div>
+            </div>
+          </div>
+          <div class="dr-foot"><span id="drRangeLbl" class="dr-range-lbl"></span><button class="btn-ghost" id="drCancel" type="button">Close</button></div>
         </div>
       </div>
     </div>
@@ -321,13 +363,6 @@ tbody tr:hover{background:#FAFBFC}
       <span class="pill" id="dataThrough" style="display:none"></span>
     </div>
   </div>
-
-  <div class="tabs" id="tabs">
-    <button data-page="daily" class="on">Daily Sales</button>
-    <button data-page="monthly">Monthly / MTD</button>
-    <button data-page="returns">Returns</button>
-    <button data-page="products">Products</button>
-    <button data-page="health">Store Health</button>
   </div>
 
   <main id="view"></main>
@@ -592,7 +627,7 @@ function card({lab,val,sub,d,goodUp=true,accent=false}){
 /* ============================================================
    PAGES
    ============================================================ */
-let PAGE='daily';
+let PAGE='sales';
 function cmp(a,b){return DATELESS?null:delta(a,b);}
 function dataBanner(){
   if(DATELESS){const who=SESSION.role==='manager'?esc(SESSION.store):'all stores';
@@ -620,17 +655,97 @@ function updateDataThrough(){
   el.className='pill';
   el.textContent='Data through '+DATA_MAX.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+(lag>0?' · '+lag+'d behind':' · current');
 }
+/* ---------- date-range picker ---------- */
+let PK={view:null,start:null,end:null,selecting:false};
+const PK_PRESETS=[
+  {k:'today',label:'Today'},
+  {k:'yesterday',label:'Yesterday'},
+  {k:'7d',label:'Last 7 days'},
+  {k:'30d',label:'Last 30 days'},
+  {k:'90d',label:'Last 90 days',range:()=>{const e=pkMax();const s=new Date(e);s.setDate(s.getDate()-89);return[s,e];}},
+  {k:'month',label:'This month'},
+  {k:'lastmonth',label:'Last month',range:()=>{const r=pkMax();return[new Date(r.getFullYear(),r.getMonth()-1,1),new Date(r.getFullYear(),r.getMonth(),0)];}},
+  {k:'quarter',label:'This quarter',range:()=>{const r=pkMax();return[new Date(r.getFullYear(),Math.floor(r.getMonth()/3)*3,1),r];}},
+  {k:'year',label:'This year'},
+];
+function pkMax(){return DATA_MAX?startOfDay(DATA_MAX):startOfDay(new Date());}
+function pkISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function pkFmt(d){return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+function openPicker(){
+  const pop=$('#drPop'); if(!pop)return;
+  if(FILTERS.from&&FILTERS.to){PK.start=startOfDay(parseInputDate(FILTERS.from));PK.end=startOfDay(parseInputDate(FILTERS.to));}
+  else{const r=dateRange(FILTERS.preset);PK.start=startOfDay(r.start);PK.end=startOfDay(new Date(Math.min(+r.end,+pkMax())));}
+  PK.selecting=false;
+  const anchor=PK.end||pkMax();
+  PK.view=new Date(anchor.getFullYear(),anchor.getMonth()-1,1);
+  pop.style.display='block'; renderPicker();
+}
+function closePicker(){const p=$('#drPop');if(p)p.style.display='none';}
+function renderPicker(){
+  const active=!(FILTERS.from&&FILTERS.to)?FILTERS.preset:null;
+  const dp=$('#drPresets'); if(dp){ dp.innerHTML=PK_PRESETS.map(p=>`<button class="dr-preset ${p.k===active?'on':''}" data-pk="${p.k}" type="button">${p.label}</button>`).join(''); dp.querySelectorAll('.dr-preset').forEach(b=>b.onclick=()=>pickPreset(b.dataset.pk)); }
+  const m1=new Date(PK.view), m2=new Date(PK.view.getFullYear(),PK.view.getMonth()+1,1);
+  $('#drM1').textContent=m1.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  $('#drM2').textContent=m2.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  $('#drGrid1').innerHTML=pkGrid(m1); $('#drGrid2').innerHTML=pkGrid(m2);
+  const lbl=PK.start?(pkFmt(PK.start)+(PK.end&&+PK.end!==+PK.start?' \u2013 '+pkFmt(PK.end):(PK.selecting?' \u2013 select end date':''))):'Select a date or range';
+  $('#drRangeLbl').textContent=lbl;
+  wirePickerDays();
+}
+function pkGrid(monthFirst){
+  const y=monthFirst.getFullYear(),m=monthFirst.getMonth();
+  const dim=new Date(y,m+1,0).getDate();
+  const startDow=new Date(y,m,1).getDay();
+  const dow=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html=dow.map(d=>`<div class="dr-dow">${d}</div>`).join('');
+  for(let x=0;x<startDow;x++)html+='<div class="dr-day other"></div>';
+  const max=pkMax(), today=startOfDay(new Date());
+  for(let d=1;d<=dim;d++){
+    const date=new Date(y,m,d), disabled=date>max;
+    let cls='dr-day';
+    if(disabled)cls+=' disabled';
+    if(+date===+today)cls+=' today';
+    if(PK.start&&PK.end){ const same=+PK.start===+PK.end;
+      if(+date>=+PK.start&&+date<=+PK.end)cls+=' in';
+      if(same&&+date===+PK.start)cls+=' sel';
+      else{ if(+date===+PK.start)cls+=' start'; if(+date===+PK.end)cls+=' end'; } }
+    else if(PK.start&&+date===+PK.start)cls+=' sel';
+    html+=`<button class="${cls}" data-d="${pkISO(date)}"${disabled?' disabled':''} type="button">${d}</button>`;
+  }
+  return html;
+}
+function wirePickerDays(){
+  document.querySelectorAll('#drPop .dr-day[data-d]:not(.disabled)').forEach(btn=>{
+    btn.onclick=()=>pkClickDay(new Date(btn.dataset.d+'T00:00:00'));
+    btn.onmouseenter=()=>{ if(PK.selecting&&PK.start)pkHover(new Date(btn.dataset.d+'T00:00:00')); };
+  });
+}
+function pkClickDay(date){
+  if(!PK.selecting){PK.start=date;PK.end=date;PK.selecting=true;renderPicker();}
+  else{ if(+date<+PK.start){PK.start=date;PK.end=null;renderPicker();return;} PK.end=date;PK.selecting=false;applyPickerRange(PK.start,PK.end); }
+}
+function pkHover(date){
+  let a=+PK.start,b=+date; if(b<a){const t=a;a=b;b=t;}
+  document.querySelectorAll('#drPop .dr-day[data-d]').forEach(el=>{const t=+new Date(el.dataset.d+'T00:00:00');el.classList.toggle('hover',t>=a&&t<=b);});
+}
+function applyPickerRange(s,e){ FILTERS.from=pkISO(s); FILTERS.to=pkISO(e); FILTERS.preset='custom'; closePicker(); syncWindowUI(); render(); }
+function pickPreset(k){
+  const p=PK_PRESETS.find(x=>x.k===k);
+  if(p&&p.range){const a=p.range();FILTERS.from=pkISO(startOfDay(a[0]));FILTERS.to=pkISO(startOfDay(a[1]));FILTERS.preset='custom';}
+  else{FILTERS.preset=k;FILTERS.from=null;FILTERS.to=null;}
+  closePicker(); syncWindowUI(); render();
+}
 function syncWindowUI(){
   const custom=!!(FILTERS.from&&FILTERS.to);
-  document.querySelectorAll('#dateSeg button[data-p]').forEach(x=>{
+  document.querySelectorAll('#periodSeg button[data-p]').forEach(x=>{
     if(x.dataset.p==='custom') x.classList.toggle('on',custom);
     else x.classList.toggle('on',!custom&&x.dataset.p===FILTERS.preset);
   });
-  const cb=$('#customBtn'); if(cb){ if(custom){const f=s=>new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}); cb.textContent=f(FILTERS.from)+' – '+f(FILTERS.to);} else cb.textContent='Custom'; }
+  const cb=$('#customBtn'); if(cb){ if(custom){const f=s=>new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});cb.textContent=f(FILTERS.from)+' \u2013 '+f(FILTERS.to);} else cb.textContent='Custom'; }
 }
 function render(){
   renderTopbar(); updateDataThrough(); syncWindowUI();
-  const r={daily:pageDaily,monthly:pageMonthly,returns:pageReturns,products:pageProducts,health:pageHealth}[PAGE];
+  const r={sales:pageSales,returns:pageReturns,products:pageProducts,health:pageHealth}[PAGE];
   r();
   $('#footnote').innerHTML = footnote();
 }
@@ -645,46 +760,75 @@ function renderTopbar(){
 }
 
 /* window label helper */
-function winLabel(){ if(FILTERS.from&&FILTERS.to){const f=s=>new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});return f(FILTERS.from)+' – '+f(FILTERS.to);} return {today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days',month:'This month',year:'This year'}[FILTERS.preset]; }
+function winLabel(){ if(FILTERS.from&&FILTERS.to){const f=s=>new Date(s+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});return f(FILTERS.from)+' – '+f(FILTERS.to);} return {today:'Today',yesterday:'Yesterday','7d':'Last 7 days','30d':'Last 30 days',month:'Month to date',year:'This year'}[FILTERS.preset]; }
 
-/* ---------- 01 DAILY ---------- */
-function pageDaily(){
-  const rng=activeRange();
-  const rows=windowRows(); const prev=applyType(scopedRows().filter(r=>inRange(r,prevRange(rng))));
-  const k=kpis(rows), pk=kpis(prev);
-  const dailyTarget=getTarget().daily;
-  const ach=dailyTarget>0?k.rev/dailyTarget*100:0;
-  const pv=s=>DATELESS?'':s;  // previous-period value (day-wise comparison)
+/* ---------- SALES DASHBOARD (adaptive by period) ---------- */
+function pageSales(){
+  const rng=activeRange(), prng=prevRange(rng);
+  const rows=DATELESS?applyType(scopedRows()):applyType(scopedRows().filter(r=>inRange(r,rng)));
+  const prevRows=DATELESS?[]:applyType(scopedRows().filter(r=>inRange(r,prng)));
+  const k=kpis(rows), pk=kpis(prevRows);
+  const dayMs=864e5, spanMs=endOfDay(rng.end)-startOfDay(rng.start);
+  const nDays=Math.max(1,Math.round(spanMs/dayMs));
+  const singleDay=nDays<=1;
+  const isCustom=!!(FILTERS.from&&FILTERS.to);
+  const prefixMap={today:"Today's",yesterday:"Yesterday's",month:'MTD','7d':'Last 7d','30d':'Last 30d'};
+  const pfx=isCustom?'':(prefixMap[FILTERS.preset]||'');
+  const L=b=>pfx?pfx+' '+b:b;
   const _df=t=>new Date(t).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-  const subLabel=(FILTERS.from&&FILTERS.to)?(_df(rng.start)+' – '+_df(rng.end)):((rng.end-rng.start)<1.5*864e5?_df(rng.start):winLabel()+' · '+_df(rng.start)+'–'+_df(rng.end));
+  const rangeTxt=singleDay?_df(rng.start):(_df(rng.start)+' \u2013 '+_df(rng.end));
+  const cmpTxt=singleDay?(FILTERS.preset==='yesterday'?'vs day before':'vs prior day'):('vs previous '+nDays+'d');
+  const pv=s=>DATELESS?'':s;
+
+  const dailyTarget=getTarget().daily, monthlyTarget=getTarget().monthly;
+  const useMonthly=(FILTERS.preset==='month')&&!isCustom;
+  const target=useMonthly?monthlyTarget:dailyTarget*nDays;
+  const ach=target>0?k.rev/target*100:0;
+  const aC=ach>=100?'var(--pos)':ach>=70?'var(--brand-ink)':'var(--neg)';
+  const aB=ach>=100?'var(--pos)':ach>=70?'var(--gold)':'var(--neg)';
 
   const cards=[
-    card({lab:'Revenue',val:fmtC(k.rev),sub:pv('prev '+fmtC(pk.rev)),d:cmp(k.rev,pk.rev),accent:true}),
-    card({lab:'Net Revenue',val:fmtC(k.net),sub:pv('prev '+fmtC(pk.net)),d:cmp(k.net,pk.net)}),
-    card({lab:'Orders',val:fmtN(k.orders),sub:pv('prev '+fmtN(pk.orders)),d:cmp(k.orders,pk.orders)}),
+    card({lab:L('Revenue'),val:fmtC(k.rev),sub:pv('prev '+fmtC(pk.rev)),d:cmp(k.rev,pk.rev),accent:true}),
+    card({lab:'Net Revenue',val:fmtC(k.net),sub:'after returns',d:cmp(k.net,pk.net)}),
+    card({lab:L('Orders'),val:fmtN(k.orders),sub:pv('prev '+fmtN(pk.orders)),d:cmp(k.orders,pk.orders)}),
     card({lab:'Units Sold',val:fmtN(k.qty),sub:pv('prev '+fmtN(pk.qty)),d:cmp(k.qty,pk.qty)}),
-    card({lab:'AOV',val:fmtINR(k.aov),sub:pv('prev '+fmtINR(pk.aov)),d:cmp(k.aov,pk.aov)}),
-    card({lab:'UPT',val:k.upt.toFixed(2),sub:pv('prev '+pk.upt.toFixed(2)),d:cmp(k.upt,pk.upt)}),
-    card({lab:'ASP',val:fmtINR(k.asp),sub:pv('prev '+fmtINR(pk.asp)),d:cmp(k.asp,pk.asp)}),
-    card({lab:'Weighted Discount',val:fmtPct(k.wdisc),sub:pv('prev '+fmtPct(pk.wdisc)),d:cmp(k.wdisc,pk.wdisc),goodUp:false}),
+    card({lab:L('AOV'),val:fmtINR(k.aov),sub:pv('prev '+fmtINR(pk.aov)),d:cmp(k.aov,pk.aov)}),
+    card({lab:'UPT',val:k.upt.toFixed(2),sub:'units / order',d:cmp(k.upt,pk.upt)}),
+    card({lab:'ASP',val:fmtINR(k.asp),sub:'per unit',d:cmp(k.asp,pk.asp)}),
+    card({lab:'Weighted Discount',val:fmtPct(k.wdisc),sub:'of gross',d:cmp(k.wdisc,pk.wdisc),goodUp:false}),
     card({lab:'Returns',val:fmtN(k.retQty),sub:fmtINR(k.retAmt),d:cmp(k.retQty,pk.retQty),goodUp:false}),
-    card({lab:'Return Rate',val:fmtPct(k.returnRate),sub:pv('prev '+fmtPct(pk.returnRate)),d:cmp(k.returnRate,pk.returnRate),goodUp:false}),
+    card({lab:L('Return Rate'),val:fmtPct(k.returnRate),sub:pv('prev '+fmtPct(pk.returnRate)),d:cmp(k.returnRate,pk.returnRate),goodUp:false}),
   ].join('');
 
+  const trendSingle=`<div class="grid2">
+      <div class="panel span2"><h3><span class="bar"></span>Hourly sales trend \u2014 ${winLabel().toLowerCase()} ${cmpTxt}</h3><div class="chartwrap"><canvas id="chTrend"></canvas></div></div>
+      <div class="panel"><h3><span class="bar"></span>Payment mode split</h3><div class="chartwrap sm"><canvas id="chPay"></canvas></div></div>
+      <div class="panel"><h3><span class="bar"></span>Channel mix</h3><div class="phint">Offline = in-store \u00b7 Online = D2C shipped</div><div class="chartwrap sm"><canvas id="chType"></canvas></div></div>
+    </div>`;
+  const trendMulti=`<div class="grid2">
+      <div class="panel span2"><h3><span class="bar"></span>Daily revenue trend</h3><div class="phint">${rangeTxt} ${cmpTxt}</div><div class="chartwrap lg"><canvas id="chTrend"></canvas></div></div>
+      <div class="panel"><h3><span class="bar"></span>Daily orders</h3><div class="chartwrap sm"><canvas id="chOrders"></canvas></div></div>
+      <div class="panel"><h3><span class="bar"></span>Daily AOV</h3><div class="chartwrap sm"><canvas id="chAov"></canvas></div></div>
+      <div class="panel"><h3><span class="bar"></span>Payment mode split</h3><div class="chartwrap sm"><canvas id="chPay"></canvas></div></div>
+      <div class="panel"><h3><span class="bar"></span>Channel mix</h3><div class="phint">Offline = in-store \u00b7 Online = D2C shipped</div><div class="chartwrap sm"><canvas id="chType"></canvas></div></div>
+      <div class="panel span2"><h3><span class="bar"></span>Week-wise revenue</h3><div class="phint">7-day buckets across the period</div><div class="chartwrap sm"><canvas id="chWeek"></canvas></div></div>
+      <div class="panel span2"><h3><span class="bar"></span>Sales heatmap</h3><div class="phint">Revenue intensity by day \u2014 darker gold = stronger day</div><div id="heatmap"></div></div>
+    </div>`;
+
   $('#view').innerHTML=`<section class="page">
-    <div class="pagehead"><h2>Daily Sales</h2><span class="sub">${subLabel} · vs previous period · ${SESSION.role==='manager'?esc(SESSION.store):'scoped view'}</span></div>
+    <div class="pagehead"><h2>Sales Dashboard</h2><span class="sub">${isCustom?'Custom range':winLabel()} \u00b7 ${rangeTxt} \u00b7 ${cmpTxt} \u00b7 ${SESSION.role==='manager'?esc(SESSION.store):'scoped view'}</span></div>
 
     ${dataBanner()}
 
     <div class="targets">
-      <div class="field"><label>Daily target (₹)</label><input id="dailyTargetInput" type="number" value="${dailyTarget}"/></div>
+      <div class="field"><label>${useMonthly?'Monthly':'Daily'} target (\u20b9)</label><input id="${useMonthly?'monthlyTargetInput':'dailyTargetInput'}" type="number" value="${useMonthly?monthlyTarget:dailyTarget}"/></div>
       <div style="flex:1;min-width:220px">
-        <div class="flabel">Target achievement</div>
+        <div class="flabel">${useMonthly?'Month achievement':(singleDay?'Target achievement':'Revenue vs target pace')}</div>
         <div style="display:flex;align-items:baseline;gap:10px;margin-top:6px">
-          <b style="font-family:var(--f-display);font-size:22px;color:${ach>=100?'var(--pos)':ach>=70?'var(--brand-ink)':'var(--neg)'}">${fmtPct(ach,0)}</b>
-          <span class="mono" style="color:var(--faint);font-size:12px">${fmtINR(k.rev)} / ${fmtINR(dailyTarget)}</span>
+          <b style="font-family:var(--f-display);font-size:22px;color:${aC}">${fmtPct(ach,0)}</b>
+          <span class="mono" style="color:var(--faint);font-size:12px">${fmtINR(k.rev)} / ${fmtINR(target)}${(useMonthly||singleDay)?'':' ('+nDays+'d @ '+fmtC(dailyTarget)+'/day)'}</span>
         </div>
-        <div class="mini"><i style="width:${Math.min(100,ach)}%;background:${ach>=100?'var(--pos)':ach>=70?'var(--gold)':'var(--neg)'}"></i></div>
+        <div class="mini"><i style="width:${Math.min(100,ach)}%;background:${aB}"></i></div>
       </div>
     </div>
 
@@ -692,41 +836,82 @@ function pageDaily(){
 
     <div class="panel" style="margin-top:14px">
       <h3><span class="bar"></span>Smart insights</h3>
-      <div class="phint">Auto-generated from the current scope &amp; window — heuristics, not a substitute for judgement.</div>
-      <div class="insights" id="insDaily"></div>
+      <div class="phint">Auto-generated for ${(isCustom?'the selected range':winLabel().toLowerCase())} \u2014 heuristics, not a substitute for judgement.</div>
+      <div class="insights" id="insSales"></div>
     </div>
 
+    ${singleDay?trendSingle:trendMulti}
+
     <div class="grid2">
-      <div class="panel span2"><h3><span class="bar"></span>Revenue by hour — ${winLabel().toLowerCase()} vs previous</h3><div class="chartwrap"><canvas id="chHour"></canvas></div></div>
-      <div class="panel"><h3><span class="bar"></span>Payment mode split</h3><div class="chartwrap sm"><canvas id="chPay"></canvas></div></div>
-      <div class="panel"><h3><span class="bar"></span>Channel mix</h3><div class="phint">Offline = in-store cash &amp; carry · Online = D2C shipped from warehouse</div><div class="chartwrap sm"><canvas id="chType"></canvas></div></div>
-      <div class="panel"><h3><span class="bar"></span>Top sellers</h3><div class="phint">Highest revenue this window</div><div class="tscroll" id="tblTop"></div></div>
-      <div class="panel"><h3><span class="bar"></span>Slow &amp; zero movers</h3><div class="phint">Lowest revenue — watch for dead stock</div><div class="tscroll" id="tblBot"></div></div>
+      <div class="panel"><h3><span class="bar"></span>${L('Top products')}</h3><div class="phint">By revenue with contribution %</div><div class="tscroll" id="tblProd"></div></div>
+      <div class="panel"><h3><span class="bar"></span>${L('Employee performance')}</h3><div class="phint">Ranked by revenue</div><div class="tscroll" id="tblEmp"></div></div>
     </div>
   </section>`;
 
-  // insights
-  $('#insDaily').innerHTML = renderInsights(insightsDaily(rows,prev,k,pk));
+  $('#insSales').innerHTML=renderInsights(insightsSales(rows,prevRows,k,pk,{singleDay,nDays,ach,target,useMonthly}));
 
-  // hour chart (this vs prev)
-  const hours=[]; for(let h=8;h<=22;h++)hours.push(h);
-  const hLabel=hours.map(h=>((h%12)||12)+(h<12?'a':'p'));
-  const cur=hours.map(h=>sumBy(rows.filter(r=>r.date&&r.date.getHours()===h),r=>r.rev));
-  const pr=hours.map(h=>sumBy(prev.filter(r=>r.date&&r.date.getHours()===h),r=>r.rev));
-  if(DATELESS)chartNote('chHour','Hourly view needs dates — restore POS Created At in the sheet');else mount('chHour',{type:'bar',data:{labels:hLabel,datasets:[
+  if(DATELESS){
+    chartNote('chTrend', singleDay?'Hourly view needs dates \u2014 restore POS Created At in the sheet':'Trend needs dates in the sheet');
+    if(!singleDay){ chartNote('chOrders','Needs dates in the sheet'); chartNote('chAov','Needs dates in the sheet'); chartNote('chWeek','Needs dates in the sheet'); const hm=$('#heatmap'); if(hm)hm.innerHTML='<div class="empty">Heatmap needs dates in the sheet</div>'; }
+  } else if(singleDay){
+    const hours=[];for(let hh=8;hh<=22;hh++)hours.push(hh);
+    const hLabel=hours.map(hh=>((hh%12)||12)+(hh<12?'a':'p'));
+    const cur=hours.map(hh=>sumBy(rows.filter(r=>r.date&&r.date.getHours()===hh),r=>r.rev));
+    const pr=hours.map(hh=>sumBy(prevRows.filter(r=>r.date&&r.date.getHours()===hh),r=>r.rev));
+    mount('chTrend',{type:'bar',data:{labels:hLabel,datasets:[
       {label:winLabel(),data:cur,backgroundColor:'#FFC600',borderRadius:5,maxBarThickness:22},
-      {label:'Previous',data:pr,backgroundColor:'#E4E7EB',borderRadius:5,maxBarThickness:22}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+fmtINR(c.parsed.y)}}},scales:{x:gridX,y:gridY}}});
+      {label:(FILTERS.preset==='yesterday'?'Day before':'Prior day'),data:pr,backgroundColor:'#E4E7EB',borderRadius:5,maxBarThickness:22}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+fmtINR(c.parsed.y)}}},scales:{x:gridX,y:gridY}}});
+  } else {
+    const days=[];for(let x=0;x<nDays;x++){const d=startOfDay(rng.start);d.setDate(d.getDate()+x);days.push(d);}
+    const pick=(set,d)=>set.filter(r=>r.date&&startOfDay(r.date).getTime()===startOfDay(d).getTime());
+    const curRev=days.map(d=>sumBy(pick(rows,d),r=>r.rev));
+    const pStart=startOfDay(prng.start);
+    const prevRev=days.map((d,x)=>{const pd=new Date(pStart);pd.setDate(pd.getDate()+x);return sumBy(pick(prevRows,pd),r=>r.rev);});
+    const labels=days.map(d=>d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+    lineChart('chTrend',labels,[{label:'This period',data:curRev,color:'#1A1D21'},{label:'Previous',data:prevRev,color:'#C4CAD3',fill:false}]);
+    lineChart('chOrders',labels,[{label:'Orders',data:days.map(d=>uniqCount(pick(rows,d),'orderId')),color:'#3B82F6'}]);
+    lineChart('chAov',labels,[{label:'AOV',data:days.map(d=>{const dd=pick(rows,d);const o=uniqCount(dd,'orderId');return o?sumBy(dd,r=>r.rev)/o:0;}),color:'#16A34A'}]);
+    const nB=Math.max(1,Math.min(8,Math.ceil(nDays/7)));const wk=new Array(nB).fill(0);
+    rows.forEach(r=>{if(r.date){const idx=Math.floor((startOfDay(r.date)-startOfDay(rng.start))/dayMs/7);if(idx>=0&&idx<nB)wk[idx]+=r.rev;}});
+    barChart('chWeek',wk.map((_,x)=>'W'+(x+1)),wk,{color:'#FFC600'});
+    const hm=$('#heatmap'); if(hm)hm.innerHTML=nDays>62?'<div class="empty">Heatmap shows day detail for ranges up to ~2 months \u2014 narrow the range.</div>':buildHeatmap(rows,rng.start,rng.end);
+  }
 
-  // payment + channel
   const pay=sortMap(groupSum(rows,r=>r.payment,r=>r.rev));
   pay.length?pieChart('chPay',pay.map(x=>x[0]),pay.map(x=>x[1]),{doughnut:false}):emptyCanvas('chPay');
   const typ=sortMap(groupSum(rows,r=>r.type,r=>r.rev));
   typ.length?pieChart('chType',typ.map(x=>x[0]),typ.map(x=>x[1]),{doughnut:true}):emptyCanvas('chType');
 
-  // top / bottom products
-  $('#tblTop').innerHTML=productTable(rows,'desc',6);
-  $('#tblBot').innerHTML=productTable(rows,'asc',6);
+  $('#tblProd').innerHTML=contribTable(rows);
+  $('#tblEmp').innerHTML=empTable(rows);
+}
+function insightsSales(rows,prevRows,k,pk,ctx){
+  const out=[];
+  const d=delta(k.rev,pk.rev);
+  if(pk.rev>0) out.push(ins(`Revenue ${d.up?'up':'down'} <b>${fmtPct(d.pct,0)}</b> ${ctx.singleDay?(FILTERS.preset==='yesterday'?'vs day before':'vs prior day'):'vs previous '+ctx.nDays+'d'} (${fmtINR(k.rev)} vs ${fmtINR(pk.rev)}).`,d.up?'good':'bad',d.up?'\U0001F4C8':'\U0001F4C9'));
+  if(ctx.target>0) out.push(ins(`Revenue is <b>${fmtPct(ctx.ach,0)}</b> of the ${fmtC(ctx.target)} ${ctx.useMonthly?'monthly':'period'} target.`,ctx.ach>=100?'good':ctx.ach>=70?'info':'warn',ctx.ach>=100?'\u2705':'\U0001F3AF'));
+  if(k.wdisc>CONFIG.thresholds.discountPct) out.push(ins(`Weighted discount <b>${fmtPct(k.wdisc)}</b> \u2014 above the ${CONFIG.thresholds.discountPct}% guardrail.`,'warn','\U0001F3F7'));
+  else if(k.disc>0) out.push(ins(`Discount discipline healthy at <b>${fmtPct(k.wdisc)}</b> weighted.`,'good','\U0001F3F7'));
+  const er=sortMap(groupSum(rows,r=>r.emp,r=>r.rev));
+  if(er.length&&k.rev>0){const e=er[0][0],rv=er[0][1];const sh=rv/k.rev*100;if(sh>=25)out.push(ins(`<b>${esc(e)}</b> drove <b>${fmtPct(sh,0)}</b> of revenue.`,'good','\U0001F9D1'));}
+  const pr=sortMap(groupSum(rows,r=>r.product,r=>r.rev));
+  if(pr.length&&k.rev>0){const sh=pr[0][1]/k.rev*100;if(sh>=20)out.push(ins(`<b>${esc(pr[0][0])}</b> is <b>${fmtPct(sh,0)}</b> of sales \u2014 high concentration.`,sh>40?'warn':'good','\u2b50'));}
+  const pay=sortMap(groupSum(rows,r=>r.payment,r=>r.rev));
+  if(pay.length&&k.rev>0){const sh=pay[0][1]/k.rev*100;if(sh>=40)out.push(ins(`<b>${esc(pay[0][0])}</b> is the dominant tender at <b>${fmtPct(sh,0)}</b>.`,'info','\U0001F4B3'));}
+  const off=sumBy(rows.filter(r=>r.type==='Offline'),r=>r.rev); if(k.rev>0){const sh=off/k.rev*100; if(sh>=55)out.push(ins(`In-store (offline) is <b>${fmtPct(sh,0)}</b> of revenue; D2C online <b>${fmtPct(100-sh,0)}</b>.`,'info','\U0001F3EC'));}
+  if(!ctx.singleDay){
+    const skuAll=new Set(scopedRows().map(r=>r.sku).filter(s=>s&&s!=='\u2014'));
+    const last7=dateRange('7d'); const sold7=new Set(applyType(scopedRows().filter(r=>inRange(r,last7))).map(r=>r.sku));
+    const dead=[...skuAll].filter(s=>!sold7.has(s)).length;
+    if(dead>0)out.push(ins(`<b>${dead}</b> SKU${dead>1?'s have':' has'} had zero sales in the last 7 days.`,'warn','\U0001F4E6'));
+    const wknd=rows.filter(r=>r.date&&(r.date.getDay()===0||r.date.getDay()===6));
+    const wkdy=rows.filter(r=>r.date&&r.date.getDay()>0&&r.date.getDay()<6);
+    const we=avgDaily(wknd),wd=avgDaily(wkdy);
+    if(we>0&&wd>0&&we>wd*1.15)out.push(ins(`Weekend days average <b>${fmtC(we)}</b> vs <b>${fmtC(wd)}</b> weekdays \u2014 weekends run hotter.`,'info','\U0001F4C5'));
+  }
+  if(k.returnRate>CONFIG.thresholds.returnRatePct)out.push(ins(`Return rate <b>${fmtPct(k.returnRate)}</b> exceeds the ${CONFIG.thresholds.returnRatePct}% benchmark.`,'bad','\u21a9'));
+  return out.slice(0,8);
 }
 function emptyCanvas(id){const el=document.getElementById(id);if(el)el.parentElement.innerHTML='<div class="empty">No data in this window</div>';}
 function chartNote(id,msg){const el=document.getElementById(id);if(el){const w=el.closest('.chartwrap')||el.parentElement;w.innerHTML='<div class="empty">'+msg+'</div>';}}
@@ -743,110 +928,23 @@ function productTable(rows,dir='desc',limit=8){
   }</tbody></table>`;
 }
 
-/* ---------- 02 MONTHLY / MTD ---------- */
-function pageMonthly(){
-  const rows=monthRows();
-  const now=new Date();
-  const prevStart=new Date(now.getFullYear(),now.getMonth()-1,1);
-  const prevEnd=new Date(now.getFullYear(),now.getMonth()-1,now.getDate()+1); // same day-of-month last month (MTD compare)
-  const prevRows=applyType(scopedRows().filter(r=>r.date&&r.date>=prevStart&&r.date<prevEnd));
-  const k=kpis(rows), pk=kpis(prevRows);
-  const monthlyTarget=getTarget().monthly;
-  const ach=monthlyTarget>0?k.rev/monthlyTarget*100:0;
-
-  const cards=[
-    card({lab:'MTD Revenue',val:fmtC(k.rev),sub:fmtINR(k.rev),d:cmp(k.rev,pk.rev),accent:true}),
-    card({lab:'Net Revenue',val:fmtC(k.net),sub:'after returns',d:cmp(k.net,pk.net)}),
-    card({lab:'MTD Orders',val:fmtN(k.orders),d:cmp(k.orders,pk.orders)}),
-    card({lab:'MTD Units',val:fmtN(k.qty),d:cmp(k.qty,pk.qty)}),
-    card({lab:'AOV',val:fmtINR(k.aov),d:cmp(k.aov,pk.aov)}),
-    card({lab:'UPT',val:k.upt.toFixed(2),d:cmp(k.upt,pk.upt)}),
-    card({lab:'ASP',val:fmtINR(k.asp),d:cmp(k.asp,pk.asp)}),
-    card({lab:'Weighted Discount',val:fmtPct(k.wdisc),d:cmp(k.wdisc,pk.wdisc),goodUp:false}),
-    card({lab:'Returns',val:fmtN(k.retQty),sub:fmtINR(k.retAmt),goodUp:false}),
-    card({lab:'Target Achieved',val:fmtPct(ach,0),sub:fmtINR(k.rev)+' / '+fmtC(monthlyTarget),accent:true}),
-  ].join('');
-
-  $('#view').innerHTML=`<section class="page">
-    <div class="pagehead"><h2>Monthly Dashboard</h2><span class="sub">Month-to-date · ${now.toLocaleString('en-IN',{month:'long',year:'numeric'})} · vs same period last month</span></div>
-
-    ${dataBanner()}
-
-    <div class="targets">
-      <div class="field"><label>Monthly target (₹)</label><input id="monthlyTargetInput" type="number" value="${monthlyTarget}"/></div>
-      <div style="flex:1;min-width:220px">
-        <div class="flabel">Month achievement</div>
-        <div style="display:flex;align-items:baseline;gap:10px;margin-top:6px">
-          <b style="font-family:var(--f-display);font-size:22px;color:${ach>=100?'var(--pos)':ach>=70?'var(--brand-ink)':'var(--neg)'}">${fmtPct(ach,0)}</b>
-          <span class="mono" style="color:var(--faint);font-size:12px">day ${now.getDate()} of month</span>
-        </div>
-        <div class="mini"><i style="width:${Math.min(100,ach)}%;background:${ach>=100?'var(--pos)':ach>=70?'var(--gold)':'var(--neg)'}"></i></div>
-      </div>
-    </div>
-
-    <div class="kgrid" style="margin-top:14px">${cards}</div>
-
-    <div class="panel" style="margin-top:14px">
-      <h3><span class="bar"></span>Smart insights</h3>
-      <div class="phint">Month-to-date signals</div>
-      <div class="insights" id="insMonthly"></div>
-    </div>
-
-    <div class="grid2">
-      <div class="panel span2"><h3><span class="bar"></span>Daily revenue trend</h3><div class="phint">This month vs previous month (by day of month)</div><div class="chartwrap lg"><canvas id="chDaily"></canvas></div></div>
-      <div class="panel"><h3><span class="bar"></span>Week-wise revenue</h3><div class="chartwrap sm"><canvas id="chWeek"></canvas></div></div>
-      <div class="panel"><h3><span class="bar"></span>This vs last month</h3><div class="chartwrap sm"><canvas id="chMoM"></canvas></div></div>
-      <div class="panel span2"><h3><span class="bar"></span>Sales heatmap</h3><div class="phint">Revenue intensity by day — darker gold = stronger day</div><div id="heatmap"></div></div>
-      <div class="panel"><h3><span class="bar"></span>Top products</h3><div class="phint">By revenue with contribution %</div><div class="tscroll" id="tblMProd"></div></div>
-      <div class="panel"><h3><span class="bar"></span>Employee leaderboard</h3><div class="phint">Ranked by revenue</div><div class="tscroll" id="tblEmp"></div></div>
-    </div>
-  </section>`;
-
-  $('#insMonthly').innerHTML=renderInsights(insightsMonthly(rows,k,ach,monthlyTarget));
-
-  // daily trend (by day-of-month this vs last)
-  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  const labels=[]; for(let d=1;d<=daysInMonth;d++)labels.push(d);
-  const cur=labels.map(d=>sumBy(rows.filter(r=>r.date&&r.date.getDate()===d),x=>x.rev));
-  const lastDim=new Date(now.getFullYear(),now.getMonth(),0).getDate();
-  const prevAll=applyType(scopedRows().filter(r=>r.date&&r.date>=prevStart&&r.date<new Date(now.getFullYear(),now.getMonth(),1)));
-  const prevSeries=labels.map(d=>d<=lastDim?sumBy(prevAll.filter(r=>r.date&&r.date.getDate()===d),x=>x.rev):null);
-  // null out future days this month
-  const today=now.getDate(); const curSeries=cur.map((v,i)=>labels[i]<=today?v:null);
-  if(DATELESS)chartNote('chDaily','Daily trend needs dates in the sheet');else lineChart('chDaily',labels.map(d=>'D'+d),[
-    {label:'This month',data:curSeries,color:'#1A1D21'},
-    {label:'Last month',data:prevSeries,color:'#C4CAD3',fill:false}
-  ]);
-
-  // week-wise
-  const wk=[0,0,0,0,0]; rows.forEach(r=>{if(r.date){const w=Math.min(4,Math.floor((r.date.getDate()-1)/7));wk[w]+=r.rev;}});
-  if(DATELESS)chartNote('chWeek','Weekly view needs dates in the sheet');else barChart('chWeek',['W1','W2','W3','W4','W5'],wk,{color:'#FFC600'});
-
-  // MoM
-  if(DATELESS)chartNote('chMoM','Month comparison needs dates in the sheet');else barChart('chMoM',[prevStart.toLocaleString('en-IN',{month:'short'}),now.toLocaleString('en-IN',{month:'short'})],[pk.rev,k.rev],{color:['#E4E7EB','#FFC600']});
-
-  // heatmap
-  $('#heatmap').innerHTML=DATELESS?'<div class="empty">Heatmap needs dates in the sheet</div>':buildHeatmap(rows,now);
-
-  // tables
-  $('#tblMProd').innerHTML=contribTable(rows);
-  $('#tblEmp').innerHTML=empTable(rows);
-}
-
-function buildHeatmap(rows,now){
-  const y=now.getFullYear(),m=now.getMonth();
-  const dim=new Date(y,m+1,0).getDate();
-  const byDay={}; rows.forEach(r=>{if(r.date)byDay[r.date.getDate()]=(byDay[r.date.getDate()]||0)+r.rev;});
+/* Monthly page merged into the adaptive Sales Dashboard */
+function buildHeatmap(rows,start,end){
+  start=startOfDay(start); end=startOfDay(end);
+  const byDay={}; rows.forEach(r=>{if(r.date){const key=startOfDay(r.date).getTime();byDay[key]=(byDay[key]||0)+r.rev;}});
   const max=Math.max(1,...Object.values(byDay));
-  const firstDow=(new Date(y,m,1).getDay()+6)%7; // Mon=0
-  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  let cells=days.map(d=>`<div style="font-family:var(--f-mono);font-size:9px;color:var(--faint);text-align:center;text-transform:uppercase">${d}</div>`).join('');
-  for(let i=0;i<firstDow;i++)cells+='<div></div>';
-  for(let d=1;d<=dim;d++){
-    const v=byDay[d]||0; const t=v/max; const future=d>now.getDate();
-    const bg=future?'transparent':(v===0?'var(--panel3)':`rgba(255,198,0,${(0.12+t*0.82).toFixed(2)})`);
-    const col=t>0.55?'#1A1D21':(v>0?'var(--ink)':'var(--faint)');
-    cells+=`<div title="${now.toLocaleString('en-IN',{month:'short'})} ${d}: ${fmtINR(v)}" style="aspect-ratio:1;border:1px solid ${future?'var(--line)':'transparent'};border-radius:7px;background:${bg};display:grid;place-content:center;font-family:var(--f-mono);font-size:10px;color:${col};font-weight:600;${future?'opacity:.4':''}">${d}</div>`;
+  const gridStart=new Date(start); gridStart.setDate(gridStart.getDate()-((gridStart.getDay()+6)%7));
+  const gridEnd=new Date(end); gridEnd.setDate(gridEnd.getDate()+(6-((gridEnd.getDay()+6)%7)));
+  const dow=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let cells=dow.map(d=>`<div style="font-size:9px;color:var(--faint);text-align:center;text-transform:uppercase;font-weight:600">${d}</div>`).join('');
+  const total=Math.round((gridEnd-gridStart)/864e5)+1;
+  for(let x=0;x<total;x++){
+    const d=new Date(gridStart); d.setDate(d.getDate()+x);
+    const inR=d>=start&&d<=end; const v=byDay[d.getTime()]||0; const t=v/max;
+    let bg,col,op='';
+    if(!inR){bg='transparent';col='var(--faint)';op='opacity:.22';}
+    else{bg=v===0?'var(--panel3)':`rgba(255,198,0,${(0.12+t*0.82).toFixed(2)})`;col=t>0.55?'#1A1D21':(v>0?'var(--ink)':'var(--faint)');}
+    cells+=`<div title="${d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}: ${fmtINR(v)}" style="aspect-ratio:1;border:1px solid transparent;border-radius:7px;background:${bg};display:grid;place-content:center;font-size:10px;color:${col};font-weight:600;${op}">${d.getDate()}</div>`;
   }
   return `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:6px">${cells}</div>`;
 }
@@ -1068,9 +1166,9 @@ function insightsDaily(rows,prev,k,pk){
   if(k.returnRate>CONFIG.thresholds.returnRatePct)out.push(ins(`Return rate <b>${fmtPct(k.returnRate)}</b> exceeds the ${CONFIG.thresholds.returnRatePct}% benchmark.`,'bad','↩️'));
   return out.slice(0,8);
 }
-function insightsMonthly(rows,k,ach,target){
-  const out=[];
-  out.push(ins(`MTD revenue <b>${fmtINR(k.rev)}</b> — <b>${fmtPct(ach,0)}</b> of the ${fmtC(target)} target.`,ach>=100?'good':ach>=70?'info':'warn',ach>=100?'✅':'🎯'));
+function insightsMonthly(rows,k,ach,target,rng){
+  const out=[]; const custom=rng&&rng.custom;
+  out.push(ins(`${custom?'Revenue':'MTD revenue'} <b>${fmtINR(k.rev)}</b> — <b>${fmtPct(ach,0)}</b> of the ${fmtC(target)} monthly target.`,ach>=100?'good':ach>=70?'info':'warn',ach>=100?'✅':'🎯'));
   // zero-sales SKUs last 7 days
   const skuAll=new Set(scopedRows().map(r=>r.sku).filter(s=>s&&s!=='—'));
   const last7=dateRange('7d'); const sold7=new Set(applyType(scopedRows().filter(r=>inRange(r,last7))).map(r=>r.sku));
@@ -1082,10 +1180,10 @@ function insightsMonthly(rows,k,ach,target){
   const we=avgDaily(wknd),wd=avgDaily(wkdy);
   if(we>0&&wd>0){ if(we>wd*1.15)out.push(ins(`Weekend days average <b>${fmtC(we)}</b> vs <b>${fmtC(wd)}</b> on weekdays — weekends run hotter.`,'info','📅')); }
   // discount
-  if(k.wdisc>CONFIG.thresholds.discountPct)out.push(ins(`Weighted discount <b>${fmtPct(k.wdisc)}</b> is above the recommended ${CONFIG.thresholds.discountPct}% threshold this month.`,'warn','🏷️'));
+  if(k.wdisc>CONFIG.thresholds.discountPct)out.push(ins(`Weighted discount <b>${fmtPct(k.wdisc)}</b> is above the recommended ${CONFIG.thresholds.discountPct}% threshold${custom?'':' this month'}.`,'warn','🏷️'));
   // top product contribution
   const pr=sortMap(groupSum(rows,r=>r.product,r=>r.rev));
-  if(pr.length&&k.rev>0){const sh=pr[0][1]/k.rev*100;if(sh>=20)out.push(ins(`<b>${esc(pr[0][0])}</b> is ${fmtPct(sh,0)} of MTD sales — high concentration.`,sh>40?'warn':'info','⭐'));}
+  if(pr.length&&k.rev>0){const sh=pr[0][1]/k.rev*100;if(sh>=20)out.push(ins(`<b>${esc(pr[0][0])}</b> is ${fmtPct(sh,0)} of ${custom?'period':'MTD'} sales — high concentration.`,sh>40?'warn':'info','⭐'));}
   return out.slice(0,8);
 }
 function avgDaily(rows){const days=new Set(rows.map(r=>r.date?startOfDay(r.date).getTime():0));days.delete(0);const n=days.size||1;return sumBy(rows,r=>r.rev)/n;}
@@ -1172,16 +1270,15 @@ function doLogin(){
 function failLogin(m){$('#loginErr').textContent=m;}
 
 function wireApp(){
-  document.querySelectorAll('#dateSeg button[data-p]:not([data-p="custom"])').forEach(b=>b.onclick=()=>{
-    FILTERS.preset=b.dataset.p; FILTERS.from=null; FILTERS.to=null; $('#datePop').style.display='none'; syncWindowUI(); render();
+  document.querySelectorAll('#periodSeg button[data-p]:not([data-p="custom"])').forEach(b=>b.onclick=()=>{
+    FILTERS.preset=b.dataset.p; FILTERS.from=null; FILTERS.to=null; closePicker(); syncWindowUI(); render();
   });
-  $('#customBtn').onclick=(e)=>{ e.stopPropagation(); const p=$('#datePop'); const open=p.style.display!=='none'; p.style.display=open?'none':'block';
-    if(!open){ if(FILTERS.from)$('#fromDate').value=FILTERS.from; if(FILTERS.to)$('#toDate').value=FILTERS.to; } };
-  $('#applyDates').onclick=()=>{ let a=$('#fromDate').value,b=$('#toDate').value; if(!a||!b)return;
-    if(a>b){const x=a;a=b;b=x;$('#fromDate').value=a;$('#toDate').value=b;}
-    FILTERS.from=a; FILTERS.to=b; FILTERS.preset='custom'; $('#datePop').style.display='none'; syncWindowUI(); render(); };
-  $('#clearDates').onclick=()=>{ FILTERS.from=null; FILTERS.to=null; $('#fromDate').value=''; $('#toDate').value=''; FILTERS.preset='today'; $('#datePop').style.display='none'; syncWindowUI(); render(); };
-  document.addEventListener('click',(e)=>{ const p=$('#datePop'); if(p&&p.style.display!=='none'&&!e.target.closest('.winctl')) p.style.display='none'; });
+  $('#customBtn').onclick=(e)=>{ e.stopPropagation(); const p=$('#drPop'); if(p.style.display==='block')closePicker(); else openPicker(); };
+  $('#drPrev').onclick=()=>{ PK.view=new Date(PK.view.getFullYear(),PK.view.getMonth()-1,1); renderPicker(); };
+  $('#drNext').onclick=()=>{ PK.view=new Date(PK.view.getFullYear(),PK.view.getMonth()+1,1); renderPicker(); };
+  $('#drCancel').onclick=()=>closePicker();
+  ['#drGrid1','#drGrid2'].forEach(g=>{const el=$(g); if(el)el.onmouseleave=()=>{ if(PK.selecting)document.querySelectorAll('#drPop .dr-day.hover').forEach(x=>x.classList.remove('hover')); };});
+  document.addEventListener('click',(e)=>{ const p=$('#drPop'); if(p&&p.style.display==='block'&&!e.target.closest('.winctl')) closePicker(); });
   document.querySelectorAll('#typeSeg button').forEach(b=>b.onclick=()=>{
     FILTERS.type=b.dataset.t; document.querySelectorAll('#typeSeg button').forEach(x=>x.classList.toggle('on',x===b)); render();
   });
