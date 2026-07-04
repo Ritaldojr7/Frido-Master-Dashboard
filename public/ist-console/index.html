@@ -359,7 +359,8 @@ function csvToRecords(rows,headers){
     const mp=_parseMonth(g(row,'mon'));const ni=_num(g(row,'ni'));
     const gsal=_num(g(row,'sal'));const mgv=_num(g(row,'mg')),attv=_num(g(row,'att'));
     const daysInMonth=mp?new Date(mp.yr,(mp.idx%12)+1,0).getDate():30;
-    const sal=mgv>0?(daysInMonth>0?mgv*attv/daysInMonth:0):gsal; // Salary = Monthly Gross × Attendance ÷ days-in-month; if Monthly Gross absent, fall back to Gross Salary (already attendance-adjusted) to avoid double-proration
+    const divisor=30.4;
+    const sal=mgv>0?mgv*attv/divisor:gsal; // Salary = Monthly Gross × Attendance ÷ 30.4 (average days); if Monthly Gross absent, fall back to Gross Salary (already attendance-adjusted) to avoid double-proration
     out.push({id:String(idv).trim(),name:String(g(row,'name')!=null?g(row,'name'):idv).trim(),
       vert:(String(g(row,'vert')||'').trim())||'Unknown',mon:mp?mp.label:String(g(row,'mon')||'').trim(),
       yr:mp?mp.yr:null,qtr:mp?mp.qtr:'',midx:mp?mp.idx:0,days:daysInMonth,
@@ -840,7 +841,7 @@ function renderSettings(rows,agents,active){
   const trows=Object.keys(DEF_T).map(k=>`<div class="cfg"><label>${TLAB[k]}</label><input type="number" step="${k==='zeroStreak'?1:0.05}" data-t="${k}" value="${THRESH[k]}"></div>`).join('');
   const excl=Object.keys(state.exclude);const ov=Object.entries(state.override);
   const confCard=cardEl('Salary methodology','attendance-prorated salary, shown throughout',
-    `<div class="note" style="font-size:13px">Salary is calculated as <b>(Monthly Gross × Attendance ÷ days-in-month)</b> and is <b>visible across the dashboard</b>. This attendance-prorated salary — not raw Gross Salary — drives every calculation: ROI, cost, profitability, coverage, recovery multiple, and the vertical cost-to-sales matrix.</div>`);
+    `<div class="note" style="font-size:13px">Salary is calculated as <b>(Monthly Gross × Attendance ÷ 30.4)</b> and is <b>visible across the dashboard</b>. This attendance-prorated salary — not raw Gross Salary — drives every calculation: ROI, cost, profitability, coverage, recovery multiple, and the vertical cost-to-sales matrix.</div>`);
   host.innerHTML=confCard.replace('class="card"','class="card" style="margin-bottom:16px"')+
     `<div class="grid g2" style="margin-bottom:16px">`+
     cardEl('Scorecard weights','must be relative; auto-normalized (now sums to '+wsum+')',wrows+`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" id="saveW">Apply weights</button><button class="btn sec" id="resetW">Reset</button></div>`)+
@@ -862,7 +863,7 @@ function renderSettings(rows,agents,active){
          <li>Customer quality beyond return rate (repeat/new customers, refunds, complaints, replacements) — not captured.</li>
          <li>Per-category discount / selling price, weekly/daily consistency — granularity not available.</li>
        </ul>
-       <p style="margin:0"><b>Working days</b> is a proxy (max attendance logged that month) since true roster days aren't in the data. <b>Salary</b> is computed as <b>(Monthly Gross × Attendance) ÷ days-in-month</b> — the attendance-prorated pay — and replaces raw Gross Salary in every calculation (ROI, cost, coverage, cost-ratios). The attendance-prorated salary is shown throughout the dashboard and replaces raw Gross Salary in every calculation. The one agent-month split across two verticals (EMP438, Dec 2025) has salary and attendance de-duplicated so it isn't double-counted. <b>Salary justification</b> follows your rule: net payable &gt; ₹0 → justified; = ₹0 → requires review.</p>
+       <p style="margin:0"><b>Working days</b> is a proxy (max attendance logged that month) since true roster days aren't in the data. <b>Salary</b> is computed as <b>(Monthly Gross × Attendance) ÷ 30.4</b> — the attendance-prorated pay — and replaces raw Gross Salary in every calculation (ROI, cost, coverage, cost-ratios). The attendance-prorated salary is shown throughout the dashboard and replaces raw Gross Salary in every calculation. The one agent-month split across two verticals (EMP438, Dec 2025) has salary and attendance de-duplicated so it isn't double-counted. <b>Salary justification</b> follows your rule: net payable &gt; ₹0 → justified; = ₹0 → requires review.</p>
        </div>`);
   // wire
   const collect=attr=>{const o={};host.querySelectorAll(`[data-${attr}]`).forEach(i=>o[i.dataset[attr==='w'?'w':attr==='g'?'g':'t']]=parseFloat(i.value)||0);return o;};
