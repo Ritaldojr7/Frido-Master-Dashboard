@@ -76,14 +76,20 @@ export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES];
 
-/** Users allowed to access the ISD dashboards (Executive Performance, Performance & Profitability, Salary Analysis). Strictly limited to these emails. */
+/** Users allowed to access the ISD dashboards (Executive Performance, Performance & Profitability). Strictly limited to these emails. */
 export const ISD_DASHBOARD_EMAILS = [
+    'ritwik.m@myfrido.com',
+    'saiyed.a@myfrido.com',
+    'juned.m@myfrido.com',
+    'harshika.s@myfrido.com'
+];
+
+/** Users allowed to access the Salary Analysis dashboard. Strictly limited to these emails. */
+export const SALARY_ANALYSIS_EMAILS = [
     'ritwik.m@myfrido.com',
     'saiyed.a@myfrido.com',
     'juned.m@myfrido.com'
 ];
-
-export const SALARY_ANALYSIS_EMAILS = ISD_DASHBOARD_EMAILS;
 
 /**
  * @param {string | { role?: string, roles?: string[] } | null | undefined} userOrRole
@@ -181,12 +187,18 @@ export function hasAccess(userOrRole, path) {
     // Normalize path: strip query/hash and trailing slashes
     const cleanPath = String(path).trim().split(/[?#]/)[0].replace(/\/+$/, '');
 
-    // Strictly check ISD dashboards email list (Executive Performance, Performance & Profitability, Salary Analysis)
-    const isIsdDashboard = cleanPath === '/isd/salary-analysis' ||
-                           cleanPath === '/isd/executive-performance' ||
-                           cleanPath === '/isd/performance-profitability';
+    // Strictly check ISD dashboards email list (Executive Performance, Performance & Profitability) and Salary Analysis
+    const isSalaryDashboard = cleanPath === '/isd/salary-analysis';
+    const isOtherIsdDashboard = cleanPath === '/isd/executive-performance' ||
+                                 cleanPath === '/isd/performance-profitability';
 
-    if (isIsdDashboard) {
+    if (isSalaryDashboard) {
+        if (!userOrRole || typeof userOrRole !== 'object') return false;
+        const email = String(userOrRole.email || '').trim().toLowerCase();
+        return SALARY_ANALYSIS_EMAILS.map(e => e.toLowerCase()).includes(email);
+    }
+
+    if (isOtherIsdDashboard) {
         if (!userOrRole || typeof userOrRole !== 'object') return false;
         const email = String(userOrRole.email || '').trim().toLowerCase();
         return ISD_DASHBOARD_EMAILS.map(e => e.toLowerCase()).includes(email);
