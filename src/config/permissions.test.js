@@ -162,6 +162,11 @@ describe('hasAccess', () => {
         expect(hasAccess({ email: 'saiyed.a@myfrido.com', role: 'admin' }, '/isd/performance-profitability')).toBe(true);
         expect(hasAccess({ email: 'juned.m@myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(true);
 
+        // harshika.s@myfrido.com should have access to executive-performance and performance-profitability, but NOT salary-analysis
+        expect(hasAccess({ email: 'harshika.s@myfrido.com', role: 'staff' }, '/isd/executive-performance')).toBe(true);
+        expect(hasAccess({ email: 'harshika.s@myfrido.com', role: 'staff' }, '/isd/performance-profitability')).toBe(true);
+        expect(hasAccess({ email: 'harshika.s@myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(false);
+
         // Non-whitelisted emails should be denied even if they are admins or data analysts
         expect(hasAccess({ email: 'other@myfrido.com', role: 'admin' }, '/isd/executive-performance')).toBe(false);
         expect(hasAccess({ email: 'other@myfrido.com', role: 'data_analyst' }, '/isd/performance-profitability')).toBe(false);

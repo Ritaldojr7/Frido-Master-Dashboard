@@ -34,6 +34,7 @@ import {
     PROFILE_ROLES,
     RETAIL_STAFF_ACCESS_ROLES,
     ISD_DASHBOARD_EMAILS,
+    SALARY_ANALYSIS_EMAILS,
     defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
@@ -152,7 +153,7 @@ function App() {
                                     <Route
                                         path="/isd/salary-analysis"
                                         element={
-                                            <RoleGuard allowedEmails={ISD_DASHBOARD_EMAILS}>
+                                            <RoleGuard allowedEmails={SALARY_ANALYSIS_EMAILS}>
                                                 <SalaryAnalysisDashboard />
                                             </RoleGuard>
                                         }
