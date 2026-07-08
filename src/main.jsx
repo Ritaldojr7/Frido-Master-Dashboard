@@ -37,7 +37,7 @@ if (!clerkPublishableKey && import.meta.env.PROD) {
                     signUpForceRedirectUrl={typeof window !== 'undefined' ? window.location.origin : undefined}
                     allowedRedirectOrigins={[
                         'https://frido-master-dashboard.onrender.com',
-                        'http://localhost:3000',
+                        'http://localhost:3005',
                         'http://localhost:4000',
                         'http://localhost:5173'
                     ]}

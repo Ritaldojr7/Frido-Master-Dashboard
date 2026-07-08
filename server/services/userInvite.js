@@ -33,7 +33,7 @@ export async function createClerkInvitationFlow({
     const publicMetadata = buildPublicMetadata(userRole, storeName, department);
     let invitation = null;
     let existingClerkUser = null;
-    let inviteLink = origin || 'http://localhost:3000';
+    let inviteLink = origin || 'http://localhost:3005';
 
     try {
         invitation = await clerkClient.invitations.createInvitation({
