@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frido Retail Experience — Overall Performance Dashboard (3 May – 2 Jun 2026)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --ink:#1c1b19; --ink-soft:#5c5852; --ink-faint:#8a857d;
+  --line:#e7e3dc; --line-soft:#f0ede7;
+  --pos:#12b886; --pos-soft:#d3f2e7;
+  --neu:#f4b740; --neu-soft:#fbeecb;
+  --neg:#e8543f; --neg-soft:#f9dcd5;
+  --sug:#7b6ef6; --sug-soft:#e3e0fd;
+  --accent:#1a7f6b; --accent-2:#0f5f50;
+  --bar:#b9d8cf;
+  --shadow:0 1px 2px rgba(28,27,25,.04),0 4px 16px rgba(28,27,25,.05);
+  --radius:14px;
+}
+[data-theme="dark"]{
+  --bg:#141613; --panel:#1e211d; --ink:#f2f0ec; --ink-soft:#b0aca4; --ink-faint:#7d7970;
+  --line:#2c302a; --line-soft:#242720;
+  --pos-soft:#123a30; --neu-soft:#3a2f14; --neg-soft:#3d1d16; --sug-soft:#241f4a;
+  --bar:#2f5e53; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.5;
+  -webkit-font-smoothing:antialiased; padding-bottom:64px;
+  transition:background .3s ease,color .3s ease;
+}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+
+/* ---- Header ---- */
+header{border-bottom:1px solid var(--line);background:var(--panel);transition:background .3s}
+.head-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:26px 0 22px;flex-wrap:wrap}
+.brand{display:flex;gap:14px;align-items:flex-start}
+.brand-mark{
+  width:44px;height:44px;border-radius:11px;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;
+  box-shadow:0 3px 10px rgba(26,127,107,.28);
+}
+.brand h1{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.brand .sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-weight:500}
+.brand .sub b{color:var(--accent);font-weight:600}
+.head-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{
+  font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+  background:var(--panel);border:1px solid var(--line);border-radius:9px;
+  padding:8px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  transition:all .15s;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- Filter bar ---- */
+.filters{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;margin:22px 0 0;box-shadow:var(--shadow)}
+.filter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.field label{display:block;font-size:10.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}
+.field select,.field input{
+  width:100%;font:inherit;font-size:13px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:8px;padding:9px 11px;cursor:pointer;
+  transition:border-color .15s;
+}
+.field select:focus,.field input:focus{outline:none;border-color:var(--accent)}
+.field input{cursor:text}
+.filter-foot{display:flex;justify-content:space-between;align-items:center;
+  margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft)}
+.showing{font-size:12.5px;color:var(--ink-soft)}
+.showing b{color:var(--accent);font-weight:700}
+
+/* ---- Tabs ---- */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:24px 0 0;
+  overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-faint);
+  background:none;border:none;border-bottom:2px solid transparent;
+  padding:12px 16px;cursor:pointer;white-space:nowrap;transition:color .15s;margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-4px;border-radius:4px}
+
+.panel-view{display:none;animation:fade .35s ease}
+.panel-view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---- KPI cards ---- */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.kpi-row.two{grid-template-columns:repeat(2,1fr);max-width:calc(66.66% - 8px)}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi .k-label{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint)}
+.kpi .k-val{font-size:38px;font-weight:800;letter-spacing:-.03em;margin:6px 0 2px;line-height:1}
+.kpi .k-sub{font-size:12px;color:var(--ink-soft);font-weight:500}
+.kpi .k-trend{position:absolute;top:18px;right:20px;font-size:11.5px;font-weight:700;
+  display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px}
+.k-trend.up{color:var(--pos);background:var(--pos-soft)}
+.k-trend.down{color:var(--neg);background:var(--neg-soft)}
+.k-trend.flat{color:var(--ink-faint);background:var(--line-soft)}
+.val-pos{color:var(--pos)} .val-neu{color:var(--neu)} .val-neg{color:var(--neg)}
+.val-ink{color:var(--ink)} .val-accent{color:var(--accent)}
+
+/* ---- Panels / cards ---- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px 24px;box-shadow:var(--shadow);margin-top:20px}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  margin-bottom:4px;flex-wrap:wrap}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.card-hint{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.card-note{font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:70ch}
+.chart-box{position:relative;margin-top:18px}
+
+/* callout */
+.callout{background:var(--line-soft);border-radius:10px;padding:14px 16px;margin-top:18px;
+  font-size:13px;color:var(--ink-soft);line-height:1.55}
+.callout b{color:var(--accent);font-weight:600}
+.callout .warn{color:var(--neg);font-weight:600}
+
+/* exec summary */
+.exec{background:linear-gradient(180deg,var(--panel),var(--bg));
+  border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;
+  margin-top:20px;box-shadow:var(--shadow)}
+.exec h3{font-size:14px;font-weight:700;color:var(--accent);letter-spacing:-.01em;margin-bottom:12px}
+.exec p{font-size:13.5px;color:var(--ink-soft);margin-bottom:11px;line-height:1.65;max-width:82ch}
+.exec p:last-child{margin-bottom:0}
+.exec b{color:var(--ink);font-weight:600}
+
+/* ---- Table ---- */
+.tbl-scroll{overflow-x:auto;margin-top:18px;border-radius:10px;border:1px solid var(--line-soft)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+thead th{background:var(--bg);font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-faint);text-align:left;padding:11px 14px;
+  border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--accent)}
+thead th.num,tbody td.num{text-align:right}
+thead th .arr{opacity:.5;font-size:9px;margin-left:3px}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg)}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:7px;font-size:12px;font-weight:700;color:#fff}
+.store-cell{font-weight:600;color:var(--ink)}
+.city-tag{font-size:11px;color:var(--ink-faint)}
+.mini-bar{display:inline-block;height:7px;border-radius:4px;vertical-align:middle}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.pill.low{background:var(--pos-soft);color:var(--pos)}
+.pill.mod{background:var(--neu-soft);color:#b5851a}
+.pill.high{background:var(--neg-soft);color:var(--neg)}
+.spark{vertical-align:middle}
+
+/* legend chips */
+.chips{display:flex;gap:16px;flex-wrap:wrap;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);font-weight:500}
+.chip .dot{width:11px;height:11px;border-radius:3px}
+.dist-list{margin-top:16px;border-top:1px solid var(--line-soft)}
+.dist-row{display:flex;justify-content:space-between;padding:11px 2px;
+  border-bottom:1px solid var(--line-soft);font-size:13px}
+.dist-row:last-child{border-bottom:none}
+.dist-row .lbl{display:flex;align-items:center;gap:9px;color:var(--ink-soft);font-weight:500}
+.dist-row .val{font-weight:700}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-auto{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+
+footer{margin-top:36px;padding-top:22px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--ink-faint);line-height:1.7}
+footer b{color:var(--ink-soft);font-weight:600}
+.foot-note{margin-top:10px;font-size:11.5px;color:var(--ink-faint);max-width:90ch}
+
+.data-flag{display:inline-block;font-size:11px;color:var(--neu);background:var(--neu-soft);
+  padding:2px 8px;border-radius:6px;font-weight:600;margin-left:8px}
+
+@media(max-width:900px){
+  .filter-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-row,.kpi-row.two{grid-template-columns:1fr;max-width:none}
+  .two-col,.grid-auto{grid-template-columns:1fr}
+  .kpi .k-val{font-size:32px}
+}
+@media(max-width:560px){
+  .wrap{padding:0 16px}
+  .filter-grid{grid-template-columns:1fr}
+  .head-inner{padding:20px 0}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-inner">
+    <div class="brand">
+      <div class="brand-mark">◱</div>
+      <div>
+        <h1>Retail Experience — Overall Performance</h1>
+        <div class="sub">Cumulative · <b>3 May – 2 Jun 2026</b> · 5 reporting weeks · 13 stores · 4 cities</div>
+      </div>
+    </div>
+    <div class="head-tools">
+      <button class="btn" id="printBtn" title="Print or save as PDF">⎙ Export PDF</button>
+      <button class="btn" id="themeBtn" title="Toggle dark mode">◐ Dark Mode</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="filter-grid">
+      <div class="field" style="display: none;">
+        <label for="fSearch">Search store</label>
+        <input id="fSearch" type="text" placeholder="Type store name…" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fCity">City</label>
+        <select id="fCity"><option value="">All cities</option></select>
+      </div>
+      <div class="field">
+        <label for="fStore">Store</label>
+        <select id="fStore"><option value="">All stores</option></select>
+      </div>
+      <div class="field">
+        <label for="fWeek">Reporting week</label>
+        <select id="fWeek"><option value="">All 5 weeks (cumulative)</option></select>
+      </div>
+    </div>
+    <div class="filter-foot">
+      <div class="showing" id="showing">Showing <b>850</b> responses · <b>13</b> stores · <b>5</b> weeks</div>
+      <button class="btn" id="resetBtn">↺ Reset filters</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-view="overview" role="tab">Overview</button>
+    <button class="tab" data-view="stores" role="tab">Store Performance</button>
+    <button class="tab" data-view="sentiment" role="tab">Sentiment Analysis</button>
+    <button class="tab" data-view="orders" role="tab">Order Type &amp; Issues</button>
+    <button class="tab" data-view="issues" role="tab">Issue Deep-Dive</button>
+  </div>
+
+  <!-- ============ OVERVIEW ============ -->
+  <section class="panel-view active" id="view-overview">
+    <div class="kpi-row" id="kpiRow"></div>
+    <div class="kpi-row two" id="kpiRow2"></div>
+
+    <div class="exec" id="execSummary"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Week-over-week trajectory</div>
+          <div class="card-note">The single-week reports can't show this. CSAT climbed while negative sentiment fell across the period.</div>
+        </div>
+        <div class="card-hint">Line = CSAT · Bars = Responses</div>
+      </div>
+      <div class="chart-box" style="height:330px"><canvas id="trendChart"></canvas></div>
+      <div class="callout" id="trendNote"></div>
+    </div>
+
+    <div class="grid-auto">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Sentiment mix over time</div>
+          <div class="card-hint">% of weekly responses</div></div>
+        <div class="chart-box" style="height:280px"><canvas id="sentTrendChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Cumulative sentiment</div>
+          <div class="card-hint">850 responses</div></div>
+        <div class="chart-box" style="height:200px"><canvas id="donutChart"></canvas></div>
+        <div class="dist-list" id="distList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STORE PERFORMANCE ============ -->
+  <section class="panel-view" id="view-stores">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Cumulative store ranking</div>
+          <div class="card-note">Response-weighted across every week each store appears. Sortable — click any column header.</div>
+        </div>
+        <div class="card-hint" id="storeCount"></div>
+      </div>
+      <div class="tbl-scroll">
+        <table id="storeTable">
+          <thead><tr>
+            <th data-sort="rank" class="num">#</th>
+            <th data-sort="name">Store</th>
+            <th data-sort="city">City</th>
+            <th data-sort="resp" class="num">Responses</th>
+            <th data-sort="csat" class="num">Avg CSAT</th>
+            <th data-sort="posShare" class="num">Positive %</th>
+            <th data-sort="issueRate" class="num">Issue rate</th>
+            <th data-sort="trend">CSAT trend</th>
+          </tr></thead>
+          <tbody id="storeTbody"></tbody>
+        </table>
+      </div>
+      <div class="callout" id="storeNote"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Responses &amp; CSAT by store</div>
+        <div class="card-hint">Bars = responses · Line = CSAT</div></div>
+      <div class="chart-box" style="height:340px"><canvas id="storeBarChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ============ SENTIMENT ============ -->
+  <section class="panel-view" id="view-sentiment">
+    <div class="card">
+      <div class="card-head"><div>
+        <div class="card-title">Sentiment breakdown by store</div>
+        <div class="card-note">Absolute response counts. Positive shown separately from Suggestive.</div>
+      </div><div class="card-hint">Stacked counts</div></div>
+      <div class="chips" style="margin-top:12px">
+        <span class="chip"><span class="dot" style="background:var(--pos)"></span>Positive</span>
+        <span class="chip"><span class="dot" style="background:var(--sug)"></span>Suggestive</span>
+        <span class="chip"><span class="dot" style="background:var(--neu)"></span>Neutral</span>
+        <span class="chip"><span class="dot" style="background:var(--neg)"></span>Negative</span>
+      </div>
+      <div class="chart-box" style="height:420px"><canvas id="sentStoreChart"></canvas></div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head"><div class="card-title">City-wise sentiment</div>
+          <div class="card-hint" id="cityToggleHint">% share</div></div>
+        <div class="chart-box" style="height:300px"><canvas id="cityChart"></canvas></div>
+        <div class="callout" id="cityNote"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Positive-sentiment leaders</div>
+          <div class="card-hint">Positive % · min 40 responses</div></div>
+        <div class="chart-box" style="height:300px"><canvas id="posLeaderChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ORDERS ============ -->
+  <section class="panel-view" id="view-orders">
+    <div class="kpi-row two" id="orderKpis" style="max-width:none;grid-template-columns:1fr 1fr"></div>
+    <div class="card">
+      <div class="card-head"><div>
+        <div class="card-title">Online vs Cash &amp; Carry — issue split by week</div>
+        <div class="card-note">Where friction originated across the purchase journey, week by week.</div>
+      </div><div class="card-hint">% of weekly issues</div></div>
+      <div class="chart-box" style="height:320px"><canvas id="orderChart"></canvas></div>
+      <div class="callout" id="orderNote"></div>
+    </div>
+  </section>
+
+  <!-- ============ ISSUES ============ -->
+  <section class="panel-view" id="view-issues">
+    <div class="kpi-row" id="issueKpis"></div>
+    <div class="card">
+      <div class="card-head"><div>
+        <div class="card-title">Top issue drivers over time</div>
+        <div class="card-note">Raw mention counts per week. Stock Unavailability is the persistent #1 across all 5 weeks.</div>
+      </div><div class="card-hint">Mentions per week</div></div>
+      <div class="chart-box" style="height:320px"><canvas id="issueTrendChart"></canvas></div>
+      <div class="callout" id="issueNote"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Issue rate by store</div>
+        <div class="card-hint">Issues ÷ responses · cumulative</div></div>
+      <div class="chart-box" style="height:360px"><canvas id="issueStoreChart"></canvas></div>
+      <div class="callout">Colour bands follow the reports' own legend: <span class="pill high">&gt;40% high</span> <span class="pill mod">25–40% moderate</span> <span class="pill low">&lt;25% low</span></div>
+    </div>
+  </section>
+
+  <footer>
+    <div><b>Period:</b> 3 May 2026 – 2 Jun 2026 &nbsp;·&nbsp; <b>Source:</b> 5 weekly Retail Experience Feedback reports &nbsp;·&nbsp; <b>Prepared by:</b> Disha Bhojwani &nbsp;·&nbsp; <b>Checked by:</b> Rhythm Jain &nbsp;·&nbsp; <b>Reported to:</b> Saiyad Abdal &amp; Nishrit Pandita &nbsp;·&nbsp; Feedback &amp; Consumer Trial Department</div>
+    <div class="foot-note" id="methodNote"></div>
+  </footer>
+</div>
+
+<script id="payload" type="application/json">{
+ "weeks": [
+  {
+   "id": "w1",
+   "label": "3\u20139 May",
+   "start": "2026-05-03",
+   "end": "2026-05-09",
+   "type": "Daily",
+   "stores": 11,
+   "released": "2026-05-25",
+   "csat_pct": 69,
+   "csat_avg": null,
+   "positive": 50,
+   "neutral": 42,
+   "negative": 8,
+   "suggestive": null,
+   "responses": 205,
+   "sent_counts": {
+    "positive": 97,
+    "suggestive": 6,
+    "neutral": 86,
+    "negative": 16
+   },
+   "issue_count": 103,
+   "issue_rate": 50,
+   "online_pct": 59,
+   "cc_pct": 41,
+   "top_issue": "Stock Unavailability"
+  },
+  {
+   "id": "w2",
+   "label": "10\u201315 May",
+   "start": "2026-05-10",
+   "end": "2026-05-15",
+   "type": "Daily",
+   "stores": 12,
+   "released": "2026-06-01",
+   "csat_pct": 79,
+   "csat_avg": null,
+   "positive": 67,
+   "neutral": 31,
+   "negative": 2,
+   "suggestive": null,
+   "responses": 170,
+   "sent_counts": {
+    "positive": 107,
+    "suggestive": 7,
+    "neutral": 53,
+    "negative": 3
+   },
+   "issue_count": 56,
+   "issue_rate": 33,
+   "online_pct": 54,
+   "cc_pct": 46,
+   "top_issue": "Stock Unavailability"
+  },
+  {
+   "id": "w3",
+   "label": "16\u201321 May",
+   "start": "2026-05-16",
+   "end": "2026-05-21",
+   "type": "Weekly",
+   "stores": 12,
+   "released": "2026-06-08",
+   "csat_pct": 80,
+   "csat_avg": null,
+   "positive": 65,
+   "neutral": 30,
+   "negative": 5,
+   "suggestive": null,
+   "responses": 173,
+   "sent_counts": {
+    "positive": 103,
+    "suggestive": 10,
+    "neutral": 52,
+    "negative": 8
+   },
+   "issue_count": 60,
+   "issue_rate": 35,
+   "online_pct": 62,
+   "cc_pct": 38,
+   "top_issue": "Stock Unavailability"
+  },
+  {
+   "id": "w4",
+   "label": "22\u201327 May",
+   "start": "2026-05-22",
+   "end": "2026-05-27",
+   "type": "Weekly",
+   "stores": 12,
+   "released": "2026-06-15",
+   "csat_pct": 78,
+   "csat_avg": null,
+   "positive": 68,
+   "neutral": 31,
+   "negative": 1,
+   "suggestive": null,
+   "responses": 160,
+   "sent_counts": {
+    "positive": 103,
+    "suggestive": 6,
+    "neutral": 50,
+    "negative": 1
+   },
+   "issue_count": 49,
+   "issue_rate": 31,
+   "online_pct": 64,
+   "cc_pct": 36,
+   "top_issue": "Stock Unavailability"
+  },
+  {
+   "id": "w5",
+   "label": "28 May\u20132 Jun",
+   "start": "2026-05-28",
+   "end": "2026-06-02",
+   "type": "Weekly",
+   "stores": 13,
+   "released": "2026-06-20",
+   "csat_pct": 87,
+   "csat_avg": 8.49,
+   "positive": 64,
+   "neutral": 34,
+   "negative": 2,
+   "suggestive": 4,
+   "responses": 142,
+   "sent_counts": {
+    "positive": 86,
+    "suggestive": 5,
+    "neutral": 48,
+    "negative": 3
+   },
+   "issue_count": 50,
+   "issue_rate": 35,
+   "online_pct": 60,
+   "cc_pct": 40,
+   "top_issue": "Stock Unavailability"
+  }
+ ],
+ "stores": [
+  {
+   "name": "Sky City Mall, Borivali",
+   "city": "Mumbai",
+   "weeks": 5,
+   "resp": 143,
+   "issues": 67,
+   "issueRate": 47,
+   "csat": 8.13,
+   "P": 71,
+   "S": 6,
+   "N": 58,
+   "Neg": 8,
+   "perweek": {
+    "w1": {
+     "resp": 44,
+     "csat": 8.0,
+     "issues": 25,
+     "sent": {
+      "P": 20,
+      "S": 0,
+      "N": 21,
+      "Neg": 3
+     }
+    },
+    "w2": {
+     "resp": 29,
+     "csat": 7.95,
+     "issues": 15,
+     "sent": {
+      "P": 13,
+      "S": 1,
+      "N": 13,
+      "Neg": 2
+     }
+    },
+    "w3": {
+     "resp": 27,
+     "csat": 8.31,
+     "issues": 8,
+     "sent": {
+      "P": 15,
+      "S": 4,
+      "N": 6,
+      "Neg": 2
+     }
+    },
+    "w4": {
+     "resp": 25,
+     "csat": 8.3,
+     "issues": 7,
+     "sent": {
+      "P": 18,
+      "S": 0,
+      "N": 7,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 18,
+     "csat": 8.2,
+     "issues": 12,
+     "sent": {
+      "P": 5,
+      "S": 1,
+      "N": 11,
+      "Neg": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "Elpro PCMC",
+   "city": "Pune",
+   "weeks": 5,
+   "resp": 144,
+   "issues": 48,
+   "issueRate": 33,
+   "csat": 8.13,
+   "P": 90,
+   "S": 5,
+   "N": 40,
+   "Neg": 9,
+   "perweek": {
+    "w1": {
+     "resp": 42,
+     "csat": 7.7,
+     "issues": 22,
+     "sent": {
+      "P": 19,
+      "S": 1,
+      "N": 15,
+      "Neg": 7
+     }
+    },
+    "w2": {
+     "resp": 35,
+     "csat": 8.56,
+     "issues": 10,
+     "sent": {
+      "P": 25,
+      "S": 0,
+      "N": 10,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 28,
+     "csat": 8.02,
+     "issues": 5,
+     "sent": {
+      "P": 21,
+      "S": 2,
+      "N": 3,
+      "Neg": 2
+     }
+    },
+    "w4": {
+     "resp": 21,
+     "csat": 8.1,
+     "issues": 5,
+     "sent": {
+      "P": 14,
+      "S": 1,
+      "N": 6,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 18,
+     "csat": 8.5,
+     "issues": 6,
+     "sent": {
+      "P": 11,
+      "S": 1,
+      "N": 6,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Amanora Mall, Hadapsar",
+   "city": "Pune",
+   "weeks": 5,
+   "resp": 97,
+   "issues": 25,
+   "issueRate": 26,
+   "csat": 8.37,
+   "P": 70,
+   "S": 2,
+   "N": 23,
+   "Neg": 2,
+   "perweek": {
+    "w1": {
+     "resp": 23,
+     "csat": 7.5,
+     "issues": 12,
+     "sent": {
+      "P": 11,
+      "S": 0,
+      "N": 10,
+      "Neg": 2
+     }
+    },
+    "w2": {
+     "resp": 17,
+     "csat": 8.93,
+     "issues": 3,
+     "sent": {
+      "P": 13,
+      "S": 1,
+      "N": 3,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 21,
+     "csat": 8.35,
+     "issues": 5,
+     "sent": {
+      "P": 16,
+      "S": 0,
+      "N": 5,
+      "Neg": 0
+     }
+    },
+    "w4": {
+     "resp": 21,
+     "csat": 8.5,
+     "issues": 2,
+     "sent": {
+      "P": 18,
+      "S": 1,
+      "N": 2,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 15,
+     "csat": 8.9,
+     "issues": 3,
+     "sent": {
+      "P": 12,
+      "S": 0,
+      "N": 3,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Gachibowli Store, Hyderabad",
+   "city": "Hyderabad",
+   "weeks": 5,
+   "resp": 99,
+   "issues": 34,
+   "issueRate": 34,
+   "csat": 8.54,
+   "P": 60,
+   "S": 4,
+   "N": 35,
+   "Neg": 0,
+   "perweek": {
+    "w1": {
+     "resp": 14,
+     "csat": 8.7,
+     "issues": 8,
+     "sent": {
+      "P": 5,
+      "S": 1,
+      "N": 8,
+      "Neg": 0
+     }
+    },
+    "w2": {
+     "resp": 25,
+     "csat": 8.8,
+     "issues": 4,
+     "sent": {
+      "P": 19,
+      "S": 2,
+      "N": 4,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 19,
+     "csat": 8.46,
+     "issues": 7,
+     "sent": {
+      "P": 12,
+      "S": 0,
+      "N": 7,
+      "Neg": 0
+     }
+    },
+    "w4": {
+     "resp": 20,
+     "csat": 8.1,
+     "issues": 7,
+     "sent": {
+      "P": 11,
+      "S": 1,
+      "N": 8,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 21,
+     "csat": 8.6,
+     "issues": 8,
+     "sent": {
+      "P": 13,
+      "S": 0,
+      "N": 8,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Mall of Asia, Bangalore",
+   "city": "Bangalore",
+   "weeks": 5,
+   "resp": 69,
+   "issues": 28,
+   "issueRate": 41,
+   "csat": 8.16,
+   "P": 35,
+   "S": 5,
+   "N": 25,
+   "Neg": 4,
+   "perweek": {
+    "w1": {
+     "resp": 13,
+     "csat": 8.3,
+     "issues": 8,
+     "sent": {
+      "P": 4,
+      "S": 1,
+      "N": 7,
+      "Neg": 1
+     }
+    },
+    "w2": {
+     "resp": 8,
+     "csat": 8.65,
+     "issues": 2,
+     "sent": {
+      "P": 5,
+      "S": 1,
+      "N": 2,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 16,
+     "csat": 8.75,
+     "issues": 6,
+     "sent": {
+      "P": 8,
+      "S": 2,
+      "N": 5,
+      "Neg": 1
+     }
+    },
+    "w4": {
+     "resp": 17,
+     "csat": 7.5,
+     "issues": 8,
+     "sent": {
+      "P": 9,
+      "S": 0,
+      "N": 7,
+      "Neg": 1
+     }
+    },
+    "w5": {
+     "resp": 15,
+     "csat": 7.9,
+     "issues": 4,
+     "sent": {
+      "P": 9,
+      "S": 1,
+      "N": 4,
+      "Neg": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "Amar Tech Park",
+   "city": "Pune",
+   "weeks": 5,
+   "resp": 50,
+   "issues": 18,
+   "issueRate": 36,
+   "csat": 8.23,
+   "P": 30,
+   "S": 3,
+   "N": 16,
+   "Neg": 1,
+   "perweek": {
+    "w1": {
+     "resp": 11,
+     "csat": 8.1,
+     "issues": 4,
+     "sent": {
+      "P": 7,
+      "S": 0,
+      "N": 4,
+      "Neg": 0
+     }
+    },
+    "w2": {
+     "resp": 10,
+     "csat": 8.71,
+     "issues": 4,
+     "sent": {
+      "P": 6,
+      "S": 0,
+      "N": 4,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 10,
+     "csat": 7.68,
+     "issues": 4,
+     "sent": {
+      "P": 5,
+      "S": 1,
+      "N": 3,
+      "Neg": 1
+     }
+    },
+    "w4": {
+     "resp": 8,
+     "csat": 8.1,
+     "issues": 4,
+     "sent": {
+      "P": 4,
+      "S": 1,
+      "N": 3,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 11,
+     "csat": 8.5,
+     "issues": 2,
+     "sent": {
+      "P": 8,
+      "S": 1,
+      "N": 2,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Nexus Westend, Aundh",
+   "city": "Pune",
+   "weeks": 5,
+   "resp": 57,
+   "issues": 26,
+   "issueRate": 46,
+   "csat": 7.99,
+   "P": 28,
+   "S": 2,
+   "N": 25,
+   "Neg": 2,
+   "perweek": {
+    "w1": {
+     "resp": 17,
+     "csat": 7.3,
+     "issues": 6,
+     "sent": {
+      "P": 10,
+      "S": 1,
+      "N": 5,
+      "Neg": 1
+     }
+    },
+    "w2": {
+     "resp": 11,
+     "csat": 8.57,
+     "issues": 7,
+     "sent": {
+      "P": 4,
+      "S": 0,
+      "N": 7,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 13,
+     "csat": 7.67,
+     "issues": 7,
+     "sent": {
+      "P": 6,
+      "S": 0,
+      "N": 6,
+      "Neg": 1
+     }
+    },
+    "w4": {
+     "resp": 13,
+     "csat": 8.5,
+     "issues": 4,
+     "sent": {
+      "P": 7,
+      "S": 1,
+      "N": 5,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 3,
+     "csat": 8.9,
+     "issues": 2,
+     "sent": {
+      "P": 1,
+      "S": 0,
+      "N": 2,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Banjara Hills, Hyderabad",
+   "city": "Hyderabad",
+   "weeks": 5,
+   "resp": 52,
+   "issues": 24,
+   "issueRate": 46,
+   "csat": 7.72,
+   "P": 27,
+   "S": 1,
+   "N": 22,
+   "Neg": 2,
+   "perweek": {
+    "w1": {
+     "resp": 12,
+     "csat": 7.2,
+     "issues": 7,
+     "sent": {
+      "P": 5,
+      "S": 0,
+      "N": 6,
+      "Neg": 1
+     }
+    },
+    "w2": {
+     "resp": 16,
+     "csat": 8.28,
+     "issues": 6,
+     "sent": {
+      "P": 9,
+      "S": 1,
+      "N": 6,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 12,
+     "csat": 7.47,
+     "issues": 6,
+     "sent": {
+      "P": 6,
+      "S": 0,
+      "N": 5,
+      "Neg": 1
+     }
+    },
+    "w4": {
+     "resp": 7,
+     "csat": 8.0,
+     "issues": 3,
+     "sent": {
+      "P": 4,
+      "S": 0,
+      "N": 3,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 5,
+     "csat": 7.4,
+     "issues": 2,
+     "sent": {
+      "P": 3,
+      "S": 0,
+      "N": 2,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Kopa Mall, Koregaon Park",
+   "city": "Pune",
+   "weeks": 5,
+   "resp": 52,
+   "issues": 15,
+   "issueRate": 29,
+   "csat": 8.51,
+   "P": 36,
+   "S": 1,
+   "N": 14,
+   "Neg": 1,
+   "perweek": {
+    "w1": {
+     "resp": 16,
+     "csat": 8.2,
+     "issues": 6,
+     "sent": {
+      "P": 9,
+      "S": 1,
+      "N": 5,
+      "Neg": 1
+     }
+    },
+    "w2": {
+     "resp": 8,
+     "csat": 8.23,
+     "issues": 2,
+     "sent": {
+      "P": 6,
+      "S": 0,
+      "N": 2,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 9,
+     "csat": 8.94,
+     "issues": 4,
+     "sent": {
+      "P": 5,
+      "S": 0,
+      "N": 4,
+      "Neg": 0
+     }
+    },
+    "w4": {
+     "resp": 7,
+     "csat": 8.5,
+     "issues": 0,
+     "sent": {
+      "P": 7,
+      "S": 0,
+      "N": 0,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 12,
+     "csat": 8.8,
+     "issues": 3,
+     "sent": {
+      "P": 9,
+      "S": 0,
+      "N": 3,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Lakeshore Y Junction, Hyderabad",
+   "city": "Hyderabad",
+   "weeks": 5,
+   "resp": 40,
+   "issues": 15,
+   "issueRate": 38,
+   "csat": 8.52,
+   "P": 23,
+   "S": 2,
+   "N": 14,
+   "Neg": 1,
+   "perweek": {
+    "w1": {
+     "resp": 12,
+     "csat": 8.7,
+     "issues": 4,
+     "sent": {
+      "P": 7,
+      "S": 1,
+      "N": 4,
+      "Neg": 0
+     }
+    },
+    "w2": {
+     "resp": 7,
+     "csat": 8.81,
+     "issues": 2,
+     "sent": {
+      "P": 5,
+      "S": 0,
+      "N": 2,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 6,
+     "csat": 8.46,
+     "issues": 2,
+     "sent": {
+      "P": 4,
+      "S": 0,
+      "N": 2,
+      "Neg": 0
+     }
+    },
+    "w4": {
+     "resp": 10,
+     "csat": 8.6,
+     "issues": 5,
+     "sent": {
+      "P": 4,
+      "S": 1,
+      "N": 5,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 5,
+     "csat": 7.6,
+     "issues": 2,
+     "sent": {
+      "P": 3,
+      "S": 0,
+      "N": 1,
+      "Neg": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "Kompally Mall, Hyderabad",
+   "city": "Hyderabad",
+   "weeks": 5,
+   "resp": 26,
+   "issues": 10,
+   "issueRate": 38,
+   "csat": 8.54,
+   "P": 16,
+   "S": 0,
+   "N": 10,
+   "Neg": 0,
+   "perweek": {
+    "w1": {
+     "resp": 1,
+     "csat": 7.0,
+     "issues": 1,
+     "sent": {
+      "P": 0,
+      "S": 0,
+      "N": 1,
+      "Neg": 0
+     }
+    },
+    "w2": {
+     "resp": 2,
+     "csat": 9.5,
+     "issues": 0,
+     "sent": {
+      "P": 2,
+      "S": 0,
+      "N": 0,
+      "Neg": 0
+     }
+    },
+    "w3": {
+     "resp": 7,
+     "csat": 7.61,
+     "issues": 4,
+     "sent": {
+      "P": 3,
+      "S": 0,
+      "N": 4,
+      "Neg": 0
+     }
+    },
+    "w4": {
+     "resp": 6,
+     "csat": 8.8,
+     "issues": 3,
+     "sent": {
+      "P": 3,
+      "S": 0,
+      "N": 3,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 10,
+     "csat": 9.0,
+     "issues": 2,
+     "sent": {
+      "P": 8,
+      "S": 0,
+      "N": 2,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Bhartiya Mall, Bangalore",
+   "city": "Bangalore",
+   "weeks": 4,
+   "resp": 20,
+   "issues": 8,
+   "issueRate": 40,
+   "csat": 8.32,
+   "P": 9,
+   "S": 3,
+   "N": 7,
+   "Neg": 1,
+   "perweek": {
+    "w2": {
+     "resp": 2,
+     "csat": 5.83,
+     "issues": 1,
+     "sent": {
+      "P": 0,
+      "S": 1,
+      "N": 0,
+      "Neg": 1
+     }
+    },
+    "w3": {
+     "resp": 5,
+     "csat": 9.4,
+     "issues": 2,
+     "sent": {
+      "P": 2,
+      "S": 1,
+      "N": 2,
+      "Neg": 0
+     }
+    },
+    "w4": {
+     "resp": 5,
+     "csat": 7.8,
+     "issues": 1,
+     "sent": {
+      "P": 4,
+      "S": 0,
+      "N": 1,
+      "Neg": 0
+     }
+    },
+    "w5": {
+     "resp": 8,
+     "csat": 8.6,
+     "issues": 4,
+     "sent": {
+      "P": 3,
+      "S": 1,
+      "N": 4,
+      "Neg": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "Lulu Mall, Bangalore",
+   "city": "Bangalore",
+   "weeks": 1,
+   "resp": 1,
+   "issues": 0,
+   "issueRate": 0,
+   "csat": 9.0,
+   "P": 1,
+   "S": 0,
+   "N": 0,
+   "Neg": 0,
+   "perweek": {
+    "w5": {
+     "resp": 1,
+     "csat": 9.0,
+     "issues": 0,
+     "sent": {
+      "P": 1,
+      "S": 0,
+      "N": 0,
+      "Neg": 0
+     }
+    }
+   }
+  }
+ ],
+ "issueDrivers": {
+  "w1": {
+   "total_issue_mentions": 103,
+   "drivers": [
+    [
+     "Stock Unavailability",
+     31
+    ]
+   ]
+  },
+  "w2": {
+   "total_issue_mentions": 170,
+   "drivers": [
+    [
+     "Stock Unavailability",
+     28
+    ],
+    [
+     "Staff Experience",
+     15
+    ],
+    [
+     "Logistics & Supply Chain",
+     11
+    ]
+   ]
+  },
+  "w3": {
+   "total_issue_mentions": 173,
+   "drivers": [
+    [
+     "Stock Unavailability",
+     38
+    ],
+    [
+     "Logistics & Supply Chain",
+     12
+    ],
+    [
+     "Staff Experience",
+     9
+    ]
+   ]
+  },
+  "w4": {
+   "total_issue_mentions": 160,
+   "drivers": [
+    [
+     "Stock Unavailability",
+     19
+    ],
+    [
+     "Logistics & Supply Chain",
+     18
+    ],
+    [
+     "Staff Experience",
+     9
+    ]
+   ]
+  },
+  "w5": {
+   "total_issue_mentions": 142,
+   "drivers": [
+    [
+     "Stock Unavailability",
+     30
+    ],
+    [
+     "Logistics & Supply Chain",
+     11
+    ],
+    [
+     "Staff Experience",
+     5
+    ]
+   ]
+  }
+ }
+}</script>
+<script>/* Frido Overall Performance Dashboard — logic */
+(function(){
+"use strict";
+
+const DATA = JSON.parse(document.getElementById('payload').textContent);
+const WEEKS = DATA.weeks;
+const STORES = DATA.stores;
+const DRIVERS = DATA.issueDrivers;
+const WIDS = ["w1","w2","w3","w4","w5"];
+const WLABEL = {}; WEEKS.forEach(w=>WLABEL[w.id]=w.label);
+
+// ---- theme-aware colour reader ----
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let C = {};
+function readColors(){
+  C = {
+    ink:css('--ink'), inkSoft:css('--ink-soft'), inkFaint:css('--ink-faint'),
+    line:css('--line'), lineSoft:css('--line-soft'), panel:css('--panel'),
+    pos:css('--pos'), neu:css('--neu'), neg:css('--neg'), sug:css('--sug'),
+    accent:css('--accent'), bar:css('--bar')
+  };
+}
+readColors();
+
+// ---- global filter state ----
+const state = { city:'', store:'', week:'', search:'' };
+const charts = {};
+
+// ================= helpers =================
+function fmtPct(n){ return Math.round(n)+'%'; }
+function storeWeeks(s){ return WIDS.filter(w=>s.perweek[w]); }
+
+// Aggregate a store under the current week filter
+function storeAgg(s){
+  const wks = state.week ? (s.perweek[state.week]?[state.week]:[]) : storeWeeks(s);
+  let resp=0,iss=0,P=0,S=0,N=0,Neg=0,csatNum=0;
+  wks.forEach(w=>{const d=s.perweek[w];
+    resp+=d.resp; iss+=d.issues; csatNum+=d.csat*d.resp;
+    P+=d.sent.P; S+=d.sent.S; N+=d.sent.N; Neg+=d.sent.Neg;});
+  return {resp,iss,P,S,N,Neg,
+    csat: resp? +(csatNum/resp).toFixed(2):0,
+    issueRate: resp? Math.round(iss/resp*100):0,
+    posShare: resp? Math.round((P+S)/resp*100):0,
+    wksPresent: wks.length};
+}
+
+// Stores passing city/store/search filters (week handled inside agg)
+function filteredStores(){
+  return STORES.filter(s=>{
+    if(state.city && s.city!==state.city) return false;
+    if(state.store && s.name!==state.store) return false;
+    if(state.search && !s.name.toLowerCase().includes(state.search.toLowerCase())) return false;
+    if(state.week && !s.perweek[state.week]) return false;
+    return true;
+  });
+}
+
+// Totals for the current filter selection
+function totals(){
+  const list = filteredStores();
+  let resp=0,P=0,S=0,N=0,Neg=0,iss=0,csatNum=0,storeSet=new Set();
+  list.forEach(s=>{const a=storeAgg(s);
+    resp+=a.resp;P+=a.P;S+=a.S;N+=a.N;Neg+=a.Neg;iss+=a.iss;
+    csatNum+=a.csat*a.resp; if(a.resp>0) storeSet.add(s.name);});
+  return {resp,P,S,N,Neg,iss,stores:storeSet.size,
+    csat: resp? +(csatNum/resp).toFixed(2):0,
+    csatPct: resp? Math.round(csatNum/resp/10*100):0,
+    posPct: resp? Math.round((P+S)/resp*100):0,
+    neuPct: resp? Math.round(N/resp*100):0,
+    negPct: resp? Math.round(Neg/resp*100):0,
+    issPct: resp? Math.round(iss/resp*100):0};
+}
+
+// Which weeks are "in scope" given the week filter
+function scopeWeeks(){ return state.week ? [state.week] : WIDS; }
+
+// ================= populate filter dropdowns =================
+function initFilters(){
+  const cities=[...new Set(STORES.map(s=>s.city))].sort();
+  const fCity=document.getElementById('fCity');
+  cities.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;fCity.appendChild(o);});
+  const fWeek=document.getElementById('fWeek');
+  WEEKS.forEach(w=>{const o=document.createElement('option');o.value=w.id;
+    o.textContent=w.label+' ('+w.responses+' resp)';fWeek.appendChild(o);});
+  refreshStoreDropdown();
+
+  fCity.addEventListener('change',e=>{state.city=e.target.value;state.store='';refreshStoreDropdown();render();});
+  document.getElementById('fStore').addEventListener('change',e=>{state.store=e.target.value;render();});
+  fWeek.addEventListener('change',e=>{state.week=e.target.value;render();});
+  document.getElementById('fSearch').addEventListener('input',e=>{state.search=e.target.value;refreshStoreDropdown();render();});
+  document.getElementById('resetBtn').addEventListener('click',resetFilters);
+}
+function refreshStoreDropdown(){
+  const fStore=document.getElementById('fStore');
+  const cur=state.store;
+  fStore.innerHTML='<option value="">All stores</option>';
+  STORES.filter(s=>!state.city||s.city===state.city)
+        .filter(s=>!state.search||s.name.toLowerCase().includes(state.search.toLowerCase()))
+        .sort((a,b)=>a.name.localeCompare(b.name))
+        .forEach(s=>{const o=document.createElement('option');o.value=s.name;
+          o.textContent=s.name;if(s.name===cur)o.selected=true;fStore.appendChild(o);});
+}
+function resetFilters(){
+  state.city='';state.store='';state.week='';state.search='';
+  document.getElementById('fCity').value='';
+  document.getElementById('fWeek').value='';
+  document.getElementById('fSearch').value='';
+  refreshStoreDropdown();render();
+}
+
+// ================= tabs =================
+function initTabs(){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.panel-view').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('view-'+t.dataset.view).classList.add('active');
+      // charts need resize when their container becomes visible
+      Object.values(charts).forEach(c=>{try{c.resize();}catch(e){}});
+    });
+  });
+}
+
+// ================= Chart.js defaults =================
+function chartDefaults(){
+  Chart.defaults.font.family="'Inter',sans-serif";
+  Chart.defaults.font.size=11.5;
+  Chart.defaults.color=C.inkFaint;
+  Chart.defaults.plugins.legend.display=false;
+  Chart.defaults.plugins.tooltip.backgroundColor=C.ink;
+  Chart.defaults.plugins.tooltip.titleColor=C.panel;
+  Chart.defaults.plugins.tooltip.bodyColor=C.panel;
+  Chart.defaults.plugins.tooltip.padding=10;
+  Chart.defaults.plugins.tooltip.cornerRadius=8;
+  Chart.defaults.plugins.tooltip.displayColors=true;
+  Chart.defaults.plugins.tooltip.boxPadding=4;
+  Chart.defaults.animation.duration = window.matchMedia('(prefers-reduced-motion:reduce)').matches?0:600;
+}
+function destroy(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+function gridCfg(){ return {color:C.lineSoft,drawTicks:false}; }
+
+// ================= OVERVIEW =================
+function trendArrow(first,last,goodUp){
+  const d=last-first;
+  if(Math.abs(d)<0.5) return {cls:'flat',txt:'±0'};
+  const up=d>0;
+  const good=(up===goodUp);
+  return {cls:good?'up':'down', txt:(up?'▲ ':'▼ ')+Math.abs(Math.round(d*10)/10)};
+}
+
+function renderKPIs(){
+  const t=totals();
+  const scoped = scopeWeeks();
+  // trend endpoints from first->last scoped week (only meaningful when >1 week)
+  const csatSeries = scoped.map(w=>WEEKS.find(x=>x.id===w).csat_pct);
+  const negSeries  = scoped.map(w=>{const W=WEEKS.find(x=>x.id===w);return Math.round(W.sent_counts.negative/W.responses*100);});
+  const showTrend = scoped.length>1 && !state.city && !state.store;
+
+  const csatTrend = showTrend? trendArrow(csatSeries[0],csatSeries[csatSeries.length-1],true):null;
+  const negTrend  = showTrend? trendArrow(negSeries[0],negSeries[negSeries.length-1],false):null;
+
+  const periodLbl = state.week? WLABEL[state.week] : (scoped.length+' weeks');
+
+  const row=document.getElementById('kpiRow');
+  row.innerHTML=`
+    <div class="kpi">
+      ${csatTrend?`<span class="k-trend ${csatTrend.cls}">${csatTrend.txt}pt</span>`:''}
+      <div class="k-label">Overall CSAT</div>
+      <div class="k-val val-ink">${t.csatPct}%</div>
+      <div class="k-sub">Avg ${t.csat.toFixed(2)} / 10 · ${state.week?'this week':'response-weighted'}</div>
+    </div>
+    <div class="kpi">
+      <div class="k-label">Positive sentiment</div>
+      <div class="k-val val-pos">${t.posPct}%</div>
+      <div class="k-sub">${t.P+t.S} of ${t.resp} · incl. suggestive</div>
+    </div>
+    <div class="kpi">
+      <div class="k-label">Neutral sentiment</div>
+      <div class="k-val val-neu">${t.neuPct}%</div>
+      <div class="k-sub">${t.N} responses — stock-driven</div>
+    </div>`;
+
+  const row2=document.getElementById('kpiRow2');
+  row2.innerHTML=`
+    <div class="kpi">
+      ${negTrend?`<span class="k-trend ${negTrend.cls}">${negTrend.txt}pt</span>`:''}
+      <div class="k-label">Negative sentiment</div>
+      <div class="k-val val-neg">${t.negPct}%</div>
+      <div class="k-sub">${t.Neg} responses across ${periodLbl}</div>
+    </div>
+    <div class="kpi">
+      <div class="k-label">Issue rate</div>
+      <div class="k-val val-accent">${t.issPct}%</div>
+      <div class="k-sub">${t.iss} of ${t.resp} responses flagged</div>
+    </div>`;
+}
+
+function renderExec(){
+  const t=totals();
+  const el=document.getElementById('execSummary');
+  const scopeTxt = state.week ? `the week of <b>${WLABEL[state.week]}</b>`
+                              : `<b>5 reporting weeks (3 May – 2 Jun 2026)</b>`;
+  let filterTxt='';
+  if(state.city) filterTxt+=` Filtered to <b>${state.city}</b>.`;
+  if(state.store) filterTxt+=` Store: <b>${state.store}</b>.`;
+
+  // Determine top-3 stores by CSAT among those with >=40 resp in scope
+  const ranked=filteredStores().map(s=>({s,a:storeAgg(s)}))
+    .filter(x=>x.a.resp>=(state.week?8:40)).sort((a,b)=>b.a.csat-a.a.csat);
+  const top=ranked.slice(0,3).map(x=>x.s.name.split(',')[0]).join(', ');
+
+  el.innerHTML=`<h3>Executive summary — ${state.week?WLABEL[state.week]:'cumulative to date'}</h3>
+    <p>Across ${scopeTxt}, the retail network logged <b>${t.resp} customer responses</b> at a response-weighted CSAT of <b>${t.csatPct}%</b> (${t.csat.toFixed(2)}/10). Positive sentiment held at <b>${t.posPct}%</b> against just <b>${t.negPct}% negative</b> — a consistently favourable base.${filterTxt}</p>
+    <p><b>Stock Unavailability is the persistent #1 friction driver in every single week</b>, not a one-off spike. Issues stayed operational — inventory, logistics, and staff execution — rather than product dissatisfaction. ${top?`Strongest performers by CSAT: <b>${top}</b>.`:''}</p>
+    <p>The headline trajectory is the story the weekly snapshots couldn't show: <b>CSAT rose from 69% to 87%</b> and <b>negative sentiment fell from 8% to 2%</b> across the period, while issue rate compressed from 50% to 35%.</p>`;
+}
+
+function renderTrend(){
+  destroy('trendChart');
+  const scoped=scopeWeeks();
+  const labels=scoped.map(w=>WLABEL[w]);
+  const resp=scoped.map(w=>WEEKS.find(x=>x.id===w).responses);
+  const csat=scoped.map(w=>WEEKS.find(x=>x.id===w).csat_pct/10);
+  const ctx=document.getElementById('trendChart');
+  charts.trendChart=new Chart(ctx,{
+    data:{labels,datasets:[
+      {type:'bar',label:'Responses',data:resp,yAxisID:'y',
+       backgroundColor:C.bar,borderRadius:6,barPercentage:.55,order:2},
+      {type:'line',label:'CSAT (/10)',data:csat,yAxisID:'y1',
+       borderColor:C.accent,backgroundColor:C.accent,borderWidth:3,
+       pointRadius:5,pointHoverRadius:7,pointBackgroundColor:C.panel,
+       pointBorderColor:C.accent,pointBorderWidth:2.5,tension:.35,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y1'
+        ?'CSAT: '+c.parsed.y.toFixed(2)+'/10':'Responses: '+c.parsed.y}}},
+      scales:{
+        y:{position:'left',beginAtZero:true,grid:gridCfg(),
+           title:{display:true,text:'Responses',color:C.inkFaint,font:{size:10.5,weight:'700'}}},
+        y1:{position:'right',min:6,max:10,grid:{drawOnChartArea:false},
+           title:{display:true,text:'CSAT',color:C.inkFaint,font:{size:10.5,weight:'700'}}},
+        x:{grid:{display:false}}
+      }}
+  });
+  const c0=WEEKS[0], c1=WEEKS[WEEKS.length-1];
+  document.getElementById('trendNote').innerHTML=
+    `<b>CSAT +18 points</b> across the window (${c0.csat_pct}% → ${c1.csat_pct}%). Response volume tapered from ${c0.responses} to ${c1.responses} as reporting shifted from daily to weekly cadence — <span class="warn">volume decline is a cadence artefact, not a demand signal</span>.`;
+}
+
+function renderSentTrend(){
+  destroy('sentTrendChart');
+  const scoped=scopeWeeks();
+  const labels=scoped.map(w=>WLABEL[w]);
+  const mk=key=>scoped.map(w=>{const W=WEEKS.find(x=>x.id===w);
+    return +(W.sent_counts[key]/W.responses*100).toFixed(1);});
+  const ctx=document.getElementById('sentTrendChart');
+  charts.sentTrendChart=new Chart(ctx,{type:'line',
+    data:{labels,datasets:[
+      {label:'Positive',data:mk('positive'),borderColor:C.pos,backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,tension:.35},
+      {label:'Neutral',data:mk('neutral'),borderColor:C.neu,backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,tension:.35},
+      {label:'Negative',data:mk('negative'),borderColor:C.neg,backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,tension:.35}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:14,usePointStyle:true,pointStyle:'circle'}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y+'%'}}},
+      scales:{y:{beginAtZero:true,grid:gridCfg(),ticks:{callback:v=>v+'%'}},x:{grid:{display:false}}}}
+  });
+}
+
+function renderDonut(){
+  destroy('donutChart');
+  const t=totals();
+  const ctx=document.getElementById('donutChart');
+  charts.donutChart=new Chart(ctx,{type:'doughnut',
+    data:{labels:['Positive','Neutral','Suggestive','Negative'],
+      datasets:[{data:[t.P,t.N,t.S,t.Neg],
+        backgroundColor:[C.pos,C.neu,C.sug,C.neg],borderColor:C.panel,borderWidth:3,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
+      plugins:{tooltip:{callbacks:{label:c=>{const tot=t.P+t.N+t.S+t.Neg;
+        return c.label+': '+c.parsed+' ('+Math.round(c.parsed/tot*100)+'%)';}}}}}
+  });
+  const tot=t.P+t.N+t.S+t.Neg||1;
+  const rows=[['Positive',t.P,C.pos],['Neutral',t.N,C.neu],['Negative',t.Neg,C.neg],['Suggestive',t.S,C.sug]];
+  document.getElementById('distList').innerHTML=rows.map(([l,v,c])=>
+    `<div class="dist-row"><span class="lbl"><span class="dot" style="width:11px;height:11px;border-radius:3px;background:${c}"></span>${l}</span>
+     <span class="val" style="color:${c}">${v} (${Math.round(v/tot*100)}%)</span></div>`).join('');
+}
+
+// ================= STORE PERFORMANCE =================
+let sortKey='csat', sortDir=-1;
+function renderStoreTable(){
+  const rows=filteredStores().map(s=>{const a=storeAgg(s);
+    const wks=storeWeeks(s);
+    const csatSeries=wks.map(w=>s.perweek[w].csat);
+    return {name:s.name,city:s.city,resp:a.resp,csat:a.csat,
+      posShare:a.posShare,issueRate:a.issueRate,csatSeries,
+      trend:csatSeries.length>1?csatSeries[csatSeries.length-1]-csatSeries[0]:0};
+  }).filter(r=>r.resp>0);
+
+  rows.sort((a,b)=>{
+    let va=a[sortKey],vb=b[sortKey];
+    if(sortKey==='name'||sortKey==='city'){return sortDir*String(va).localeCompare(String(vb));}
+    if(sortKey==='rank'){va=a.csat;vb=b.csat;return -sortDir*(va-vb);}
+    return sortDir*((va||0)-(vb||0));
+  });
+
+  document.getElementById('storeCount').textContent=rows.length+' stores in view';
+  const tb=document.getElementById('storeTbody');
+  const maxResp=Math.max(...rows.map(r=>r.resp),1);
+  tb.innerHTML=rows.map((r,i)=>{
+    const band=r.issueRate>40?'high':r.issueRate>=25?'mod':'low';
+    const rankColor=i===0?C.pos:i===1?'#3aa88b':i===2?'#6bbfa8':C.inkFaint;
+    const barW=Math.round(r.resp/maxResp*60)+8;
+    const spark=makeSpark(r.csatSeries);
+    const tr=r.trend;
+    const trTxt=r.csatSeries.length>1?`<span style="color:${tr>=0?C.pos:C.neg};font-weight:700;font-size:11px">${tr>=0?'▲':'▼'} ${Math.abs(tr).toFixed(1)}</span>`:'<span style="color:var(--ink-faint);font-size:11px">—</span>';
+    return `<tr>
+      <td class="num"><span class="rank-badge" style="background:${rankColor}">${i+1}</span></td>
+      <td><span class="store-cell">${r.name.split(',')[0]}</span></td>
+      <td><span class="city-tag">${r.city}</span></td>
+      <td class="num"><span class="mini-bar" style="width:${barW}px;background:var(--bar)"></span> <b>${r.resp}</b></td>
+      <td class="num"><b>${r.csat.toFixed(2)}</b></td>
+      <td class="num">${r.posShare}%</td>
+      <td class="num"><span class="pill ${band}">${r.issueRate}%</span></td>
+      <td>${spark} ${trTxt}</td>
+    </tr>`;
+  }).join('');
+
+  // header sort arrows
+  document.querySelectorAll('#storeTable thead th').forEach(th=>{
+    const k=th.dataset.sort;
+    th.querySelector('.arr')?.remove();
+    if(k===sortKey){const s=document.createElement('span');s.className='arr';
+      s.textContent=sortDir<0?'▼':'▲';th.appendChild(s);}
+  });
+
+  // note: strongest + weakest
+  if(rows.length){
+    const byCsat=[...rows].sort((a,b)=>b.csat-a.csat);
+    const best=byCsat[0], worst=byCsat[byCsat.length-1];
+    const highIssue=[...rows].sort((a,b)=>b.issueRate-a.issueRate)[0];
+    document.getElementById('storeNote').innerHTML=
+      `<b>${best.name.split(',')[0]}</b> leads on satisfaction (${best.csat.toFixed(2)}/10). <b>${worst.name.split(',')[0]}</b> sits lowest (${worst.csat.toFixed(2)}). Highest issue concentration: <b>${highIssue.name.split(',')[0]}</b> at ${highIssue.issueRate}% — ${highIssue.issueRate>40?'above the 40% high-concentration band.':'within the moderate band.'}`;
+  }
+}
+function makeSpark(series){
+  if(series.length<2) return '';
+  const w=52,h=16,pad=2;
+  const min=Math.min(...series),max=Math.max(...series);
+  const rng=(max-min)||1;
+  const pts=series.map((v,i)=>{
+    const x=pad+i*(w-2*pad)/(series.length-1);
+    const y=h-pad-((v-min)/rng)*(h-2*pad);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  const up=series[series.length-1]>=series[0];
+  const col=up?C.pos:C.neg;
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderStoreBar(){
+  destroy('storeBarChart');
+  const rows=filteredStores().map(s=>({s,a:storeAgg(s)})).filter(x=>x.a.resp>0)
+    .sort((a,b)=>b.a.resp-a.a.resp);
+  const labels=rows.map(x=>x.s.name.split(',')[0]);
+  const resp=rows.map(x=>x.a.resp);
+  const csat=rows.map(x=>x.a.csat);
+  const ctx=document.getElementById('storeBarChart');
+  charts.storeBarChart=new Chart(ctx,{
+    data:{labels,datasets:[
+      {type:'bar',label:'Responses',data:resp,yAxisID:'y',backgroundColor:C.bar,borderRadius:5,order:2},
+      {type:'line',label:'CSAT',data:csat,yAxisID:'y1',borderColor:C.accent,
+       backgroundColor:C.accent,borderWidth:2.5,pointRadius:4,pointBackgroundColor:C.panel,
+       pointBorderColor:C.accent,pointBorderWidth:2,tension:.3,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{tooltip:{callbacks:{label:c=>c.dataset.yAxisID==='y1'
+        ?'CSAT: '+c.parsed.y.toFixed(2):'Responses: '+c.parsed.y}}},
+      scales:{y:{beginAtZero:true,grid:gridCfg()},
+        y1:{position:'right',min:6,max:10,grid:{drawOnChartArea:false}},
+        x:{grid:{display:false},ticks:{maxRotation:55,minRotation:35,font:{size:10}}}}}
+  });
+}
+
+// ================= SENTIMENT =================
+function renderSentStore(){
+  destroy('sentStoreChart');
+  const rows=filteredStores().map(s=>({s,a:storeAgg(s)})).filter(x=>x.a.resp>0)
+    .sort((a,b)=>b.a.resp-a.a.resp);
+  const labels=rows.map(x=>x.s.name.split(',')[0]);
+  const ctx=document.getElementById('sentStoreChart');
+  charts.sentStoreChart=new Chart(ctx,{type:'bar',
+    data:{labels,datasets:[
+      {label:'Positive',data:rows.map(x=>x.a.P),backgroundColor:C.pos,stack:'s',borderRadius:{topLeft:0}},
+      {label:'Suggestive',data:rows.map(x=>x.a.S),backgroundColor:C.sug,stack:'s'},
+      {label:'Neutral',data:rows.map(x=>x.a.N),backgroundColor:C.neu,stack:'s'},
+      {label:'Negative',data:rows.map(x=>x.a.Neg),backgroundColor:C.neg,stack:'s'}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.x}}},
+      scales:{x:{stacked:true,beginAtZero:true,grid:gridCfg()},
+        y:{stacked:true,grid:{display:false},ticks:{font:{size:11}}}}}
+  });
+}
+
+let cityMode='pct';
+function renderCity(){
+  destroy('cityChart');
+  const cities=[...new Set(filteredStores().map(s=>s.city))];
+  const agg={}; cities.forEach(c=>agg[c]={P:0,S:0,N:0,Neg:0,resp:0});
+  filteredStores().forEach(s=>{const a=storeAgg(s);const c=s.city;
+    agg[c].P+=a.P;agg[c].S+=a.S;agg[c].N+=a.N;agg[c].Neg+=a.Neg;agg[c].resp+=a.resp;});
+  const order=cities.filter(c=>agg[c].resp>0).sort((a,b)=>agg[b].resp-agg[a].resp);
+  const conv=(c,k)=>cityMode==='pct'? +(agg[c][k]/agg[c].resp*100).toFixed(1):agg[c][k];
+  const ctx=document.getElementById('cityChart');
+  charts.cityChart=new Chart(ctx,{type:'bar',
+    data:{labels:order,datasets:[
+      {label:'Positive',data:order.map(c=>conv(c,'P')),backgroundColor:C.pos,stack:'c'},
+      {label:'Suggestive',data:order.map(c=>conv(c,'S')),backgroundColor:C.sug,stack:'c'},
+      {label:'Neutral',data:order.map(c=>conv(c,'N')),backgroundColor:C.neu,stack:'c'},
+      {label:'Negative',data:order.map(c=>conv(c,'Neg')),backgroundColor:C.neg,stack:'c'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:12,usePointStyle:true,pointStyle:'circle'}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y+(cityMode==='pct'?'%':'')}}},
+      scales:{x:{stacked:true,grid:{display:false}},
+        y:{stacked:true,beginAtZero:true,grid:gridCfg(),ticks:{callback:v=>cityMode==='pct'?v+'%':v}}}}
+  });
+  // note
+  if(order.length){
+    const best=[...order].sort((a,b)=>(agg[b].P+agg[b].S)/agg[b].resp-(agg[a].P+agg[a].S)/agg[a].resp)[0];
+    const worst=[...order].sort((a,b)=>(agg[a].P+agg[a].S)/agg[a].resp-(agg[b].P+agg[b].S)/agg[b].resp)[0];
+    const bp=Math.round((agg[best].P+agg[best].S)/agg[best].resp*100);
+    const wp=Math.round((agg[worst].P+agg[worst].S)/agg[worst].resp*100);
+    document.getElementById('cityNote').innerHTML=
+      `<b>${best}</b> is the strongest city (${bp}% positive across ${agg[best].resp} responses). <b>${worst}</b> trails at ${wp}% — ${worst==='Mumbai'?'entirely Sky City Mall, its single location.':'worth a closer look.'}`;
+  }
+}
+
+function renderPosLeader(){
+  destroy('posLeaderChart');
+  const min=state.week?8:40;
+  const rows=filteredStores().map(s=>({s,a:storeAgg(s)}))
+    .filter(x=>x.a.resp>=min)
+    .map(x=>({name:x.s.name.split(',')[0],pct:x.a.resp?Math.round((x.a.P+x.a.S)/x.a.resp*100):0,resp:x.a.resp}))
+    .sort((a,b)=>b.pct-a.pct).slice(0,10);
+  const ctx=document.getElementById('posLeaderChart');
+  charts.posLeaderChart=new Chart(ctx,{type:'bar',
+    data:{labels:rows.map(r=>r.name),datasets:[{data:rows.map(r=>r.pct),
+      backgroundColor:rows.map(r=>r.pct>=65?C.pos:r.pct>=50?C.neu:C.neg),borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{tooltip:{callbacks:{label:c=>'Positive: '+c.parsed.x+'% ('+rows[c.dataIndex].resp+' resp)'}}},
+      scales:{x:{beginAtZero:true,max:100,grid:gridCfg(),ticks:{callback:v=>v+'%'}},
+        y:{grid:{display:false},ticks:{font:{size:11}}}}}
+  });
+}
+
+// ================= ORDERS =================
+function renderOrders(){
+  const scoped=scopeWeeks();
+  // KPI: response-weighted avg online/cc across scope
+  let onW=0,ccW=0,tot=0;
+  scoped.forEach(w=>{const W=WEEKS.find(x=>x.id===w);
+    onW+=W.online_pct*W.issue_count; ccW+=W.cc_pct*W.issue_count; tot+=W.issue_count;});
+  const onAvg=tot?Math.round(onW/tot):0, ccAvg=tot?Math.round(ccW/tot):0;
+  document.getElementById('orderKpis').innerHTML=`
+    <div class="kpi"><div class="k-label">Online-linked issues</div>
+      <div class="k-val val-neu">${onAvg}%</div>
+      <div class="k-sub">Fulfilment &amp; post-purchase coordination</div></div>
+    <div class="kpi"><div class="k-label">Cash &amp; Carry issues</div>
+      <div class="k-val val-accent">${ccAvg}%</div>
+      <div class="k-sub">In-store inventory &amp; staff interaction</div></div>`;
+
+  destroy('orderChart');
+  const labels=scoped.map(w=>WLABEL[w]);
+  const online=scoped.map(w=>WEEKS.find(x=>x.id===w).online_pct);
+  const cc=scoped.map(w=>WEEKS.find(x=>x.id===w).cc_pct);
+  const ctx=document.getElementById('orderChart');
+  charts.orderChart=new Chart(ctx,{type:'bar',
+    data:{labels,datasets:[
+      {label:'Online',data:online,backgroundColor:C.neu,stack:'o',borderRadius:{topLeft:5,topRight:5}},
+      {label:'Cash & Carry',data:cc,backgroundColor:C.accent,stack:'o'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:14,usePointStyle:true,pointStyle:'circle'}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y+'%'}}},
+      scales:{x:{stacked:true,grid:{display:false}},
+        y:{stacked:true,beginAtZero:true,max:100,grid:gridCfg(),ticks:{callback:v=>v+'%'}}}}
+  });
+  document.getElementById('orderNote').innerHTML=
+    `Online-linked friction dominated most weeks (fulfilment &amp; delivery dependency), while Cash &amp; Carry friction was inventory-driven. <b>Stock Unavailability appeared across both journeys</b> — customers physically visited stores, then shifted to online fulfilment when sizes were unavailable, especially footwear.`;
+}
+
+// ================= ISSUES =================
+function renderIssues(){
+  const scoped=scopeWeeks();
+  // aggregate driver mentions across scope
+  const agg={};
+  scoped.forEach(w=>{(DRIVERS[w]?.drivers||[]).forEach(([name,ct])=>{
+    agg[name]=(agg[name]||0)+ct;});});
+  const totalMentions=scoped.reduce((s,w)=>s+(DRIVERS[w]?.total_issue_mentions||0),0);
+  const sorted=Object.entries(agg).sort((a,b)=>b[1]-a[1]);
+  const top3=sorted.slice(0,3);
+  const totalIssueCount=scoped.reduce((s,w)=>s+WEEKS.find(x=>x.id===w).issue_count,0);
+
+  const kb=document.getElementById('issueKpis');
+  const ranks=['#1','#2','#3'];
+  kb.innerHTML=top3.map(([name,ct],i)=>{
+    const pctOfIssues=Math.round(ct/(top3.reduce((s,[,c])=>s+c,0)+
+      sorted.slice(3).reduce((s,[,c])=>s+c,0))*100);
+    return `<div class="kpi">
+      <span class="k-trend flat">${ranks[i]}</span>
+      <div class="k-label">${name}</div>
+      <div class="k-val" style="font-size:30px;color:${i===0?C.neg:i===1?C.neu:C.inkSoft}">${ct}</div>
+      <div class="k-sub">mentions · ${pctOfIssues}% of ranked issues</div></div>`;
+  }).join('');
+
+  // trend of top drivers per week
+  destroy('issueTrendChart');
+  const driverNames=['Stock Unavailability','Logistics & Supply Chain','Staff Experience'];
+  const dcolor={'Stock Unavailability':C.neg,'Logistics & Supply Chain':C.neu,'Staff Experience':C.sug};
+  const datasets=driverNames.map(dn=>({
+    label:dn,
+    data:scoped.map(w=>{const d=(DRIVERS[w]?.drivers||[]).find(x=>x[0]===dn);return d?d[1]:null;}),
+    borderColor:dcolor[dn],backgroundColor:dcolor[dn],borderWidth:2.5,
+    pointRadius:4,pointHoverRadius:6,tension:.3,spanGaps:true
+  }));
+  const ctx=document.getElementById('issueTrendChart');
+  charts.issueTrendChart=new Chart(ctx,{type:'line',
+    data:{labels:scoped.map(w=>WLABEL[w]),datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,boxHeight:10,padding:14,usePointStyle:true,pointStyle:'circle'}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y??'n/a')+' mentions'}}},
+      scales:{y:{beginAtZero:true,grid:gridCfg(),title:{display:true,text:'Mentions',color:C.inkFaint,font:{size:10,weight:'700'}}},
+        x:{grid:{display:false}}}}
+  });
+  document.getElementById('issueNote').innerHTML=
+    `<b>Stock Unavailability ranked #1 in all ${scoped.length} weeks</b> — the clearest, most persistent signal in the dataset. Logistics and Staff Experience traded the #2 slot week to week. <span class="warn">Week 1 (3–9 May) reported only its Stock figure, so its logistics/staff points are unplotted.</span>`;
+
+  // issue rate by store
+  destroy('issueStoreChart');
+  const rows=filteredStores().map(s=>({s,a:storeAgg(s)})).filter(x=>x.a.resp>0)
+    .sort((a,b)=>b.a.issueRate-a.a.issueRate);
+  const bandColor=r=>r>40?C.neg:r>=25?C.neu:C.pos;
+  const ctx2=document.getElementById('issueStoreChart');
+  charts.issueStoreChart=new Chart(ctx2,{type:'bar',
+    data:{labels:rows.map(x=>x.s.name.split(',')[0]),
+      datasets:[{data:rows.map(x=>x.a.issueRate),
+        backgroundColor:rows.map(x=>bandColor(x.a.issueRate)),borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{tooltip:{callbacks:{label:c=>{const r=rows[c.dataIndex].a;
+        return 'Issue rate: '+c.parsed.x+'% ('+r.iss+'/'+r.resp+')';}}}},
+      scales:{x:{beginAtZero:true,max:Math.max(...rows.map(x=>x.a.issueRate),50)+5,
+        grid:gridCfg(),ticks:{callback:v=>v+'%'}},
+        y:{grid:{display:false},ticks:{font:{size:10.5}}}}}
+  });
+}
+
+// ================= showing bar + method note =================
+function renderShowing(){
+  const t=totals();
+  const scoped=scopeWeeks();
+  document.getElementById('showing').innerHTML=
+    `Showing <b>${t.resp}</b> responses · <b>${t.stores}</b> stores · <b>${scoped.length}</b> ${scoped.length===1?'week':'weeks'}`;
+}
+function renderMethod(){
+  document.getElementById('methodNote').innerHTML=
+    `Reconstructed from the 5 weekly PDF reports. Figures reconcile exactly to each report's stated totals (store responses sum to weekly totals; issue &amp; sentiment counts tie out). CSAT is response-weighted. Headline "positive %" follows the reports' convention (Positive + Suggestive); the sentiment tab shows the true 4-way split. Composite scores are not trended — the 3–9 May report used a different scale — so cross-week comparison uses CSAT and sentiment %.`;
+}
+
+// ================= master render =================
+function render(){
+  renderShowing();
+  renderKPIs(); renderExec(); renderTrend(); renderSentTrend(); renderDonut();
+  renderStoreTable(); renderStoreBar();
+  renderSentStore(); renderCity(); renderPosLeader();
+  renderOrders(); renderIssues();
+}
+
+// ================= events =================
+function initSort(){
+  document.querySelectorAll('#storeTable thead th').forEach(th=>{
+    th.addEventListener('click',()=>{
+      const k=th.dataset.sort;
+      if(k===sortKey){sortDir*=-1;}else{sortKey=k;sortDir=(k==='name'||k==='city')?1:-1;}
+      renderStoreTable();
+    });
+  });
+}
+function initTheme(){
+  document.getElementById('themeBtn').addEventListener('click',()=>{
+    const cur=document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme',cur==='dark'?'':'dark');
+    document.getElementById('themeBtn').innerHTML=cur==='dark'?'◐ Dark Mode':'◑ Light Mode';
+    readColors(); chartDefaults();
+    // rebuild all charts with new palette
+    Object.keys(charts).forEach(destroy);
+    render();
+  });
+  document.getElementById('printBtn').addEventListener('click',()=>window.print());
+  // city pct/count toggle via hint click
+  document.getElementById('cityToggleHint').style.cursor='pointer';
+  document.getElementById('cityToggleHint').title='Toggle count / %';
+  document.getElementById('cityToggleHint').addEventListener('click',()=>{
+    cityMode=cityMode==='pct'?'count':'pct';
+    document.getElementById('cityToggleHint').textContent=cityMode==='pct'?'% share':'count';
+    renderCity();
+  });
+}
+
+// ================= boot =================
+chartDefaults();
+initFilters(); initTabs(); initSort(); initTheme(); renderMethod();
+render();
+
+})();
+</script>
+</body>
+</html>

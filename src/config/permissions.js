@@ -145,6 +145,7 @@ export const routePermissions = {
     '/expense-tracker': ADMIN_ONLY,
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
+    '/retail-feedback': FEEDBACK_DEPARTMENT_ROLES,
     '/order-dispute': ORDER_DISPUTE_ROLES,
     '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
     '/retail-staff/analytics-console': RETAIL_STAFF_ACCESS_ROLES,

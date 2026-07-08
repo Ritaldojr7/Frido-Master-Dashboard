@@ -16,6 +16,7 @@ import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
 import OrderDispute from './pages/OrderDispute';
 import AiCallingFeedback from './pages/AiCallingFeedback';
+import RetailFeedbackDashboard from './pages/RetailFeedbackDashboard';
 import ExecPerformanceDashboard from './pages/ExecPerformanceDashboard';
 import PerformanceProfitabilityDashboard from './pages/PerformanceProfitabilityDashboard';
 import SalaryAnalysisDashboard from './pages/SalaryAnalysisDashboard';
@@ -123,6 +124,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={AI_CALLING_FEEDBACK_ROLES}>
                                                 <AiCallingFeedback />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/retail-feedback"
+                                        element={
+                                            <RoleGuard roles={FEEDBACK_DEPARTMENT_ROLES}>
+                                                <RetailFeedbackDashboard />
                                             </RoleGuard>
                                         }
                                     />

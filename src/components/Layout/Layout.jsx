@@ -107,6 +107,7 @@ const sidebarSections = [
                 children: [
                     { path: '/feedback-department', label: 'Feedback Dashboard', icon: ICONS.star },
                     { path: '/ai-calling-feedback', label: 'Feedback AI Calling', icon: ICONS.phone },
+                    { path: '/retail-feedback', label: 'Retail Feedback Dashboard', icon: ICONS.star },
                 ],
             },
             {
@@ -317,7 +318,8 @@ export default function Layout({ children }) {
         location.pathname.startsWith('/isd/') ||
         location.pathname === '/orm' ||
         location.pathname === '/lms-dashboard' ||
-        location.pathname === '/retail-staff/analytics-console';
+        location.pathname === '/retail-staff/analytics-console' ||
+        location.pathname === '/retail-feedback';
 
     const staffStats = useMemo(() => {
         const sections = staffRetail.sections || [];
