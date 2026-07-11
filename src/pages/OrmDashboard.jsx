@@ -12,7 +12,7 @@ export default function OrmDashboard() {
             <div className="iframe-dashboard__frame-wrap">
                 <iframe
                     className="iframe-dashboard__frame"
-                    src="https://harshikamyfrido-prog.github.io/ORM-Dashboard/"
+                    src="https://harshikamyfrido-prog.github.io/Socialmediadashboard/"
                     title="ORM Dashboard"
                     allow="clipboard-write"
                 />
