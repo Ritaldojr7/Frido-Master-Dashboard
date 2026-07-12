@@ -214,7 +214,15 @@ function DemoAuthProvider({ children }) {
         }
     }, []);
 
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('demo_authenticated') !== 'false';
+        }
+        return true;
+    });
+
     const user = useMemo(() => {
+        if (!isAuthenticated) return null;
         const emailLower = userEmail?.toLowerCase();
         const mappedName = EMAIL_NAME_MAP[emailLower];
         const name = mappedName || (userRole.charAt(0).toUpperCase() + userRole.slice(1));
@@ -232,13 +240,23 @@ function DemoAuthProvider({ children }) {
             avatar_url: '',
             status: 'active',
         };
-    }, [userRole, userEmail]);
+    }, [userRole, userEmail, isAuthenticated]);
 
-    const logout = useCallback(() => {}, []);
+    const login = useCallback(() => {
+        setIsAuthenticated(true);
+        localStorage.setItem('demo_authenticated', 'true');
+    }, []);
+
+    const logout = useCallback(() => {
+        setIsAuthenticated(false);
+        localStorage.setItem('demo_authenticated', 'false');
+    }, []);
+
     const updateProfile = useCallback(async (updates) => ({ ...user, ...updates }), [user]);
     
     const hasRole = useCallback(
         (...roles) => {
+            if (!user) return false;
             if (user.role === 'admin') return true;
             return roles.some((r) => user.roles.includes(r));
         },
@@ -248,14 +266,15 @@ function DemoAuthProvider({ children }) {
     const value = useMemo(
         () => ({
             user,
-            isAuthenticated: true,
+            isAuthenticated,
             isLoading: false,
+            login,
             logout,
             updateProfile,
             hasRole,
             apiFetch,
         }),
-        [user, logout, updateProfile, hasRole]
+        [user, isAuthenticated, login, logout, updateProfile, hasRole]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
