@@ -727,4 +727,25 @@ export const feedbackData = [
         intentDate: '',
         releaseDate: '20/06/2026',
     },
+    {
+        id: 46,
+        category: 'Footwear',
+        productName: "Frido Men's Puneri Arch Comfort Sandal",
+        productImage:
+            'https://cdn.shopify.com/s/files/1/0553/0419/2034/files/CCPC-00D.jpg?v=1777886059&width=1296',
+        reportLink: 'https://drive.google.com/file/d/19-eqVAa_iEY8E4iQkg-lwPaiUMj6VJ9g/view?usp=drive_link',
+        releaseHistory: [
+            {
+                date: '15/07/2026',
+                reportLink: 'https://drive.google.com/file/d/19-eqVAa_iEY8E4iQkg-lwPaiUMj6VJ9g/view?usp=drive_link',
+                loomLink: 'https://www.loom.com/share/9525dd99ba154f3a8f548e2832994354',
+            },
+        ],
+        dataType: 'Delivered Data',
+        iterations: 1,
+        loomLink: 'https://www.loom.com/share/9525dd99ba154f3a8f548e2832994354',
+        intentDate: '',
+        releaseDate: '15/07/2026',
+    },
 ];
+
