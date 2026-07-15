@@ -64,6 +64,7 @@ const PRODUCT_RATINGS = {
     "Frido Active Casual Sneakers - Women's": 6.6,
     'Frido Orthotics Posture Corrector': 6.3,
     'Frido Puneri Chappal - Men': 6.0,
+    "Frido Men's Puneri Arch Comfort Sandal": 8.0,
     'Frido Unisex Orthotics V-Strap Sandals': 5.8,
     'Frido School Shoes': 5.6,
 };
