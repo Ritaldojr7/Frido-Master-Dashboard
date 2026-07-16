@@ -50,6 +50,17 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           navigateFallback: `${appBase}index.html`,
+          navigateFallbackDenylist: [
+            /^\/api/,
+            /^\/orm-dashboard/,
+            /^\/fes-sm-dashboard/,
+            /^\/exec-dashboard/,
+            /^\/isd-nm/,
+            /^\/ist-console/,
+            /^\/retail-feedback/,
+            /^\/retail-staff/,
+            /^\/salary-analysis/
+          ],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
