@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frido — Online Reputation Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+// Fallback CDNs in case the primary jsdelivr host is blocked on this network
+function ensureScript(testFn, srcList, cb){
+  if(testFn()){ cb(); return; }
+  let i = 0;
+  function tryNext(){
+    if(testFn()){ cb(); return; }
+    if(i >= srcList.length){ cb(); return; }
+    const s = document.createElement("script");
+    s.src = srcList[i++];
+    s.onload = tryNext;
+    s.onerror = tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
+}
+</script>
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+  --ink:#111827;
+  --paper:#F7F7F5;
+  --panel:#ffffff;
+  --teal:#FFD200;       /* Yellow brand color */
+  --teal-deep:#111827;  /* Dark text/bg */
+  --amber:#FFD200;
+  --amber-soft:#FFFBEB;
+  --coral:#EF4444;
+  --line:#E5E7EB;
+  --muted:#4B5563;
+  --pos:#10B981;
+  --neu:#F59E0B;
+  --neg:#EF4444;
+  --mix:#8B5CF6;
+  --radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+  --font-display:'Inter', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
+}
+::selection{background:var(--amber-soft); color:var(--ink);}
+
+/* ============================= LAYOUT ============================= */
+.shell{max-width:1440px;margin:0 auto;padding:0 28px 64px;}
+header.top{
+  background:none;
+  color:var(--ink);
+  padding:32px 0 16px;
+  border-radius:0;
+  margin-bottom:24px;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+header.top::after{
+  display:none;
+}
+.top-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;position:relative;z-index:1;}
+.brand-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);opacity:.85;margin-bottom:6px;}
+h1.brand{font-family:var(--font-display);font-weight:700;font-size:clamp(24px,3.2vw,34px);margin:0;letter-spacing:-.02em;color:var(--ink);}
+.brand-sub{font-size:13.5px;color:var(--muted);margin-top:6px;max-width:520px;line-height:1.5;}
+.status-cluster{display:flex;flex-direction:row;align-items:center;gap:12px;font-size:12.5px;}
+.live-pill{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:999px;font-family:var(--font-mono);color:var(--ink);box-shadow:var(--shadow);}
+.dot{width:7px;height:7px;border-radius:50%;background:#10B981;box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.55)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.refresh-btn{background:var(--amber);color:var(--teal-deep);border:1px solid var(--amber);font-family:var(--font-body);font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:999px;cursor:pointer;transition:all .15s ease;box-shadow:var(--shadow);}
+.refresh-btn:hover{filter:brightness(1.05);transform:translateY(-1px);}
+.refresh-btn:active{transform:translateY(0);}
+.source-link{color:var(--muted); opacity:.7; font-size:11px; margin-top:2px;}
+.source-link a{color:var(--muted);text-decoration:underline;}
+
+/* ============================= FILTER BAR ============================= */
+.filterbar{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px 20px;
+  margin-bottom:24px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px 22px;
+  align-items:flex-end;
+}
+.filter-group{display:flex;flex-direction:column;gap:7px;}
+.filter-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;font-family:var(--font-mono);}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{
+  border:1px solid var(--line);
+  background:#ffffff;
+  color:var(--ink);
+  font-size:12.5px;
+  font-weight:600;
+  padding:6px 12px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:all .15s ease;
+  user-select:none;
+}
+.chip:hover{border-color:var(--teal-deep);}
+.chip.active{background:var(--teal);border-color:var(--teal);color:var(--teal-deep);}
+.chip.active.sent-pos{background:var(--pos);border-color:var(--pos);color:#ffffff;}
+.chip.active.sent-neu{background:var(--neu);border-color:var(--neu);color:#ffffff;}
+.chip.active.sent-neg{background:var(--neg);border-color:var(--neg);color:#ffffff;}
+.chip.active.sent-mix{background:var(--mix);border-color:var(--mix);color:#ffffff;}
+.date-inputs{display:flex;gap:6px;align-items:center;}
+input[type=date], select{
+  border:1px solid var(--line);
+  background:#ffffff;
+  border-radius:8px;
+  padding:6px 9px;
+  font-family:var(--font-body);
+  font-size:12.5px;
+  color:var(--ink);
+}
+select{min-width:160px;cursor:pointer;}
+.filter-spacer{flex:1;}
+.clear-btn{
+  background:none;border:1px dashed var(--coral);color:var(--coral);
+  font-size:12px;font-weight:700;padding:7px 13px;border-radius:999px;cursor:pointer;
+}
+.clear-btn:hover{background:rgba(193,84,60,.08);}
+
+/* ============================= KPI GRID ============================= */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:14px;
+  margin-bottom:26px;
+}
+.kpi-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px 18px;
+  position:relative;
+  overflow:hidden;
+  animation:rise .45s ease both;
+}
+.kpi-card .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--teal);}
+.kpi-card.amber .bar{background:var(--amber);}
+.kpi-card.coral .bar{background:var(--coral);}
+.kpi-card.pos .bar{background:var(--pos);}
+.kpi-card.neg .bar{background:var(--neg);}
+.kpi-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;font-family:var(--font-mono);margin-bottom:8px;}
+.kpi-value{font-family:var(--font-display);font-size:28px;font-weight:600;line-height:1;letter-spacing:-.01em;}
+.kpi-sub{font-size:11.5px;color:var(--muted);margin-top:6px;}
+@keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============================= SECTION ============================= */
+.section{margin-bottom:30px;}
+.section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.section-title{font-family:var(--font-display);font-size:20px;font-weight:600;}
+.section-note{font-size:12px;color:var(--muted);}
+
+/* ============================= SHIFT TABLE (screenshot recreation) ============================= */
+.shift-table-wrap{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow); overflow-x:auto;
+}
+table.shift-table{border-collapse:collapse;width:100%;min-width:720px;font-size:13.5px;}
+table.shift-table th, table.shift-table td{padding:10px 16px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;}
+table.shift-table thead th{
+  background:var(--amber);color:var(--teal-deep);font-family:var(--font-mono);
+  font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+}
+table.shift-table td.metric-label{font-weight:700;color:var(--teal-deep);background:var(--amber-soft);}
+table.shift-table tbody tr:hover td{background:#F3F4F6;}
+table.shift-table td.num{font-family:var(--font-mono);font-weight:600;}
+.row-group-label{font-weight:800;background:#E5E7EB;color:var(--ink);}
+
+/* ============================= CHART GRID ============================= */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;}
+.chart-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:18px 18px 10px;
+}
+.chart-card h3{font-family:var(--font-display);font-size:16px;margin:0 0 4px;font-weight:600;}
+.chart-card p.hint{margin:0 0 10px;font-size:11.5px;color:var(--muted);}
+.chart-canvas-box{position:relative;height:260px;}
+.chart-canvas-box.tall{height:320px;}
+
+/* ============================= DATA TABLE ============================= */
+.table-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.search-input{flex:1;min-width:200px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;background:#ffffff;color:var(--ink);}
+.search-input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--amber-soft);}
+.export-btn{background:var(--teal);color:var(--teal-deep);border:1px solid var(--teal);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:all 0.15s ease;}
+.export-btn:hover{filter:brightness(1.05);transform:translateY(-1px);}
+.export-btn:active{transform:translateY(0);}
+.table-scroll{max-height:480px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);box-shadow:var(--shadow);}
+table.data-table{border-collapse:collapse;width:100%;font-size:12.5px;}
+table.data-table thead th{
+  position:sticky;top:0;background:var(--teal);color:var(--teal-deep);padding:9px 12px;text-align:left;
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap;
+}
+table.data-table thead th:hover{background:var(--teal-deep);color:#ffffff;}
+table.data-table td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;}
+table.data-table tbody tr:nth-child(even){background:#F9FAFB;}
+table.data-table tbody tr:hover{background:var(--amber-soft);}
+.badge{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;}
+.badge.pos{background:#dff1e4;color:var(--pos);}
+.badge.neu{background:#f1ecd6;color:var(--neu);}
+.badge.neg{background:#f7e2dd;color:var(--neg);}
+.badge.mix{background:#ece3f4;color:var(--mix);}
+.badge.sla-yes{background:#f7e2dd;color:var(--neg);}
+.badge.sla-no{background:#dff1e4;color:var(--pos);}
+.empty-state{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
+
+footer.foot{text-align:center;color:var(--muted);font-size:11.5px;margin-top:30px;}
+.loading-overlay{
+  position:fixed;inset:0;background:rgba(247,247,245,.96);z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  font-family:var(--font-mono);font-size:13px;color:var(--teal-deep);
+}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--amber);animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.hidden{display:none !important;}
+@media (max-width:640px){
+  .shell{padding:0 14px 50px;}
+  header.top{padding:22px 16px 20px;border-radius:0 0 20px 20px;}
+  .kpi-value{font-size:23px;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingText">Pulling the latest sheet data…</div>
+</div>
+
+<header class="top">
+  <div class="shell" style="padding:0;">
+    <div class="top-row">
+      <div>
+        
+        <h1 class="brand">Frido - Online Reputation Management</h1>
+        <div class="brand-sub">Live mentions, response times and sentiment across Facebook & Instagram, broken down by shift and agent.</div>
+      </div>
+      <div class="status-cluster">
+        <div class="live-pill"><span class="dot"></span><span id="lastUpdated">Connecting…</span></div>
+        <button class="refresh-btn" id="refreshBtn">↻ Refresh now</button>
+        <div class="source-link">Manual refresh only</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- FILTER BAR -->
+  <div class="filterbar" id="filterBar">
+    <div class="filter-group">
+      <span class="filter-label">Date Range</span>
+      <div class="date-inputs" id="customDateInputs">
+        <input type="date" id="dateFrom"> <span style="color:var(--muted);font-size:12px;">to</span> <input type="date" id="dateTo">
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Source</span>
+      <div class="chip-row" id="sourceChips">
+        <button class="chip active" data-value="all">All</button>
+        <button class="chip" data-value="Facebook">Facebook</button>
+        <button class="chip" data-value="Instagram">Instagram</button>
+        <button class="chip" data-value="GMB">GMB</button>
+        <button class="chip" data-value="Google Play Store">Google Play Store</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Shift</span>
+      <div class="chip-row" id="shiftChips">
+        <button class="chip active" data-value="all">All</button>
+        <button class="chip" data-value="Night Shift">Night · 11pm–6am</button>
+        <button class="chip" data-value="Morning Shift">Morning · 6am–2pm</button>
+        <button class="chip" data-value="Gap Shift">Gap · 2pm–4pm</button>
+        <button class="chip" data-value="Evening Shift">Evening · 4pm–11pm</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Sentiment</span>
+      <div class="chip-row" id="sentimentChips">
+        <button class="chip active" data-value="all">All</button>
+        <button class="chip sent-pos" data-value="Positive">Positive</button>
+        <button class="chip sent-neu" data-value="Neutral">Neutral</button>
+        <button class="chip sent-neg" data-value="Negative">Negative</button>
+        <button class="chip sent-mix" data-value="Mixed">Mixed</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Agent</span>
+      <select id="agentSelect"><option value="all">All agents</option></select>
+    </div>
+
+    <div class="filter-spacer"></div>
+    <button class="clear-btn" id="clearFiltersBtn">Clear filters</button>
+  </div>
+
+  <!-- KPI GRID -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- SHIFT BREAKDOWN TABLE -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Shift-wise Breakdown</div>
+      <div class="section-note">Mirrors the daily shift report · respects active filters</div>
+    </div>
+    <div class="shift-table-wrap">
+      <table class="shift-table" id="shiftTable"></table>
+    </div>
+  </div>
+
+  <!-- AGENT-WISE BREAKDOWN TABLE -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Agent-wise Breakdown</div>
+      <div class="section-note" id="agentTableNote">Respects all active filters</div>
+    </div>
+    <div class="shift-table-wrap">
+      <table class="shift-table" id="agentBreakdownTable" style="min-width:500px;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Agent Name</th>
+            <th>No. of Tickets</th>
+            <th>FRT</th>
+            <th>ART</th>
+          </tr>
+        </thead>
+        <tbody id="agentBreakdownBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Trends & Distribution</div>
+      <div class="section-note">All charts update live with your filters</div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Comments over time</h3>
+        <p class="hint">Daily ticket volume in the selected range</p>
+        <div class="chart-canvas-box tall"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Sentiment split</h3>
+        <p class="hint">Share of tickets by sentiment</p>
+        <div class="chart-canvas-box"><canvas id="sentimentChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Source split</h3>
+        <p class="hint">Facebook vs Instagram volume</p>
+        <div class="chart-canvas-box"><canvas id="sourceChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Sentiment by shift</h3>
+        <p class="hint">Stacked tone across the three shifts</p>
+        <div class="chart-canvas-box"><canvas id="shiftSentimentChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Agent leaderboard</h3>
+        <p class="hint">Tickets handled vs SLA breaches, top 10</p>
+        <div class="chart-canvas-box tall"><canvas id="agentChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Response time by shift</h3>
+        <p class="hint">Average FRT vs ART (minutes)</p>
+        <div class="chart-canvas-box"><canvas id="rtChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Ticket Detail</div>
+      <div class="section-note" id="tableCount">0 tickets</div>
+    </div>
+    <div class="table-toolbar">
+      <input type="text" class="search-input" id="tableSearch" placeholder="Search ticket ID, agent, sentiment…">
+      <button class="export-btn" id="exportBtn">⬇ Export CSV</button>
+    </div>
+    <div class="table-scroll">
+      <table class="data-table" id="dataTable">
+        <thead><tr id="dataTableHead"></tr></thead>
+        <tbody id="dataTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="foot">Frido — Online Reputation Management · data sourced live from the published Google Sheet · built for shift-by-shift accountability</footer>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ__N4oQDh81KS8zX7BC1cpNQIe7dh9gqhgX1XQHqlbepeiLsBpxyK0yg8ZrB_t7hWruEO8y4IX3IMQ/pub?gid=0&single=true&output=csv";
+const AUTO_REFRESH_MS = 60000;
+
+const COLS = {
+  date: "Date",
+  source: "Source Type",
+  ticket: "Ticket ID",
+  agent: "First Assignment to Agent Name",
+  agentDt: "First Assignment to Agent DateTime",
+  latestResp: "Latest Response to Customer DateTime",
+  lastActionBy: "Last Action Taken By",
+  lastActionDt: "Last Action Taken on Ticket - Date/Time",
+  lastActionAgent: "Last action by agent Name",
+  location: "Location Name",
+  totalTAT: "Total TAT",
+  workingTAT: "Working TAT Seconds",
+  sentiment: "Sentiment",
+  sla: "SLA Breach Flag",
+  firstRespDt: "First Level Response to Customer DateTime",
+  frt: "First Level Response TAT"
+};
+
+let RAW = [];        // parsed raw rows
+let STATE = {
+  dateFrom: null,
+  dateTo: null,
+  source: "all",
+  shift: "all",
+  sentiment: "all",
+  agent: "all",
+  sortCol: COLS.date,
+  sortDir: "desc",
+  search: ""
+};
+let CHARTS = {};
+
+/* ============================================================
+   HELPERS — parsing
+   ============================================================ */
+function parseDate(val){
+  if(!val) return null;
+  if(val instanceof Date) return isNaN(val) ? null : val;
+  const s = String(val).trim();
+  if(!s) return null;
+
+  // Primary format used by this sheet: DD-MM-YYYY HH:MM:SS (e.g. 28-06-2026 09:41:21)
+  let m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if(m){
+    const [, dd, mo, yr, hh, mi, ss] = m;
+    const d = new Date(+yr, +mo-1, +dd, +hh, +mi, +(ss||0));
+    if(!isNaN(d)) return d;
+  }
+  // Same format, date only: DD-MM-YYYY
+  m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if(m){
+    const [, dd, mo, yr] = m;
+    const d = new Date(+yr, +mo-1, +dd);
+    if(!isNaN(d)) return d;
+  }
+
+  // Generic JS-parseable formats (ISO, M/D/YYYY, etc.)
+  let d = new Date(s);
+  if(!isNaN(d)) return d;
+
+  // Fallback: D/M/YYYY or D-M-YYYY H:MM[:SS] [AM/PM] with slashes
+  m = s.match(/(\d{1,2})[\/](\d{1,2})[\/](\d{2,4})[, ]+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+  if(m){
+    let [, mo, da, yr, hh, mi, ss, ap] = m;
+    yr = yr.length===2 ? "20"+yr : yr;
+    hh = parseInt(hh,10);
+    if(ap){
+      if(/PM/i.test(ap) && hh<12) hh+=12;
+      if(/AM/i.test(ap) && hh===12) hh=0;
+    }
+    d = new Date(yr, mo-1, da, hh, mi||0, ss||0);
+    if(!isNaN(d)) return d;
+  }
+  return null;
+}
+
+// duration field -> seconds. Accepts plain seconds, "H:MM:SS", or "X mins Y secs" style strings.
+function parseDurationSeconds(val){
+  if(val===undefined || val===null || val==="") return null;
+  if(typeof val === "number") return val;
+  const s = String(val).trim();
+  if(!s) return null;
+  if(/^\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+  if(/^\d{1,3}:\d{2}(:\d{2})?$/.test(s)){
+    const parts = s.split(":").map(Number);
+    if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+    return parts[0]*60+parts[1];
+  }
+  let total = 0; let matched = false;
+  const hr = s.match(/(\d+(\.\d+)?)\s*h/i);
+  const mn = s.match(/(\d+(\.\d+)?)\s*m/i);
+  const sc = s.match(/(\d+(\.\d+)?)\s*s/i);
+  if(hr){ total += parseFloat(hr[1])*3600; matched=true; }
+  if(mn){ total += parseFloat(mn[1])*60; matched=true; }
+  if(sc){ total += parseFloat(sc[1]); matched=true; }
+  return matched ? total : null;
+}
+
+function fmtDuration(totalSeconds){
+  if(totalSeconds===null || totalSeconds===undefined || isNaN(totalSeconds)) return "—";
+  const s = Math.round(totalSeconds);
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  if(h>0) return `${h} HR ${m} MIN ${sec} SEC`;
+  if(m>0) return `${m} MIN ${sec} SEC`;
+  return `${sec} SEC`;
+}
+
+function getSourceGroup(sourceType){
+  const s = (sourceType||"").toLowerCase().trim();
+  if(s.includes("instagram")) return "Instagram";
+  if(s.includes("facebook") || /\bfb\b/.test(s) || s.startsWith("fb")) return "Facebook";
+  if(s.includes("gmb") || s.includes("google my business") || s.includes("gmb reviews")) return "GMB";
+  if(s.includes("google play") || s.includes("play store")) return "Google Play Store";
+  return "Other";
+}
+
+// Shift definitions:
+// Night shift:   11:00pm – 6:00am (crosses midnight; 12am–6am tail belongs to previous day)
+// Morning shift: 6:01am – 2:00pm
+// Gap shift:     2:01pm – 4:00pm
+// Evening shift: 4:01pm – 10:59pm
+function getShiftInfo(date){
+  if(!date) return {shift:"Unknown", businessDate:null};
+  const totalSec = date.getHours()*3600 + date.getMinutes()*60 + date.getSeconds();
+  const calDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  // 12:00:00am–6:00:00am → tail of previous day's Night shift
+  if(totalSec <= 21600){
+    const businessDate = new Date(calDate); businessDate.setDate(businessDate.getDate()-1);
+    return {shift:"Night Shift", businessDate};
+  }
+  // 6:00:01am–2:00:00pm
+  if(totalSec <= 50400){
+    return {shift:"Morning Shift", businessDate:calDate};
+  }
+  // 2:00:01pm–4:00:00pm
+  if(totalSec <= 57600){
+    return {shift:"Gap Shift", businessDate:calDate};
+  }
+  // 4:00:01pm–10:59:59pm
+  if(totalSec <= 82799){
+    return {shift:"Evening Shift", businessDate:calDate};
+  }
+  // 11:00:00pm–11:59:59pm → start of Night shift (belongs to this calendar day)
+  return {shift:"Night Shift", businessDate:calDate};
+}
+
+function dateKey(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+/* ============================================================
+   LOAD + TRANSFORM
+   ============================================================ */
+function loadData(isManual){
+  document.getElementById("loadingText").textContent = isManual ? "Refreshing from sheet…" : "Pulling the latest sheet data…";
+  document.getElementById("loadingOverlay").classList.remove("hidden");
+
+  const urlsToTry = [
+    CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cb=" + Date.now(),
+    "https://corsproxy.io/?" + encodeURIComponent(CSV_URL)
+  ];
+
+  fetchFirstWorking(urlsToTry)
+    .then(text=>{
+      const res = Papa.parse(text, {header:true, skipEmptyLines:true});
+      RAW = transform(res.data);
+      populateAgentOptions();
+      renderAll();
+      document.getElementById("lastUpdated").textContent = "Updated " + new Date().toLocaleTimeString();
+      document.getElementById("loadingOverlay").classList.add("hidden");
+    })
+    .catch(err=>{
+      console.error("Sheet load failed:", err);
+      document.getElementById("loadingText").textContent =
+        "Couldn't reach the Google Sheet (" + (err.message || err) + "). " +
+        "If you're opening this file directly from your computer, try hosting it on a web server instead — browsers block this kind of request from a local file. Retrying…";
+      document.getElementById("loadingOverlay").classList.remove("hidden");
+    });
+}
+
+async function fetchFirstWorking(urls){
+  let lastErr;
+  for(const url of urls){
+    try{
+      const resp = await fetch(url, {cache:"no-store"});
+      if(!resp.ok) throw new Error("HTTP " + resp.status);
+      const text = await resp.text();
+      if(!text || text.trim().length===0) throw new Error("Empty response");
+      return text;
+    }catch(e){
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("Unknown fetch error");
+}
+
+function transform(rows){
+  return rows.filter(r=>r[COLS.ticket] && String(r[COLS.ticket]).trim()!=="").map(r=>{
+    const dt = parseDate(r[COLS.date]);
+    const firstRespDt = parseDate(r[COLS.firstRespDt]);
+    const frtSec = parseDurationSeconds(r[COLS.frt]);
+    const artSec = parseDurationSeconds(r[COLS.workingTAT]) ?? parseDurationSeconds(r[COLS.totalTAT]);
+    const shiftInfo = getShiftInfo(dt);
+    return {
+      ticket: r[COLS.ticket],
+      date: dt,
+      businessDate: shiftInfo.businessDate,
+      dayKey: shiftInfo.businessDate ? dateKey(shiftInfo.businessDate) : null,
+      sourceRaw: r[COLS.source] || "",
+      sourceGroup: getSourceGroup(r[COLS.source]),
+      shift: shiftInfo.shift,
+      agent: (r[COLS.agent] || "Unassigned").trim() || "Unassigned",
+      sentiment: (r[COLS.sentiment] || "Unspecified").trim() || "Unspecified",
+      sla: (r[COLS.sla]||"").trim().toLowerCase()==="yes",
+      frtSec: frtSec,
+      artSec: artSec,
+      firstRespDt: firstRespDt,
+      hasReply: !!(r[COLS.firstRespDt] && String(r[COLS.firstRespDt]).trim()!=="")
+    };
+  });
+}
+
+function populateAgentOptions(){
+  const sel = document.getElementById("agentSelect");
+  const current = sel.value;
+  const agents = [...new Set(RAW.map(r=>r.agent))].sort();
+  sel.innerHTML = '<option value="all">All agents</option>' + agents.map(a=>`<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+  if(agents.includes(current)) sel.value = current;
+}
+
+/* ============================================================
+   FILTERING
+   ============================================================ */
+// Filters against the row's actual calendar date.
+// (12:00am–12:59am) stays grouped with the day its shift started on.
+function inDateRange(actualDate){
+  if(!STATE.dateFrom && !STATE.dateTo) return true; // no custom range selected -> show all
+  if(!actualDate) return false;
+  const calDate = new Date(actualDate.getFullYear(), actualDate.getMonth(), actualDate.getDate());
+  if(STATE.dateFrom){
+    const from = new Date(STATE.dateFrom.getFullYear(), STATE.dateFrom.getMonth(), STATE.dateFrom.getDate());
+    if(calDate < from) return false;
+  }
+  if(STATE.dateTo){
+    const to = new Date(STATE.dateTo.getFullYear(), STATE.dateTo.getMonth(), STATE.dateTo.getDate());
+    if(calDate > to) return false;
+  }
+  return true;
+}
+
+function getFiltered(){
+  return RAW.filter(r=>{
+    if(!inDateRange(r.date)) return false;
+    if(STATE.source!=="all" && r.sourceGroup!==STATE.source) return false;
+    if(STATE.shift!=="all" && r.shift!==STATE.shift) return false;
+    if(STATE.sentiment!=="all" && r.sentiment!==STATE.sentiment) return false;
+    if(STATE.agent!=="all" && r.agent!==STATE.agent) return false;
+    return true;
+  });
+}
+
+/* ============================================================
+   METRIC COMPUTATION
+   ============================================================ */
+function uniqueTicketCount(rows){
+  return new Set(rows.map(r=>r.ticket)).size;
+}
+
+function computeMetrics(rows){
+  const total = uniqueTicketCount(rows);
+  const fb = uniqueTicketCount(rows.filter(r=>r.sourceGroup==="Facebook"));
+  const ig = uniqueTicketCount(rows.filter(r=>r.sourceGroup==="Instagram"));
+  const gmb = uniqueTicketCount(rows.filter(r=>r.sourceGroup==="GMB"));
+  const gps = uniqueTicketCount(rows.filter(r=>r.sourceGroup==="Google Play Store"));
+  const pos = uniqueTicketCount(rows.filter(r=>r.sentiment==="Positive"));
+  const neg = uniqueTicketCount(rows.filter(r=>r.sentiment==="Negative"));
+  const neu = uniqueTicketCount(rows.filter(r=>r.sentiment==="Neutral"));
+  const mix = uniqueTicketCount(rows.filter(r=>r.sentiment==="Mixed"));
+  const frtVals = rows.map(r=>r.frtSec).filter(v=>v!==null && v!==undefined);
+  const artVals = rows.map(r=>r.artSec).filter(v=>v!==null && v!==undefined);
+  const avgFrt = frtVals.length ? frtVals.reduce((a,b)=>a+b,0)/frtVals.length : null;
+  const avgArt = artVals.length ? artVals.reduce((a,b)=>a+b,0)/artVals.length : null;
+  const sumFrtArt = (avgFrt!==null && avgArt!==null) ? avgFrt+avgArt : null;
+  const combinedPerTicket = rows.map(r=>{
+    if(r.frtSec!==null && r.artSec!==null) return r.frtSec + r.artSec;
+    return null;
+  }).filter(v=>v!==null);
+  const avgCombined = combinedPerTicket.length ? combinedPerTicket.reduce((a,b)=>a+b,0)/combinedPerTicket.length : null;
+  const slaBreach = uniqueTicketCount(rows.filter(r=>r.sla));
+  const replied = uniqueTicketCount(rows.filter(r=>r.hasReply));
+  const replyRate = total ? (replied/total*100) : 0;
+  return {total, fb, ig, gmb, gps, pos, neg, neu, mix, avgFrt, avgArt, sumFrtArt, avgCombined, slaBreach, replied, replyRate};
+}
+
+/* ============================================================
+   RENDER — KPI cards
+   ============================================================ */
+function renderKpis(m){
+  const cards = [
+    {label:"Total Comments", value:m.total.toLocaleString(), sub:"matching current filters", cls:""},
+    {label:"Facebook", value:m.fb.toLocaleString(), sub: m.total? (m.fb/m.total*100).toFixed(1)+"% of comments":"—", cls:""},
+    {label:"Instagram", value:m.ig.toLocaleString(), sub: m.total? (m.ig/m.total*100).toFixed(1)+"% of comments":"—", cls:"amber"},
+    {label:"GMB", value:m.gmb.toLocaleString(), sub: m.total? (m.gmb/m.total*100).toFixed(1)+"% of comments":"—", cls:""},
+    {label:"Google Play Store", value:m.gps.toLocaleString(), sub: m.total? (m.gps/m.total*100).toFixed(1)+"% of comments":"—", cls:""},
+    {label:"Positive", value:m.pos.toLocaleString(), sub: m.total? (m.pos/m.total*100).toFixed(1)+"% positive":"—", cls:"pos"},
+    {label:"Negative", value:m.neg.toLocaleString(), sub: m.total? (m.neg/m.total*100).toFixed(1)+"% negative":"—", cls:"neg"},
+    {label:"Avg FRT", value: fmtDuration(m.avgFrt), sub:"first response time", cls:""},
+    {label:"Avg ART", value: fmtDuration(m.avgArt), sub:"avg response time", cls:""},
+    {label:"Avg FRT + ART", value: fmtDuration(m.avgCombined), sub:"combined per ticket", cls:"amber"},
+    {label:"SLA Breaches", value:m.slaBreach.toLocaleString(), sub: m.total? (m.slaBreach/m.total*100).toFixed(1)+"% breach rate":"—", cls:"coral"},
+    {label:"Reply Rate", value: m.replyRate.toFixed(1)+"%", sub: m.replied+" of "+m.total+" replied", cls:"pos"},
+  ];
+  document.getElementById("kpiGrid").innerHTML = cards.map((c,i)=>`
+    <div class="kpi-card ${c.cls}" style="animation-delay:${i*30}ms">
+      <div class="bar"></div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+    </div>`).join("");
+}
+
+/* ============================================================
+   RENDER — Shift breakdown table (recreates screenshot)
+   ============================================================ */
+function renderShiftTable(rows){
+  const shifts = ["Night Shift","Morning Shift","Gap Shift","Evening Shift"];
+  const shiftLabels = {"Night Shift":"11PM–6AM","Morning Shift":"6AM–2PM","Gap Shift":"2PM–4PM","Evening Shift":"4PM–11PM"};
+  const data = {};
+  shifts.forEach(s=>{
+    const sr = rows.filter(r=>r.shift===s);
+    data[s] = {
+      m: computeMetrics(sr),
+      igMetrics: computeMetrics(sr.filter(r=>r.sourceGroup==="Instagram")),
+      fbMetrics: computeMetrics(sr.filter(r=>r.sourceGroup==="Facebook")),
+      gmbMetrics: computeMetrics(sr.filter(r=>r.sourceGroup==="GMB")),
+      gpsMetrics: computeMetrics(sr.filter(r=>r.sourceGroup==="Google Play Store")),
+    };
+  });
+
+  const rowsDef = [
+    {label:"Total Comments", get:s=>data[s].m.total.toLocaleString()},
+    {group:"Facebook"},
+    {label:"Total no. of Comments", get:s=>data[s].fbMetrics.total.toLocaleString()},
+    {label:"Positive", get:s=>data[s].fbMetrics.pos.toLocaleString()},
+    {label:"Negative", get:s=>data[s].fbMetrics.neg.toLocaleString()},
+    {label:"Neutral", get:s=>data[s].fbMetrics.neu.toLocaleString()},
+    {group:"Instagram"},
+    {label:"Total no. of Comments", get:s=>data[s].igMetrics.total.toLocaleString()},
+    {label:"Positive", get:s=>data[s].igMetrics.pos.toLocaleString()},
+    {label:"Negative", get:s=>data[s].igMetrics.neg.toLocaleString()},
+    {label:"Neutral", get:s=>data[s].igMetrics.neu.toLocaleString()},
+    {group:"GMB"},
+    {label:"Total no. of Comments", get:s=>data[s].gmbMetrics.total.toLocaleString()},
+    {label:"Positive", get:s=>data[s].gmbMetrics.pos.toLocaleString()},
+    {label:"Negative", get:s=>data[s].gmbMetrics.neg.toLocaleString()},
+    {label:"Neutral", get:s=>data[s].gmbMetrics.neu.toLocaleString()},
+    {group:"Google Play Store"},
+    {label:"Total no. of Comments", get:s=>data[s].gpsMetrics.total.toLocaleString()},
+    {label:"Positive", get:s=>data[s].gpsMetrics.pos.toLocaleString()},
+    {label:"Negative", get:s=>data[s].gpsMetrics.neg.toLocaleString()},
+    {label:"Neutral", get:s=>data[s].gpsMetrics.neu.toLocaleString()},
+    {sep:true},
+    {label:"FRT", get:s=>fmtDuration(data[s].m.avgFrt)},
+    {label:"ART", get:s=>fmtDuration(data[s].m.avgArt)},
+    {label:"FRT + ART", get:s=>fmtDuration(data[s].m.sumFrtArt)},
+    {label:"Avg FRT + ART", get:s=>fmtDuration(data[s].m.avgCombined)},
+    {label:"SLA Breach", get:s=>data[s].m.slaBreach.toLocaleString()},
+    {label:"Reply Rate", get:s=>data[s].m.replyRate.toFixed(1)+"%"},
+  ];
+
+  let html = "<thead><tr><th></th>" + shifts.map(s=>`<th>${s} <span style="opacity:.75;font-weight:600;">(${shiftLabels[s]})</span></th>`).join("") + "</tr></thead><tbody>";
+  rowsDef.forEach(r=>{
+    if(r.group){
+      html += `<tr><td class="row-group-label">${r.group}</td>${shifts.map(()=>'<td class="row-group-label"></td>').join("")}</tr>`;
+    } else if(r.sep){
+      html += `<tr><td colspan="${shifts.length+1}" style="background:transparent;border:none;height:4px;padding:0;"></td></tr>`;
+    } else {
+      html += `<tr><td class="metric-label">${r.label}</td>${shifts.map(s=>`<td class="num">${r.get(s)}</td>`).join("")}</tr>`;
+    }
+  });
+  html += "</tbody>";
+  document.getElementById("shiftTable").innerHTML = html;
+}
+
+/* ============================================================
+   RENDER — Charts
+   ============================================================ */
+const palette = {
+  teal: "#111827",      /* Charcoal / Dark Slate */
+  amber: "#FFD200",     /* Brand Yellow */
+  coral: "#EF4444",     /* Red for SLA breaches */
+  pos: "#10B981",       /* Green for positive */
+  neu: "#9CA3AF",       /* Gray for neutral */
+  neg: "#EF4444",       /* Red for negative */
+  mix: "#8B5CF6",       /* Purple for mixed */
+  grid: "#E5E7EB"       /* Light gray grid lines */
+};
+
+function destroyChart(key){ if(CHARTS[key]){ CHARTS[key].destroy(); delete CHARTS[key]; } }
+
+function renderCharts(rows, m){
+  if(typeof Chart === "undefined"){ return; } // library still loading/falling back; renderAll() will be re-invoked once ready
+  // Trend over time
+  const byDaySets = {};
+  rows.forEach(r=>{ if(r.dayKey) (byDaySets[r.dayKey] = byDaySets[r.dayKey] || new Set()).add(r.ticket); });
+  const byDay = {}; Object.keys(byDaySets).forEach(d=> byDay[d]=byDaySets[d].size );
+  const days = Object.keys(byDay).sort();
+  destroyChart("trend");
+  CHARTS.trend = new Chart(document.getElementById("trendChart"), {
+    type:"line",
+    data:{ labels: days, datasets:[{ label:"Tickets", data: days.map(d=>byDay[d]), borderColor: palette.teal, backgroundColor:"rgba(255,210,0,.15)", fill:true, tension:.35, pointRadius:2 }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}}, y:{beginAtZero:true, grid:{color:palette.grid}} } }
+  });
+
+  // Sentiment donut
+  destroyChart("sentiment");
+  CHARTS.sentiment = new Chart(document.getElementById("sentimentChart"), {
+    type:"doughnut",
+    data:{ labels:["Positive","Neutral","Negative","Mixed"], datasets:[{ data:[m.pos,m.neu,m.neg,m.mix], backgroundColor:[palette.pos,palette.neu,palette.neg,palette.mix], borderWidth:2, borderColor:"#fff" }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%", plugins:{legend:{position:"bottom", labels:{boxWidth:10,font:{size:11}}}} }
+  });
+
+  // Source donut
+  destroyChart("source");
+  CHARTS.source = new Chart(document.getElementById("sourceChart"), {
+    type:"doughnut",
+    data:{ labels:["Facebook","Instagram","GMB","Google Play Store"], datasets:[{ data:[m.fb,m.ig,m.gmb,m.gps], backgroundColor:[palette.teal,palette.amber,palette.mix,palette.pos], borderWidth:2, borderColor:"#fff" }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%", plugins:{legend:{position:"bottom", labels:{boxWidth:10,font:{size:11}}}} }
+  });
+
+  // Sentiment by shift stacked bar
+  const shifts = ["Night Shift","Morning Shift","Gap Shift","Evening Shift"];
+  const shiftShortLabels = ["Night\n11pm–6am","Morning\n6am–2pm","Gap\n2pm–4pm","Evening\n4pm–11pm"];
+  const sentTypes = ["Positive","Neutral","Negative","Mixed"];
+  const sentColors = [palette.pos, palette.neu, palette.neg, palette.mix];
+  destroyChart("shiftSentiment");
+  CHARTS.shiftSentiment = new Chart(document.getElementById("shiftSentimentChart"), {
+    type:"bar",
+    data:{ labels: shiftShortLabels, datasets: sentTypes.map((s,i)=>({ label:s, data: shifts.map(sh=>uniqueTicketCount(rows.filter(r=>r.shift===sh && r.sentiment===s))), backgroundColor: sentColors[i] })) },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:11}}}}, scales:{ x:{stacked:true, grid:{display:false}}, y:{stacked:true, grid:{color:palette.grid}} } }
+  });
+
+  // Agent leaderboard
+  const agentTicketSets = {};
+  const agentBreachSets = {};
+  rows.forEach(r=>{
+    (agentTicketSets[r.agent] = agentTicketSets[r.agent] || new Set()).add(r.ticket);
+    if(r.sla) (agentBreachSets[r.agent] = agentBreachSets[r.agent] || new Set()).add(r.ticket);
+  });
+  const agentCounts = {}; Object.keys(agentTicketSets).forEach(a=> agentCounts[a]=agentTicketSets[a].size );
+  const agentBreach = {}; Object.keys(agentBreachSets).forEach(a=> agentBreach[a]=agentBreachSets[a].size );
+  const topAgents = Object.entries(agentCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart("agent");
+  CHARTS.agent = new Chart(document.getElementById("agentChart"), {
+    type:"bar",
+    data:{ labels: topAgents.map(a=>a[0]), datasets:[
+      {label:"Tickets handled", data: topAgents.map(a=>a[1]), backgroundColor: palette.teal},
+      {label:"SLA breaches", data: topAgents.map(a=>agentBreach[a[0]]||0), backgroundColor: palette.coral}
+    ]},
+    options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:11}}}}, scales:{ x:{beginAtZero:true, grid:{color:palette.grid}}, y:{grid:{display:false}} } }
+  });
+
+  // Response time by shift
+  destroyChart("rt");
+  const rtData = shifts.map(s=>{
+    const sr = rows.filter(r=>r.shift===s);
+    const mm = computeMetrics(sr);
+    return { frt: mm.avgFrt? mm.avgFrt/60 : 0, art: mm.avgArt? mm.avgArt/60 : 0 };
+  });
+  CHARTS.rt = new Chart(document.getElementById("rtChart"), {
+    type:"bar",
+    data:{ labels: shiftShortLabels, datasets:[
+      {label:"Avg FRT (min)", data: rtData.map(d=>d.frt.toFixed(2)), backgroundColor: palette.amber},
+      {label:"Avg ART (min)", data: rtData.map(d=>d.art.toFixed(2)), backgroundColor: palette.teal}
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom",labels:{boxWidth:10,font:{size:11}}}}, scales:{ x:{grid:{display:false}}, y:{beginAtZero:true, grid:{color:palette.grid}} } }
+  });
+}
+
+/* ============================================================
+   RENDER — Data table
+   ============================================================ */
+const TABLE_COLS = [
+  {key:"ticket", label:"Ticket ID"},
+  {key:"date", label:"Date", fmt:r=>r.date? r.date.toLocaleString() : "—"},
+  {key:"sourceGroup", label:"Source"},
+  {key:"shift", label:"Shift"},
+  {key:"agent", label:"Agent"},
+  {key:"sentiment", label:"Sentiment", fmt:r=>sentimentBadge(r.sentiment)},
+  {key:"frtSec", label:"FRT", fmt:r=>fmtDuration(r.frtSec)},
+  {key:"artSec", label:"ART", fmt:r=>fmtDuration(r.artSec)},
+  {key:"sla", label:"SLA Breach", fmt:r=>`<span class="badge ${r.sla?'sla-yes':'sla-no'}">${r.sla?'Yes':'No'}</span>`},
+  {key:"hasReply", label:"Replied", fmt:r=>r.hasReply?"Yes":"No"},
+];
+
+function sentimentBadge(s){
+  const cls = s==="Positive"?"pos":s==="Negative"?"neg":s==="Mixed"?"mix":"neu";
+  return `<span class="badge ${cls}">${escapeHtml(s)}</span>`;
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function renderDataTable(rows){
+  document.getElementById("dataTableHead").innerHTML = TABLE_COLS.map(c=>
+    `<th data-key="${c.key}">${c.label} ${STATE.sortCol===c.key ? (STATE.sortDir==="asc"?"▲":"▼") : ""}</th>`
+  ).join("");
+
+  let filtered = rows;
+  if(STATE.search){
+    const q = STATE.search.toLowerCase();
+    filtered = filtered.filter(r=> [r.ticket, r.agent, r.sentiment, r.sourceGroup, r.shift].some(v=>String(v).toLowerCase().includes(q)) );
+  }
+  filtered = [...filtered].sort((a,b)=>{
+    let av = a[STATE.sortCol], bv = b[STATE.sortCol];
+    if(av instanceof Date) av = av.getTime(); if(bv instanceof Date) bv = bv.getTime();
+    if(av===null||av===undefined) av = -Infinity; if(bv===null||bv===undefined) bv = -Infinity;
+    if(typeof av==="string") av = av.toLowerCase(); if(typeof bv==="string") bv = bv.toLowerCase();
+    if(av<bv) return STATE.sortDir==="asc"?-1:1;
+    if(av>bv) return STATE.sortDir==="asc"?1:-1;
+    return 0;
+  });
+
+  document.getElementById("tableCount").textContent = filtered.length.toLocaleString() + " tickets";
+
+  const MAX_ROWS = 400;
+  const display = filtered.slice(0, MAX_ROWS);
+  if(display.length===0){
+    document.getElementById("dataTableBody").innerHTML = `<tr><td colspan="${TABLE_COLS.length}"><div class="empty-state">No tickets match these filters.</div></td></tr>`;
+  } else {
+    document.getElementById("dataTableBody").innerHTML = display.map(r=>
+      `<tr>${TABLE_COLS.map(c=> `<td>${c.fmt ? c.fmt(r) : escapeHtml(r[c.key] ?? "—")}</td>`).join("")}</tr>`
+    ).join("");
+  }
+  window.__filteredForExport = filtered;
+}
+
+/* ============================================================
+   MASTER RENDER
+   ============================================================ */
+/* ============================================================
+   RENDER — Agent-wise breakdown
+   ============================================================ */
+function renderAgentTable(rows){
+  // Group by business-date + agent
+  const groups = {}; // key: "dayKey||agent"
+  rows.forEach(r=>{
+    const day = r.dayKey || (r.date ? dateKey(r.date) : "Unknown");
+    const key = day + "||" + r.agent;
+    if(!groups[key]) groups[key] = {date: day, agent: r.agent, tickets: new Set(), frtVals: [], artVals: []};
+    groups[key].tickets.add(r.ticket);
+    if(r.frtSec !== null && r.frtSec !== undefined) groups[key].frtVals.push(r.frtSec);
+    if(r.artSec !== null && r.artSec !== undefined) groups[key].artVals.push(r.artSec);
+  });
+
+  const sorted = Object.values(groups).sort((a,b)=>{
+    if(a.date < b.date) return -1;
+    if(a.date > b.date) return 1;
+    return a.agent.localeCompare(b.agent);
+  });
+
+  const avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+
+  // Totals row
+  const totalTickets = new Set(rows.map(r=>r.ticket)).size;
+  const allFrt = rows.map(r=>r.frtSec).filter(v=>v!==null&&v!==undefined);
+  const allArt = rows.map(r=>r.artSec).filter(v=>v!==null&&v!==undefined);
+
+  let html = sorted.length === 0
+    ? `<tr><td colspan="5"><div class="empty-state">No data for the selected filters.</div></td></tr>`
+    : sorted.map(g=>`
+      <tr>
+        <td class="num">${formatDisplayDate(g.date)}</td>
+        <td class="metric-label" style="font-weight:600;">${escapeHtml(g.agent)}</td>
+        <td class="num">${g.tickets.size.toLocaleString()}</td>
+        <td class="num">${fmtDuration(avg(g.frtVals))}</td>
+        <td class="num">${fmtDuration(avg(g.artVals))}</td>
+      </tr>`).join("");
+
+  // Total row
+  html += `<tr style="background:var(--amber-soft);font-weight:800;">
+    <td></td>
+    <td class="metric-label" style="font-weight:800;">Total</td>
+    <td class="num">${totalTickets.toLocaleString()}</td>
+    <td class="num">${fmtDuration(avg(allFrt))}</td>
+    <td class="num">${fmtDuration(avg(allArt))}</td>
+  </tr>`;
+
+  document.getElementById("agentBreakdownBody").innerHTML = html;
+}
+
+// Format "2026-07-01" → "01/07/2026"
+function formatDisplayDate(dayKey){
+  if(!dayKey || dayKey==="Unknown") return "—";
+  const [yr, mo, da] = dayKey.split("-");
+  return `${da}/${mo}/${yr}`;
+}
+
+function renderAll(){
+  const rows = getFiltered();
+  const m = computeMetrics(rows);
+  renderKpis(m);
+  renderShiftTable(rows);
+  renderAgentTable(rows);
+  renderCharts(rows, m);
+  renderDataTable(rows);
+}
+
+/* ============================================================
+   EVENT WIRING
+   ============================================================ */
+function wireChipGroup(containerId, stateKey){
+  const el = document.getElementById(containerId);
+  el.addEventListener("click", e=>{
+    const btn = e.target.closest(".chip");
+    if(!btn) return;
+    [...el.children].forEach(c=>c.classList.remove("active"));
+    btn.classList.add("active");
+    STATE[stateKey] = btn.dataset.value;
+    renderAll();
+  });
+}
+wireChipGroup("sourceChips","source");
+wireChipGroup("shiftChips","shift");
+wireChipGroup("sentimentChips","sentiment");
+
+document.getElementById("dateFrom").addEventListener("change", e=>{ STATE.dateFrom = e.target.value ? new Date(e.target.value) : null; renderAll(); });
+document.getElementById("dateTo").addEventListener("change", e=>{ STATE.dateTo = e.target.value ? new Date(e.target.value) : null; renderAll(); });
+document.getElementById("agentSelect").addEventListener("change", e=>{ STATE.agent = e.target.value; renderAll(); });
+
+document.getElementById("clearFiltersBtn").addEventListener("click", ()=>{
+  STATE = {...STATE, dateFrom:null, dateTo:null, source:"all", shift:"all", sentiment:"all", agent:"all", search:""};
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+  document.querySelector('#sourceChips [data-value="all"]').classList.add("active");
+  document.querySelector('#shiftChips [data-value="all"]').classList.add("active");
+  document.querySelector('#sentimentChips [data-value="all"]').classList.add("active");
+  document.getElementById("agentSelect").value = "all";
+  document.getElementById("dateFrom").value = "";
+  document.getElementById("dateTo").value = "";
+  document.getElementById("tableSearch").value = "";
+  renderAll();
+});
+
+document.getElementById("tableSearch").addEventListener("input", e=>{ STATE.search = e.target.value; renderDataTable(getFiltered()); });
+
+document.getElementById("dataTableHead").addEventListener("click", e=>{
+  const th = e.target.closest("th");
+  if(!th) return;
+  const key = th.dataset.key;
+  if(STATE.sortCol===key){ STATE.sortDir = STATE.sortDir==="asc"?"desc":"asc"; }
+  else { STATE.sortCol = key; STATE.sortDir = "asc"; }
+  renderDataTable(getFiltered());
+});
+
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const rows = window.__filteredForExport || [];
+  const headers = TABLE_COLS.map(c=>c.label);
+  const lines = [headers.join(",")];
+  rows.forEach(r=>{
+    const line = [
+      r.ticket, r.date?r.date.toLocaleString():"", r.sourceGroup, r.shift, r.agent, r.sentiment,
+      fmtDuration(r.frtSec), fmtDuration(r.artSec), r.sla?"Yes":"No", r.hasReply?"Yes":"No"
+    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",");
+    lines.push(line);
+  });
+  const blob = new Blob([lines.join("\n")], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "social-care-pulse-export.csv";
+  a.click();
+});
+
+document.getElementById("refreshBtn").addEventListener("click", ()=>loadData(true));
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadData(false);
+// Auto-refresh disabled — data only reloads when the user clicks "Refresh now."
+
+// Make sure Chart.js actually loaded; if the jsdelivr build tag failed, pull from a fallback CDN.
+ensureScript(
+  ()=> typeof Chart !== "undefined",
+  [
+    "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js",
+    "https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js"
+  ],
+  ()=>{ if(typeof Chart === "undefined"){ console.error("Chart.js failed to load from all CDNs."); } else { renderAll(); } }
+);
+ensureScript(
+  ()=> typeof Papa !== "undefined",
+  [
+    "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js",
+    "https://unpkg.com/papaparse@5.4.1/papaparse.min.js"
+  ],
+  ()=>{}
+);
+</script>
+</body>
+</html>
