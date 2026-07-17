@@ -17,7 +17,9 @@ import feedbackProductsRoutes from './routes/feedbackProducts.js';
 import hrPoliciesRoutes from './routes/hrPolicies.js';
 import orderDisputesRoutes from './routes/orderDisputes.js';
 import dashboardEditRoutes from './routes/dashboardEdit.js';
+import manpowerRoutes from './routes/manpower.js';
 import { startOrderDisputeSyncScheduler } from './services/orderDisputeSync.js';
+import { startManpowerSyncScheduler } from './services/manpowerSync.js';
 import db from './db.js';
 
 if (!process.env.CLERK_SECRET_KEY && process.env.NODE_ENV === 'production') {
@@ -52,6 +54,7 @@ app.use('/api/dashboards', dashboardRoutes);
 app.use('/api/feedback/products', feedbackProductsRoutes);
 app.use('/api/hr-policies', hrPoliciesRoutes);
 app.use('/api/order-disputes', orderDisputesRoutes);
+app.use('/api/manpower', manpowerRoutes);
 app.use('/api', dashboardEditRoutes);
 
 // ── Health check ────────────────────────────────────────
@@ -118,4 +121,5 @@ app.listen(PORT, () => {
     console.log(`   Health: http://localhost:${PORT}/api/health`);
     console.log(`   DB ping (if DB_PING_SECRET set): http://localhost:${PORT}/api/health/db\n`);
     startOrderDisputeSyncScheduler();
+    startManpowerSyncScheduler();
 });

@@ -22,6 +22,7 @@ import PerformanceProfitabilityDashboard from './pages/PerformanceProfitabilityD
 import SalaryAnalysisDashboard from './pages/SalaryAnalysisDashboard';
 import OrmDashboard from './pages/OrmDashboard';
 import LmsDashboard from './pages/LmsDashboard';
+import ManpowerDashboard from './pages/ManpowerDashboard';
 import {
     ADMIN_ONLY,
     AI_CALLING_FEEDBACK_ROLES,
@@ -36,6 +37,7 @@ import {
     RETAIL_STAFF_ACCESS_ROLES,
     ISD_DASHBOARD_EMAILS,
     SALARY_ANALYSIS_EMAILS,
+    MANPOWER_ROLES,
     defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
@@ -164,6 +166,14 @@ function App() {
                                         element={
                                             <RoleGuard allowedEmails={SALARY_ANALYSIS_EMAILS}>
                                                 <SalaryAnalysisDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/manpower"
+                                        element={
+                                            <RoleGuard roles={MANPOWER_ROLES}>
+                                                <ManpowerDashboard />
                                             </RoleGuard>
                                         }
                                     />

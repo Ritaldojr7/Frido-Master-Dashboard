@@ -51,3 +51,9 @@ services:
         sync: false
       - key: EXEC_EDIT_PASS
         sync: false
+      - key: MANPOWER_SPREADSHEET_ID
+        sync: false
+      - key: MANPOWER_SYNC_SECRET
+        sync: false
+      - key: MANPOWER_SYNC_MS
+        sync: false

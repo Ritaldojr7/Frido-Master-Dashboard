@@ -128,6 +128,35 @@ export function schemaStatements() {
             error_message TEXT DEFAULT '',
             tabs_synced INTEGER NOT NULL DEFAULT 0
         )`,
+        `CREATE TABLE IF NOT EXISTS manpower_attendance (
+            id TEXT PRIMARY KEY,
+            date TEXT NOT NULL,
+            agent_name TEXT NOT NULL DEFAULT '',
+            email TEXT NOT NULL DEFAULT '',
+            designation TEXT NOT NULL DEFAULT '',
+            vertical TEXT NOT NULL DEFAULT '',
+            morning_time TEXT,
+            evening_time TEXT,
+            morning_roster TEXT NOT NULL DEFAULT 'DS',
+            evening_roster TEXT NOT NULL DEFAULT 'DS',
+            is_lop INTEGER NOT NULL DEFAULT 0,
+            total_calls INTEGER NOT NULL DEFAULT 0,
+            total_sales REAL NOT NULL DEFAULT 0,
+            screenshot_url TEXT,
+            synced_at TEXT NOT NULL
+        )`,
+        `CREATE UNIQUE INDEX IF NOT EXISTS idx_manpower_attendance_date_email ON manpower_attendance(date, email)`,
+        `CREATE INDEX IF NOT EXISTS idx_manpower_attendance_date ON manpower_attendance(date)`,
+        `CREATE TABLE IF NOT EXISTS manpower_sync_runs (
+            id TEXT PRIMARY KEY,
+            started_at TEXT NOT NULL,
+            finished_at TEXT,
+            status TEXT NOT NULL CHECK(status IN ('success', 'error')),
+            error_message TEXT DEFAULT '',
+            row_counts TEXT NOT NULL DEFAULT '{}',
+            warnings TEXT NOT NULL DEFAULT '[]',
+            records_synced INTEGER NOT NULL DEFAULT 0
+        )`,
         `CREATE TABLE IF NOT EXISTS access_requests (
             id TEXT PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
