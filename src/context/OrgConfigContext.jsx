@@ -1,7 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { applyRuntimeOrgConfig } from '../config/organizationConfig';
-
-const OrgConfigContext = createContext({ ready: false });
 
 export function OrgConfigProvider({ children }) {
     const [ready, setReady] = useState(false);
@@ -39,13 +37,5 @@ export function OrgConfigProvider({ children }) {
         return null;
     }
 
-    return (
-        <OrgConfigContext.Provider value={{ ready }}>
-            {children}
-        </OrgConfigContext.Provider>
-    );
-}
-
-export function useOrgConfigReady() {
-    return useContext(OrgConfigContext).ready;
+    return children;
 }
