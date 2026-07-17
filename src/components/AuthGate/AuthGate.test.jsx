@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import AuthGate from './AuthGate';
+import { SUPPORT_CONTACT_EMAIL } from '../../config/organizationConfig';
 
 // Mock Clerk components
 vi.mock('@clerk/react', () => ({
@@ -41,7 +42,7 @@ describe('AuthGate', () => {
   it('renders contact admin email link', () => {
     render(<AuthGate><span>Child</span></AuthGate>);
     const link = screen.getByRole('link', { name: /contact admin/i });
-    expect(link).toHaveAttribute('href', 'mailto:ritwik.m@myfrido.com');
+    expect(link).toHaveAttribute('href', `mailto:${SUPPORT_CONTACT_EMAIL}`);
   });
 
   it('sign in button is always enabled (Clerk handles validation)', () => {

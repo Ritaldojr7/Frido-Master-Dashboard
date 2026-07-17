@@ -1,78 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDashboardData } from '../context/DashboardDataContext';
 import SectionGroup from '../components/SectionGroup/SectionGroup';
 import NoticeAttachmentList from '../components/NoticeAttachmentList/NoticeAttachmentList';
+import Typewriter from '../components/Typewriter/Typewriter';
 import { apiFetch } from '../context/AuthContext';
+import {
+    RETAIL_STRUCTURE_CONTACTS,
+    STAFF_ESCALATION_CONTACTS,
+} from '../config/organizationConfig';
 import './SubPage.css';
-
-const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
-    const [displayedText, setDisplayedText] = useState('');
-    const [index, setIndex] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    useEffect(() => {
-        let timeout;
-
-        if (!isDeleting && index < text.length) {
-            // Typing characters
-            timeout = setTimeout(() => {
-                setDisplayedText((prev) => prev + text[index]);
-                setIndex((prev) => prev + 1);
-            }, speed);
-        } else if (isDeleting && index > 0) {
-            // Deleting characters
-            timeout = setTimeout(() => {
-                setDisplayedText((prev) => prev.slice(0, -1));
-                setIndex((prev) => prev - 1);
-            }, speed / 2);
-        } else if (index === text.length && !isDeleting) {
-            // Pause before starting to delete
-            timeout = setTimeout(() => setIsDeleting(true), pause);
-        } else if (index === 0 && isDeleting) {
-            // Reset to typing
-            setIsDeleting(false);
-        }
-
-        return () => clearTimeout(timeout);
-    }, [index, text, speed, isDeleting, pause]);
-
-    return (
-        <span className="typewriter">
-            {displayedText}
-            <span className="typewriter-cursor">|</span>
-        </span>
-    );
-};
-
-const contactBoxData = [
-    { name: 'Arsh', pocFor: 'Tech', email: 'arsh.a@myfrido.com', phone: '+917028154267' },
-    { name: 'Juned', pocFor: 'MIS', email: 'juned.m@myfrido.com', phone: '+917498931102' },
-    { name: 'Nishrit', pocFor: 'Overall', email: 'nishrit.p@myfrido.com', phone: '+917051780171' },
-    { name: 'Saiyed Abdal', pocFor: 'Highest Escalations', email: 'saiyed.a@myfrido.com', phone: '+917987962503' },
-];
-
-const retailStructureData = [
-    { name: 'Vikal Gupta', pocFor: 'Retail VP', email: 'Vikal.g@myfrido.com', phone: '' },
-    { name: 'Anirudha', pocFor: 'Customer Experience', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
-    {
-        name: 'Anirudha',
-        pocFor: 'Training & Development',
-        email: 'aniruddha.b@myfrido.com',
-        phone: '+919527907966',
-    },
-    {
-        name: 'Rishab',
-        pocFor: 'Retail Inside Sales',
-        email: 'Rishab.d@myfrido.com',
-        phone: '+919353558851',
-    },
-    {
-        name: 'Shernyl',
-        pocFor: 'Retail Customer Support',
-        email: 'Shernyl.r@myfrido.com',
-        phone: '+919029929930',
-    },
-];
 
 function ContactTable({ rows, namePrefix }) {
     return (
@@ -208,12 +144,20 @@ export default function StaffDashboard() {
 
             <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '80ms' }}>
                 <h2 className="subpage__contacts-title">Escalation Matrix</h2>
-                <ContactTable rows={contactBoxData} namePrefix={(idx) => `Level ${idx + 1}`} />
+                {STAFF_ESCALATION_CONTACTS.length === 0 ? (
+                    <p className="subpage__notices-empty">Contact list not configured.</p>
+                ) : (
+                    <ContactTable rows={STAFF_ESCALATION_CONTACTS} namePrefix={(idx) => `Level ${idx + 1}`} />
+                )}
             </div>
 
             <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <h2 className="subpage__contacts-title">Retail Structure - Leaders &amp; POCs</h2>
-                <ContactTable rows={retailStructureData} />
+                {RETAIL_STRUCTURE_CONTACTS.length === 0 ? (
+                    <p className="subpage__notices-empty">Contact list not configured.</p>
+                ) : (
+                    <ContactTable rows={RETAIL_STRUCTURE_CONTACTS} />
+                )}
             </div>
         </div>
     );

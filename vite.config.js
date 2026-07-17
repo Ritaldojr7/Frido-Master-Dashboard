@@ -98,6 +98,12 @@ export default defineConfig(({ mode }) => {
         VITE_CLERK_PUBLISHABLE_KEY:
           process.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_00000000000000000000000000000000',
         VITE_DEMO_MODE: 'false',
+        VITE_ISD_DASHBOARD_EMAILS:
+          'alice@test.myfrido.com,bob@test.myfrido.com,charlie@test.myfrido.com,diana@test.myfrido.com',
+        VITE_SALARY_ANALYSIS_EMAILS:
+          'alice@test.myfrido.com,bob@test.myfrido.com,charlie@test.myfrido.com',
+        VITE_HOME_PATH_BY_EMAIL:
+          '{"bob@test.myfrido.com":"/business-analytics","eve@test.myfrido.com":"/feedback-department"}',
       },
       coverage: {
         provider: 'v8',

@@ -10,20 +10,14 @@ export const AuthContext = createContext();
  */
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
+import { DEMO_USER_EMAIL, DEMO_USER_NAME } from '../config/organizationConfig.js';
+
 const DEMO_ROLE = import.meta.env.VITE_DEMO_ROLE || 'staff';
-const EMAIL_NAME_MAP = {
-    'ritwik.m@myfrido.com': 'Ritwik',
-    'juned.m@myfrido.com': 'Juned',
-    'saiyed.a@myfrido.com': 'Saiyed',
-    'shravani.p@myfrido.com': 'Shravani',
-    'rupali.b@myfrido.com': 'Rupali',
-    'aaysha.k@myfrido.com': 'Aaysha',
-};
 
 const DEMO_USER = {
     id: 'demo-staff',
-    email: 'ritwik.m@myfrido.com',
-    name: 'Ritwik',
+    email: DEMO_USER_EMAIL,
+    name: DEMO_USER_NAME,
     role: DEMO_ROLE,
     roles: [DEMO_ROLE],
     department: 'Retail',
@@ -174,9 +168,9 @@ function DemoAuthProvider({ children }) {
                 }
                 return null;
             };
-            return getEmailFromUrl() || 'ritwik.m@myfrido.com';
+            return getEmailFromUrl() || DEMO_USER_EMAIL;
         }
-        return 'ritwik.m@myfrido.com';
+        return DEMO_USER_EMAIL;
     });
 
     useEffect(() => {
@@ -224,8 +218,16 @@ function DemoAuthProvider({ children }) {
     const user = useMemo(() => {
         if (!isAuthenticated) return null;
         const emailLower = userEmail?.toLowerCase();
-        const mappedName = EMAIL_NAME_MAP[emailLower];
-        const name = mappedName || (userRole.charAt(0).toUpperCase() + userRole.slice(1));
+        const localPart = emailLower?.split('@')[0] || '';
+        const derivedName = localPart
+            .split(/[._-]/)
+            .filter(Boolean)
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ');
+        const name =
+            emailLower === DEMO_USER_EMAIL.toLowerCase()
+                ? DEMO_USER_NAME
+                : derivedName || userRole.charAt(0).toUpperCase() + userRole.slice(1);
         const roles = [userRole];
         if (userRole === 'executive') {
             roles.push('team_lead');

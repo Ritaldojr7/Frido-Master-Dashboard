@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { feedbackData as feedbackDataStatic } from '../config/feedbackDatabase';
 import { apiFetch } from '../context/AuthContext';
+import Typewriter from '../components/Typewriter/Typewriter';
 import './FeedbackDepartment.css';
 
 const FEEDBACK_KNOWN_IDS_KEY = 'frido_feedback_known_product_ids';
@@ -67,41 +68,6 @@ const PRODUCT_RATINGS = {
     "Frido Men's Puneri Arch Comfort Sandal": 8.0,
     'Frido Unisex Orthotics V-Strap Sandals': 5.8,
     'Frido School Shoes': 5.6,
-};
-
-const Typewriter = ({ text, speed = 80, pause = 3000 }) => {
-    const [displayedText, setDisplayedText] = useState('');
-    const [index, setIndex] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    React.useEffect(() => {
-        let timeout;
-
-        if (!isDeleting && index < text.length) {
-            timeout = setTimeout(() => {
-                setDisplayedText((prev) => prev + text[index]);
-                setIndex((prev) => prev + 1);
-            }, speed);
-        } else if (isDeleting && index > 0) {
-            timeout = setTimeout(() => {
-                setDisplayedText((prev) => prev.slice(0, -1));
-                setIndex((prev) => prev - 1);
-            }, speed / 2);
-        } else if (index === text.length && !isDeleting) {
-            timeout = setTimeout(() => setIsDeleting(true), pause);
-        } else if (index === 0 && isDeleting) {
-            setIsDeleting(false);
-        }
-
-        return () => clearTimeout(timeout);
-    }, [index, text, speed, isDeleting, pause]);
-
-    return (
-        <span className="typewriter">
-            {displayedText}
-            <span className="typewriter-cursor">|</span>
-        </span>
-    );
 };
 
 export default function FeedbackDepartment() {

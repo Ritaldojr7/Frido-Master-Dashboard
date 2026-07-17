@@ -328,7 +328,13 @@ cd Frido-Master-Dashboard
 npm install
 ```
 
-Create a `.env` file in the project root with at minimum:
+Create a `.env` file from the template:
+
+```bash
+cp .env.example .env
+```
+
+Fill in at minimum:
 
 ```env
 # Clerk (required for auth)
@@ -355,9 +361,13 @@ npm run dev:all
 | http://localhost:4000 | Express API |
 | http://localhost:4000/api/health | Health check |
 
-### Demo mode
+### Demo mode (local / GitHub Pages only)
 
 Set `VITE_DEMO_MODE=true` to bypass Clerk and use a mock user (`VITE_DEMO_ROLE` defaults to `staff`). Useful for UI development without backend credentials.
+
+**Production guard:** The server **refuses to start** when `NODE_ENV=production` and `VITE_DEMO_MODE=true`. Never set `VITE_DEMO_MODE` on Render or in production CI builds — it disables all API authentication.
+
+Configure the demo identity with `VITE_DEMO_USER_EMAIL` and `VITE_DEMO_USER_NAME`.
 
 ---
 
@@ -380,8 +390,22 @@ Set `VITE_DEMO_MODE=true` to bypass Clerk and use a mock user (`VITE_DEMO_ROLE` 
 
 | Variable | Description |
 |----------|-------------|
-| `DEFAULT_ADMIN_EMAIL` | Seed admin email (default: `ritwik.m@myfrido.com`) |
+| `DEFAULT_ADMIN_EMAIL` | Seed admin email (required for first-time admin bootstrap) |
 | `DEFAULT_ADMIN_PASSWORD` | Seed admin password (local dev only) |
+| `ACCESS_REQUEST_NOTIFY_EMAIL` | Optional override for access-request notification recipient |
+
+### Organization config (frontend — set at build time)
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_ISD_DASHBOARD_EMAILS` | Comma-separated emails for ISD executive dashboards |
+| `VITE_SALARY_ANALYSIS_EMAILS` | Comma-separated emails for salary analysis |
+| `VITE_STORE_EMAIL_MAP` | JSON object mapping store emails to display names |
+| `VITE_HOME_PATH_BY_EMAIL` | JSON object mapping emails to custom home paths |
+| `VITE_SUPPORT_CONTACT_EMAIL` | Login page admin contact email |
+| `VITE_STAFF_ESCALATION_CONTACTS` | JSON array of retail escalation contacts |
+| `VITE_RETAIL_STRUCTURE_CONTACTS` | JSON array of retail leadership contacts |
+| `VITE_DEMO_USER_EMAIL` / `VITE_DEMO_USER_NAME` | Demo mode identity |
 
 ### Email (Microsoft Graph)
 
@@ -513,6 +537,24 @@ Add the repository secret `RENDER_DEPLOY_HOOK_URL` (from Render → Web Service 
 | Database connection errors in prod | Supabase paused or wrong `DATABASE_URL` | Ping `/api/health/db`; verify connection string in Render |
 | Build fails on Render | DevDependencies skipped | Use `npm ci --include=dev` (already in `render.yaml`) |
 | Local API calls fail | Server not running | Run `npm run dev:all` or start both `dev` and `dev:server` |
+
+---
+
+## Security audit
+
+Run `npm audit --omit=dev` periodically. As of the last audit:
+
+| Package | Severity | Notes |
+|---------|----------|-------|
+| `xlsx` | High | No upstream fix — used only for admin CSV/XLS import; keep uploads admin-only |
+| `react-router-dom` | High/Critical | Run `npm audit fix` to pick up patched versions |
+| `@clerk/shared` → `js-cookie` | High | Transitive via Clerk — update `@clerk/react` / `@clerk/express` when patches ship |
+| `multer` | High | Run `npm audit fix` for notice upload middleware |
+| `googleapis` → `uuid` | Moderate | Transitive; `npm audit fix --force` may bump googleapis major |
+
+Safe fixes are applied via `npm audit fix`. Review remaining items before production deploy.
+
+Static HTML dashboards under `/exec-dashboard`, `/salary-analysis`, etc. require a Clerk session cookie — direct URL access without signing in returns 401.
 
 ---
 

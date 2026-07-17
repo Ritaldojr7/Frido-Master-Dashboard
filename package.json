@@ -8,7 +8,7 @@
     "dev:staff": "vite --mode staff",
     "dev:server": "node server/index.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
-    "ngrok": "ngrok http --domain=windrode-porfirio-pseudolegal.ngrok-free.dev 3005",
+    "ngrok": "ngrok http 3005",
     "start": "node server/index.js",
     "build": "vite build",
     "build:staff": "vite build --mode staff",
@@ -22,7 +22,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "audit:prod": "npm audit --omit=dev"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
@@ -58,6 +60,7 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "jsdom": "^28.1.0",
+    "supertest": "^7.2.2",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.0.18"

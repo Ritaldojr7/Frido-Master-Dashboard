@@ -448,7 +448,11 @@ async function ensurePostgresUsersStatusConstraint() {
  * sets DEFAULT_ADMIN_PASSWORD in the environment (never hardcode secrets).
  */
 async function seedDefaultAdmin() {
-    const email = (process.env.DEFAULT_ADMIN_EMAIL || 'ritwik.m@myfrido.com').toLowerCase().trim();
+    const email = String(process.env.DEFAULT_ADMIN_EMAIL ?? '').toLowerCase().trim();
+    if (!email) {
+        console.warn('Skipping default admin seed: DEFAULT_ADMIN_EMAIL is not set.');
+        return;
+    }
     const password = String(process.env.DEFAULT_ADMIN_PASSWORD ?? '').trim();
 
     try {
