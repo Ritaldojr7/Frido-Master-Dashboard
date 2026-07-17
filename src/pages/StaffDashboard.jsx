@@ -5,8 +5,8 @@ import NoticeAttachmentList from '../components/NoticeAttachmentList/NoticeAttac
 import Typewriter from '../components/Typewriter/Typewriter';
 import { apiFetch } from '../context/AuthContext';
 import {
-    RETAIL_STRUCTURE_CONTACTS,
-    STAFF_ESCALATION_CONTACTS,
+    getRetailStructureContacts,
+    getStaffEscalationContacts,
 } from '../config/organizationConfig';
 import './SubPage.css';
 
@@ -144,19 +144,19 @@ export default function StaffDashboard() {
 
             <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '80ms' }}>
                 <h2 className="subpage__contacts-title">Escalation Matrix</h2>
-                {STAFF_ESCALATION_CONTACTS.length === 0 ? (
+                {getStaffEscalationContacts().length === 0 ? (
                     <p className="subpage__notices-empty">Contact list not configured.</p>
                 ) : (
-                    <ContactTable rows={STAFF_ESCALATION_CONTACTS} namePrefix={(idx) => `Level ${idx + 1}`} />
+                    <ContactTable rows={getStaffEscalationContacts()} namePrefix={(idx) => `Level ${idx + 1}`} />
                 )}
             </div>
 
             <div className="subpage__contacts animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <h2 className="subpage__contacts-title">Retail Structure - Leaders &amp; POCs</h2>
-                {RETAIL_STRUCTURE_CONTACTS.length === 0 ? (
+                {getRetailStructureContacts().length === 0 ? (
                     <p className="subpage__notices-empty">Contact list not configured.</p>
                 ) : (
-                    <ContactTable rows={RETAIL_STRUCTURE_CONTACTS} />
+                    <ContactTable rows={getRetailStructureContacts()} />
                 )}
             </div>
         </div>

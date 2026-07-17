@@ -14,9 +14,9 @@ export default function RoleGuard({ roles, allowedEmails, children }) {
     if (roles) {
         hasPermission = hasAnyRole(user, roles);
     }
-    if (allowedEmails && hasPermission) {
+    if (Array.isArray(allowedEmails) && allowedEmails.length > 0 && hasPermission) {
         const email = String(user.email || '').trim().toLowerCase();
-        hasPermission = allowedEmails.map(e => e.toLowerCase()).includes(email);
+        hasPermission = allowedEmails.map((e) => e.toLowerCase()).includes(email);
     }
 
     if (!hasPermission) {
