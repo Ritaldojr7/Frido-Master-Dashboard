@@ -378,6 +378,7 @@ Configure the demo identity with `VITE_DEMO_USER_EMAIL` and `VITE_DEMO_USER_NAME
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_CLERK_PUBLISHABLE_KEY` | Yes (prod) | Clerk publishable key — baked into Vite build |
+| `CLERK_PUBLISHABLE_KEY` | Yes (prod) | Same publishable key at **runtime** for Express/Clerk middleware |
 | `CLERK_SECRET_KEY` | Yes (prod) | Clerk secret key for API token verification |
 | `DATABASE_URL` | Prod | Supabase Postgres URI. Omit for local SQLite |
 | `APP_URL` | Recommended | Public app URL (emails, asset links) |
@@ -531,7 +532,8 @@ Add the repository secret `RENDER_DEPLOY_HOOK_URL` (from Render → Web Service 
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| SPA stuck on loading spinner | Missing or mismatched Clerk keys | Ensure `VITE_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are from the same Clerk app; rebuild after setting `VITE_*` vars |
+| SPA stuck on loading spinner | Missing or mismatched Clerk keys | Ensure `VITE_CLERK_PUBLISHABLE_KEY`, `CLERK_PUBLISHABLE_KEY`, and `CLERK_SECRET_KEY` are from the same Clerk app; rebuild after setting `VITE_*` vars |
+| Entire site returns 500 JSON | Publishable key missing at runtime | Set `CLERK_PUBLISHABLE_KEY` (same value as `VITE_CLERK_PUBLISHABLE_KEY`) on Render, then redeploy |
 | `/api/*` returns 401 | Invalid or expired Clerk token | Re-sign in; verify `CLERK_SECRET_KEY` on the server |
 | Sheet sync not updating | Service account lacks access | Share the spreadsheet with the service account email as Viewer |
 | Database connection errors in prod | Supabase paused or wrong `DATABASE_URL` | Ping `/api/health/db`; verify connection string in Render |

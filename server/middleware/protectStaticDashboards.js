@@ -28,9 +28,13 @@ export function protectStaticDashboards(req, res, next) {
         return next();
     }
 
-    const { userId } = getAuth(req);
-    if (userId) {
-        return next();
+    try {
+        const { userId } = getAuth(req);
+        if (userId) {
+            return next();
+        }
+    } catch (err) {
+        console.warn('[protectStaticDashboards] Clerk auth unavailable:', err.message);
     }
 
     if (req.headers.authorization?.startsWith('Bearer ')) {

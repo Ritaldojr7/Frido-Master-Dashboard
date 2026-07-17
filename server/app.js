@@ -23,6 +23,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DIST_DIR = path.resolve(__dirname, '..', 'dist');
 export const BRAND_DIR = path.resolve(__dirname, '..', 'src', 'assets');
 
+function getClerkPublishableKey() {
+    return String(
+        process.env.CLERK_PUBLISHABLE_KEY ?? process.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''
+    ).trim();
+}
+
 export function createApp() {
     const app = express();
     app.set('trust proxy', 1);
@@ -36,11 +42,19 @@ export function createApp() {
     app.use(express.json());
     app.use(cookieParser());
 
-    if (process.env.CLERK_SECRET_KEY) {
+    const clerkSecretKey = String(process.env.CLERK_SECRET_KEY ?? '').trim();
+    const clerkPublishableKey = getClerkPublishableKey();
+
+    if (clerkSecretKey && clerkPublishableKey) {
         app.use(
             clerkMiddleware({
-                secretKey: process.env.CLERK_SECRET_KEY,
+                secretKey: clerkSecretKey,
+                publishableKey: clerkPublishableKey,
             })
+        );
+    } else if (clerkSecretKey) {
+        console.warn(
+            '[Frido Dashboard] CLERK_PUBLISHABLE_KEY (or VITE_CLERK_PUBLISHABLE_KEY) is missing — static dashboard auth middleware disabled.'
         );
     }
 
