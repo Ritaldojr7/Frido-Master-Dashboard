@@ -108,4 +108,28 @@ Yellow accent (`#FFE100`), dark mode, and lightweight glass-style panels are int
 ## License
 
 © 2026 Frido. Proprietary—all rights reserved.
-© 2026 Frido. Proprietary—all rights reserved.
+
+---
+
+## Manpower Attendance & Performance Dashboard Setup
+
+The **Manpower Attendance & Performance** dashboard is a live dashboard showing real-time agent attendance grids, monthly analytics, and productivity leaderboards populated directly by Slack check-in/checkout workflows and Google Form submissions.
+
+Data flows **Google Sheets → Supabase Postgres → dashboard API**. The server syncs sheet tabs on a schedule, stores normalized attendance rows in Postgres (via `DATABASE_URL`), and serves the dashboard from the database — not from in-memory cache.
+
+### Environment Variables
+You must set the following environment variables on the Render dashboard:
+* `DATABASE_URL` — Supabase Postgres connection string (same as the rest of the app).
+* `MANPOWER_SPREADSHEET_ID` — The ID of the live Google Sheet (e.g. `1FpDhylMH8vnAEF0KSObiTiZaCWNeFb6EuLyNix-HG54`).
+* `MANPOWER_SYNC_SECRET` — A secure token to authorize manual or external sync webhook requests (e.g., in headers `Authorization: Bearer <SECRET>`).
+* `MANPOWER_SYNC_MS` — Optional. Background sync interval in milliseconds (default is `300000` or 5 minutes).
+
+### Supabase tables
+After deploy, attendance data is stored in:
+* `manpower_attendance` — one row per agent per date (queryable in Supabase Table Editor).
+* `manpower_sync_runs` — sync audit log (status, row counts, warnings).
+
+Trigger a sync manually: `POST /api/manpower/sync` (admin or sync secret), or externally via `POST /api/manpower/sync/cron` with `MANPOWER_SYNC_SECRET`.
+
+### Google Sheets Permission
+The dashboard reuses the existing `GOOGLE_SERVICE_ACCOUNT_JSON` credential. Ensure the Google Sheet is shared as **Viewer** with the `client_email` specified in that JSON service account key.
