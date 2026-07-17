@@ -1,0 +1,111 @@
+/**
+ * Express application factory — used by server/index.js and integration tests.
+ */
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { clerkMiddleware } from '@clerk/express';
+
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import noticeRoutes from './routes/notices.js';
+import dashboardRoutes from './routes/dashboards.js';
+import feedbackProductsRoutes from './routes/feedbackProducts.js';
+import hrPoliciesRoutes from './routes/hrPolicies.js';
+import orderDisputesRoutes from './routes/orderDisputes.js';
+import dashboardEditRoutes from './routes/dashboardEdit.js';
+import manpowerRoutes from './routes/manpower.js';
+import { protectStaticDashboards } from './middleware/protectStaticDashboards.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export const DIST_DIR = path.resolve(__dirname, '..', 'dist');
+export const BRAND_DIR = path.resolve(__dirname, '..', 'src', 'assets');
+
+export function createApp() {
+    const app = express();
+    app.set('trust proxy', 1);
+
+    app.use(
+        cors({
+            origin: true,
+            credentials: true,
+        })
+    );
+    app.use(express.json());
+    app.use(cookieParser());
+
+    if (process.env.CLERK_SECRET_KEY) {
+        app.use(
+            clerkMiddleware({
+                secretKey: process.env.CLERK_SECRET_KEY,
+            })
+        );
+    }
+
+    app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/notices', noticeRoutes);
+    app.use('/api/dashboards', dashboardRoutes);
+    app.use('/api/feedback/products', feedbackProductsRoutes);
+    app.use('/api/hr-policies', hrPoliciesRoutes);
+    app.use('/api/order-disputes', orderDisputesRoutes);
+    app.use('/api/manpower', manpowerRoutes);
+    app.use('/api', dashboardEditRoutes);
+
+    app.get('/api/health', (_req, res) => {
+        res.json({ status: 'ok', service: 'frido-dashboard-api', timestamp: new Date().toISOString() });
+    });
+
+    app.get('/api/health/db', async (req, res) => {
+        const { default: db } = await import('./db.js');
+        const secret = String(process.env.DB_PING_SECRET ?? '').trim();
+        if (!secret) {
+            return res.status(503).json({ error: 'DB_PING_SECRET is not set' });
+        }
+        const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
+        const token = bearer || String(req.query.token ?? '').trim();
+        if (token !== secret) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+        try {
+            await db.get('SELECT 1 AS ok');
+            return res.json({
+                status: 'ok',
+                database: db.client,
+                timestamp: new Date().toISOString(),
+            });
+        } catch (err) {
+            console.error('[health/db]', err.message);
+            return res.status(500).json({ error: 'Database ping failed', message: err.message });
+        }
+    });
+
+    app.use(
+        '/brand',
+        express.static(BRAND_DIR, {
+            immutable: true,
+            maxAge: '7d',
+        })
+    );
+
+    app.use(protectStaticDashboards);
+    app.use(express.static(DIST_DIR));
+
+    app.use((req, res, next) => {
+        if (req.path.startsWith('/api/')) {
+            return res.status(404).json({ error: 'API endpoint not found' });
+        }
+        res.sendFile(path.join(DIST_DIR, 'index.html'), (err) => {
+            if (err) next();
+        });
+    });
+
+    app.use((err, _req, res, _next) => {
+        console.error('Unhandled error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    });
+
+    return app;
+}

@@ -1,13 +1,11 @@
 import { useAuth } from '../context/AuthContext';
+import { SALARY_ANALYSIS_EMAILS } from '../config/permissions';
 import './IframeDashboard.css';
 
 export default function SalaryAnalysisDashboard() {
     const { user } = useAuth();
-    const isAllowedUser = user && [
-        'ritwik.m@myfrido.com',
-        'juned.m@myfrido.com',
-        'saiyed.a@myfrido.com'
-    ].includes(user.email?.toLowerCase());
+    const isAllowedUser =
+        user && SALARY_ANALYSIS_EMAILS.includes(String(user.email || '').trim().toLowerCase());
 
     return (
         <div className="iframe-dashboard animate-fade-in">

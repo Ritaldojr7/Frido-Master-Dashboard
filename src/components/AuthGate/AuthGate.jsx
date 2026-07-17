@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Show, SignInButton, SignUp } from '@clerk/react';
 import { useAuth } from '../../context/AuthContext';
+import { SUPPORT_CONTACT_EMAIL } from '../../config/organizationConfig';
 import './AuthGate.css';
 import fridoLogo from '../../assets/login_logo.png';
 
@@ -299,7 +300,7 @@ export default function AuthGate({ children }) {
 
                             <div className="login__divider"><span>Simulated Demo Mode</span></div>
                             <div className="login__form-footer">
-                                <p>Need help?{' '}<a href="mailto:ritwik.m@myfrido.com" className="login__link">Contact Admin</a></p>
+                                <p>Need help?{' '}<a href={`mailto:${SUPPORT_CONTACT_EMAIL}`} className="login__link">Contact Admin</a></p>
                             </div>
                         </div>
                     </div>
@@ -481,7 +482,7 @@ export default function AuthGate({ children }) {
 
                             <div className="login__divider"><span>Secured by Clerk</span></div>
                             <div className="login__form-footer">
-                                <p>Need help?{' '}<a href="mailto:ritwik.m@myfrido.com" className="login__link">Contact Admin</a></p>
+                                <p>Need help?{' '}<a href={`mailto:${SUPPORT_CONTACT_EMAIL}`} className="login__link">Contact Admin</a></p>
                             </div>
                         </div>
                     </div>

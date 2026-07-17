@@ -24,27 +24,14 @@ export const ROLES = {
     ORM_LEAD: 'orm_lead',
 };
 
-export const STORE_EMAIL_MAP = {
-    'store.vimannagar@myfrido.com': 'Phoenix Marketcity Vimannagar',
-    'store.amanora@myfrido.com': 'Amanora Experience Store',
-    'store.amartech@myfrido.com': 'Amar Tech Park',
-    'store.elpro@myfrido.com': 'Elpro PCMC',
-    'store.westend@myfrido.com': 'Nexus Westend, Aundh',
-    'store.0006@myfrido.com': 'Kopa Mall',
-    'store.0007@myfrido.com': 'Mall of Asia',
-    'store.0008@myfrido.com': 'Lakeshore Y junction',
-    'store.0009@myfrido.com': 'SkyCity Borivali',
-    'store.0010@myfrido.com': 'Frido Experience Store Gachibowli',
-    'store.0011@myfrido.com': 'Frido Store Banjara Hills',
-    'store.0013@myfrido.com': 'Bhartiya Mall Store',
-    'store.0014@myfrido.com': 'Kompally Store',
-    'store.0015@myfrido.com': 'Vegas Mall',
-    'store.0016@myfrido.com': 'Lulu Mall',
-    'store.0017@myfrido.com': 'Golf Course Road',
-    'store.0018@myfrido.com': 'Omaxe Store',
-    'store.0019@myfrido.com': 'Felix Plaza',
-    'store.0020@myfrido.com': 'PMC Whitefield',
-};
+import {
+    HOME_PATH_BY_EMAIL,
+    ISD_DASHBOARD_EMAILS,
+    SALARY_ANALYSIS_EMAILS,
+    STORE_EMAIL_MAP,
+} from './organizationConfig.js';
+
+export { STORE_EMAIL_MAP, ISD_DASHBOARD_EMAILS, SALARY_ANALYSIS_EMAILS };
 
 export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 export const ADMIN_ONLY = [ROLES.ADMIN];
@@ -78,21 +65,6 @@ export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES];
-
-/** Users allowed to access the ISD dashboards (Executive Performance, Performance & Profitability). Strictly limited to these emails. */
-export const ISD_DASHBOARD_EMAILS = [
-    'ritwik.m@myfrido.com',
-    'saiyed.a@myfrido.com',
-    'juned.m@myfrido.com',
-    'harshika.s@myfrido.com'
-];
-
-/** Users allowed to access the Salary Analysis dashboard. Strictly limited to these emails. */
-export const SALARY_ANALYSIS_EMAILS = [
-    'ritwik.m@myfrido.com',
-    'saiyed.a@myfrido.com',
-    'juned.m@myfrido.com'
-];
 
 /**
  * @param {string | { role?: string, roles?: string[] } | null | undefined} userOrRole
@@ -236,12 +208,6 @@ export function hasAccess(userOrRole, path) {
     if (!allowed) return true;
     return hasAnyRole(userOrRole, allowed);
 }
-
-/** Per-user landing page overrides (email → path). Checked before role-based defaults. */
-const HOME_PATH_BY_EMAIL = {
-    'saiyed.a@myfrido.com': '/business-analytics',
-    'rhythm.j@myfrido.com': '/feedback-department',
-};
 
 /** Primary home route from role priority (multi-role users). */
 export function defaultHomePath(userOrRole) {

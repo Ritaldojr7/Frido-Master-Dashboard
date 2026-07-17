@@ -17,10 +17,13 @@ const clerkClient = createClerkClient({
  */
 export async function verifyToken(req, res, next) {
     if (process.env.VITE_DEMO_MODE === 'true') {
+        if (process.env.NODE_ENV === 'production') {
+            return res.status(503).json({ error: 'Demo mode is disabled in production' });
+        }
         req.user = {
             id: 'demo-staff',
-            email: 'ritwik.m@myfrido.com',
-            name: 'Ritwik',
+            email: String(process.env.VITE_DEMO_USER_EMAIL || 'demo@myfrido.com').toLowerCase(),
+            name: String(process.env.VITE_DEMO_USER_NAME || 'Demo User'),
             role: process.env.VITE_DEMO_ROLE || 'admin',
             roles: [process.env.VITE_DEMO_ROLE || 'admin'],
         };

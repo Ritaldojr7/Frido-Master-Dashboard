@@ -66,6 +66,12 @@ router.post('/request-access', async (req, res) => {
 
         // Send email to admin
         try {
+            const notifyEmail = String(
+                process.env.DEFAULT_ADMIN_EMAIL ?? process.env.ACCESS_REQUEST_NOTIFY_EMAIL ?? ''
+            ).trim();
+            if (!notifyEmail) {
+                console.warn('Access request received but no DEFAULT_ADMIN_EMAIL or ACCESS_REQUEST_NOTIFY_EMAIL configured.');
+            } else {
             const html = `
                 <h2>New Access Request</h2>
                 <p>A user has requested access to the Frido Master Dashboard:</p>
@@ -79,11 +85,12 @@ router.post('/request-access', async (req, res) => {
                 <p>Please log in to the admin dashboard to review this request.</p>
             `;
             await sendGraphMail({
-                toEmail: 'ritwik.m@myfrido.com',
-                toName: 'Ritwik M',
+                toEmail: notifyEmail,
+                toName: 'Dashboard Admin',
                 subject: `New Dashboard Access Request from ${name.trim()}`,
                 html,
             });
+            }
         } catch (emailErr) {
             console.error('Failed to send admin notification email:', emailErr);
         }

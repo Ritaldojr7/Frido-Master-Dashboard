@@ -158,14 +158,14 @@ describe('hasAccess', () => {
 
     it('restricts ISD dashboards to specific whitelisted email addresses', () => {
         // Whitelisted emails should be allowed regardless of role
-        expect(hasAccess({ email: 'ritwik.m@myfrido.com', role: 'admin' }, '/isd/executive-performance')).toBe(true);
-        expect(hasAccess({ email: 'saiyed.a@myfrido.com', role: 'admin' }, '/isd/performance-profitability')).toBe(true);
-        expect(hasAccess({ email: 'juned.m@myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(true);
+        expect(hasAccess({ email: 'alice@test.myfrido.com', role: 'admin' }, '/isd/executive-performance')).toBe(true);
+        expect(hasAccess({ email: 'bob@test.myfrido.com', role: 'admin' }, '/isd/performance-profitability')).toBe(true);
+        expect(hasAccess({ email: 'charlie@test.myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(true);
 
-        // harshika.s@myfrido.com should have access to executive-performance and performance-profitability, but NOT salary-analysis
-        expect(hasAccess({ email: 'harshika.s@myfrido.com', role: 'staff' }, '/isd/executive-performance')).toBe(true);
-        expect(hasAccess({ email: 'harshika.s@myfrido.com', role: 'staff' }, '/isd/performance-profitability')).toBe(true);
-        expect(hasAccess({ email: 'harshika.s@myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(false);
+        // diana@test.myfrido.com should have access to executive-performance and performance-profitability, but NOT salary-analysis
+        expect(hasAccess({ email: 'diana@test.myfrido.com', role: 'staff' }, '/isd/executive-performance')).toBe(true);
+        expect(hasAccess({ email: 'diana@test.myfrido.com', role: 'staff' }, '/isd/performance-profitability')).toBe(true);
+        expect(hasAccess({ email: 'diana@test.myfrido.com', role: 'staff' }, '/isd/salary-analysis')).toBe(false);
 
         // Non-whitelisted emails should be denied even if they are admins or data analysts
         expect(hasAccess({ email: 'other@myfrido.com', role: 'admin' }, '/isd/executive-performance')).toBe(false);
@@ -216,17 +216,15 @@ describe('hasAccess', () => {
 });
 
 describe('defaultHomePath', () => {
-    it('routes saiyed.a@myfrido.com to Business Analytics', () => {
+    it('routes bob@test.myfrido.com to Business Analytics', () => {
         expect(
-            defaultHomePath({ email: 'saiyed.a@myfrido.com', role: 'admin', roles: ['admin'] })
+            defaultHomePath({ email: 'bob@test.myfrido.com', role: 'admin', roles: ['admin'] })
         ).toBe('/business-analytics');
     });
 
-
-
-    it('routes rhythm.j@myfrido.com to Feedback', () => {
+    it('routes eve@test.myfrido.com to Feedback', () => {
         expect(
-            defaultHomePath({ email: 'rhythm.j@myfrido.com', role: 'feedback', roles: ['feedback'] })
+            defaultHomePath({ email: 'eve@test.myfrido.com', role: 'feedback', roles: ['feedback'] })
         ).toBe('/feedback-department');
     });
 
