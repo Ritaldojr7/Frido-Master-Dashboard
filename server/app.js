@@ -17,6 +17,7 @@ import hrPoliciesRoutes from './routes/hrPolicies.js';
 import orderDisputesRoutes from './routes/orderDisputes.js';
 import dashboardEditRoutes from './routes/dashboardEdit.js';
 import manpowerRoutes from './routes/manpower.js';
+import organizationConfigRoutes from './routes/organizationConfig.js';
 import { protectStaticDashboards } from './middleware/protectStaticDashboards.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -58,6 +59,7 @@ export function createApp() {
         );
     }
 
+    app.use('/api/config/organization', organizationConfigRoutes);
     app.use('/api/auth', authRoutes);
     app.use('/api/users', userRoutes);
     app.use('/api/notices', noticeRoutes);

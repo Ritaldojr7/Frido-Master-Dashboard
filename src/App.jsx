@@ -2,6 +2,7 @@ import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DashboardDataProvider } from './context/DashboardDataContext';
+import { OrgConfigProvider } from './context/OrgConfigContext';
 import AuthGate from './components/AuthGate/AuthGate';
 import RoleGuard from './components/RoleGuard/RoleGuard';
 import NoticeProvider from './components/NoticeProvider/NoticeProvider';
@@ -51,9 +52,13 @@ function HomeRedirect() {
 }
 
 function App() {
+    const isdDashboardEmails = ISD_DASHBOARD_EMAILS();
+    const salaryAnalysisEmails = SALARY_ANALYSIS_EMAILS();
+
     return (
         <ThemeProvider>
             <AuthProvider>
+                <OrgConfigProvider>
                 <AuthGate>
                     <Router>
                         <DashboardDataProvider>
@@ -148,7 +153,7 @@ function App() {
                                     <Route
                                         path="/isd/executive-performance"
                                         element={
-                                            <RoleGuard allowedEmails={ISD_DASHBOARD_EMAILS}>
+                                            <RoleGuard roles={ISD_EXEC_PERF_ROLES} allowedEmails={isdDashboardEmails}>
                                                 <ExecPerformanceDashboard />
                                             </RoleGuard>
                                         }
@@ -156,7 +161,7 @@ function App() {
                                     <Route
                                         path="/isd/performance-profitability"
                                         element={
-                                            <RoleGuard allowedEmails={ISD_DASHBOARD_EMAILS}>
+                                            <RoleGuard roles={ISD_EXEC_PERF_ROLES} allowedEmails={isdDashboardEmails}>
                                                 <PerformanceProfitabilityDashboard />
                                             </RoleGuard>
                                         }
@@ -164,7 +169,7 @@ function App() {
                                     <Route
                                         path="/isd/salary-analysis"
                                         element={
-                                            <RoleGuard allowedEmails={SALARY_ANALYSIS_EMAILS}>
+                                            <RoleGuard roles={ADMIN_ONLY} allowedEmails={salaryAnalysisEmails}>
                                                 <SalaryAnalysisDashboard />
                                             </RoleGuard>
                                         }
@@ -216,6 +221,7 @@ function App() {
                         </DashboardDataProvider>
                     </Router>
                 </AuthGate>
+                </OrgConfigProvider>
             </AuthProvider>
         </ThemeProvider>
     );

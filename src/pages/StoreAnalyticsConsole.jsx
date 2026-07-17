@@ -1,15 +1,16 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { STORE_EMAIL_MAP } from '../config/permissions';
+import { getStoreEmailMap } from '../config/organizationConfig';
 import './IframeDashboard.css';
 
 export default function StoreAnalyticsConsole() {
     const { user } = useAuth();
     const userEmail = user?.email?.toLowerCase();
-    const isStoreManager = Object.prototype.hasOwnProperty.call(STORE_EMAIL_MAP, userEmail);
+    const storeEmailMap = getStoreEmailMap();
+    const isStoreManager = Object.prototype.hasOwnProperty.call(storeEmailMap, userEmail);
 
     const iframeUrl = isStoreManager
-        ? `/fes-sm-dashboard/index.html?store=${encodeURIComponent(STORE_EMAIL_MAP[userEmail])}&role=manager`
+        ? `/fes-sm-dashboard/index.html?store=${encodeURIComponent(storeEmailMap[userEmail])}&role=manager`
         : `/fes-sm-dashboard/index.html`;
 
     return (

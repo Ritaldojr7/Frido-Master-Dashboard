@@ -25,13 +25,17 @@ export const ROLES = {
 };
 
 import {
-    HOME_PATH_BY_EMAIL,
-    ISD_DASHBOARD_EMAILS,
-    SALARY_ANALYSIS_EMAILS,
-    STORE_EMAIL_MAP,
+    getHomePathByEmail,
+    getIsdDashboardEmails,
+    getSalaryAnalysisEmails,
+    getStoreEmailMap,
 } from './organizationConfig.js';
 
-export { STORE_EMAIL_MAP, ISD_DASHBOARD_EMAILS, SALARY_ANALYSIS_EMAILS };
+export {
+    getStoreEmailMap as STORE_EMAIL_MAP,
+    getIsdDashboardEmails as ISD_DASHBOARD_EMAILS,
+    getSalaryAnalysisEmails as SALARY_ANALYSIS_EMAILS,
+};
 
 export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
 export const ADMIN_ONLY = [ROLES.ADMIN];
@@ -171,14 +175,22 @@ export function hasAccess(userOrRole, path) {
 
     if (isSalaryDashboard) {
         if (!userOrRole || typeof userOrRole !== 'object') return false;
+        const salaryAnalysisEmails = getSalaryAnalysisEmails();
+        if (salaryAnalysisEmails.length === 0) {
+            return hasAnyRole(userOrRole, ADMIN_ONLY);
+        }
         const email = String(userOrRole.email || '').trim().toLowerCase();
-        return SALARY_ANALYSIS_EMAILS.map(e => e.toLowerCase()).includes(email);
+        return salaryAnalysisEmails.includes(email);
     }
 
     if (isOtherIsdDashboard) {
         if (!userOrRole || typeof userOrRole !== 'object') return false;
+        const isdDashboardEmails = getIsdDashboardEmails();
+        if (isdDashboardEmails.length === 0) {
+            return hasAnyRole(userOrRole, ISD_EXEC_PERF_ROLES);
+        }
         const email = String(userOrRole.email || '').trim().toLowerCase();
-        return ISD_DASHBOARD_EMAILS.map(e => e.toLowerCase()).includes(email);
+        return isdDashboardEmails.includes(email);
     }
 
     // Strictly check Store Analytics Console email list + admins
@@ -187,7 +199,7 @@ export function hasAccess(userOrRole, path) {
         if (!userOrRole || typeof userOrRole !== 'object') return false;
         if (userOrRole.role === 'admin') return true;
         const email = String(userOrRole.email || '').trim().toLowerCase();
-        return Object.prototype.hasOwnProperty.call(STORE_EMAIL_MAP, email);
+        return Object.prototype.hasOwnProperty.call(getStoreEmailMap(), email);
     }
 
     // 1. Direct match (original path or clean normalized path)
@@ -212,7 +224,7 @@ export function hasAccess(userOrRole, path) {
 /** Primary home route from role priority (multi-role users). */
 export function defaultHomePath(userOrRole) {
     if (userOrRole && typeof userOrRole === 'object' && userOrRole.email) {
-        const emailOverride = HOME_PATH_BY_EMAIL[String(userOrRole.email).trim().toLowerCase()];
+        const emailOverride = getHomePathByEmail()[String(userOrRole.email).trim().toLowerCase()];
         if (emailOverride) return emailOverride;
     }
 
