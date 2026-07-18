@@ -289,9 +289,6 @@ export default function ManpowerDashboard() {
         return [...new Set(attendance.map(r => r.vertical))].sort();
     }, [attendance]);
 
-    const uniqueAgents = useMemo(() => {
-        return [...new Set(attendance.map(r => r.agent_name))].sort();
-    }, [attendance]);
 
     const uniqueMonths = useMemo(() => {
         return [...new Set(attendance.map(r => r.date.substring(0, 7)))].sort((a, b) => b.localeCompare(a));
