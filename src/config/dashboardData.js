@@ -981,6 +981,20 @@ export const isdNmData = {
                     icon: 'clipboard',
                     isdAccess: 'team_lead',
                 },
+                {
+                    title: 'Shopify Training Manual',
+                    url: '/api/hr-policies/shopify-training-manual',
+                    variant: 'dark',
+                    icon: 'document',
+                    isdAccess: 'executive',
+                },
+                {
+                    title: 'Slack Training Manual',
+                    url: '/api/hr-policies/slack-training-manual',
+                    variant: 'dark',
+                    icon: 'document',
+                    isdAccess: 'executive',
+                },
             ],
         },
         {

@@ -14,6 +14,16 @@ export const HR_POLICY_DOCUMENTS = {
         fileName: 'Marriage Gifting Policy.pdf',
         mimeType: 'application/pdf',
     },
+    'shopify-training-manual': {
+        storagePath: 'hr-policies/shopify-training-manual.pdf',
+        fileName: 'Frido Shopify Training Manual v1.pdf',
+        mimeType: 'application/pdf',
+    },
+    'slack-training-manual': {
+        storagePath: 'hr-policies/slack-training-manual.pdf',
+        fileName: 'Frido Slack Training Manual v1.pdf',
+        mimeType: 'application/pdf',
+    },
 };
 
 /** @param {string} slug */

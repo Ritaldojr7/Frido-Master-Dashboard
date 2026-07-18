@@ -12,6 +12,8 @@ import { uploadHrPolicyDocument, storageBackendLabel } from '../services/hrPolic
 
 const DEFAULT_LEAVE = '/Users/mbk-0107/Downloads/POLICY - LEAVE AND HOLIDAY 2026.pdf';
 const DEFAULT_MARRIAGE = '/Users/mbk-0107/Downloads/Arcatron Mobility_Marriage Gifting Policy.pdf';
+const DEFAULT_SHOPIFY = '/Users/mbk-0107/Downloads/Frido_Shopify_Training_Manual_v1_updated (1).pdf';
+const DEFAULT_SLACK = '/Users/mbk-0107/Downloads/Frido_Slack_Training_Manual_v1.pdf';
 
 function readArg(flag, fallback) {
     const idx = process.argv.indexOf(flag);
@@ -36,11 +38,15 @@ async function uploadOne(slug, filePath) {
 async function main() {
     const leavePath = readArg('--leave', DEFAULT_LEAVE);
     const marriagePath = readArg('--marriage', DEFAULT_MARRIAGE);
+    const shopifyPath = readArg('--shopify', DEFAULT_SHOPIFY);
+    const slackPath = readArg('--slack', DEFAULT_SLACK);
 
     console.log(`[upload-hr-policy-pdfs] Backend: ${storageBackendLabel()}`);
 
     await uploadOne('leave-and-holiday-2026', leavePath);
     await uploadOne('marriage-gifting-policy', marriagePath);
+    await uploadOne('shopify-training-manual', shopifyPath);
+    await uploadOne('slack-training-manual', slackPath);
 
     console.log('[upload-hr-policy-pdfs] Done.');
 }
