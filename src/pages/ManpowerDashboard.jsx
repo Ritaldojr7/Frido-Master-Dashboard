@@ -324,16 +324,17 @@ export default function ManpowerDashboard() {
         let eveningPending = 0;
 
         filteredAttendance.forEach(r => {
-            // Stats are computed on duty days (morning_roster/evening_roster === 'DS') and excluding LOP
-            if (!r.is_lop) {
-                if (r.morning_roster === 'DS') {
-                    if (r.morning_time) morningIn++;
-                    else morningPending++;
-                }
-                if (r.evening_roster === 'DS') {
-                    if (r.evening_time) eveningOut++;
-                    else eveningPending++;
-                }
+            // Count checked-in/out regardless of roster status (e.g. Worked on Week Off)
+            if (r.morning_time) {
+                morningIn++;
+            } else if (r.morning_roster === 'DS' && !r.is_lop) {
+                morningPending++;
+            }
+
+            if (r.evening_time) {
+                eveningOut++;
+            } else if (r.evening_roster === 'DS' && !r.is_lop) {
+                eveningPending++;
             }
         });
 

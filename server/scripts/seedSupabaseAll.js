@@ -20,6 +20,8 @@ import path from 'path';
 
 const DEFAULT_LEAVE = '/Users/mbk-0107/Downloads/POLICY - LEAVE AND HOLIDAY 2026.pdf';
 const DEFAULT_MARRIAGE = '/Users/mbk-0107/Downloads/Arcatron Mobility_Marriage Gifting Policy.pdf';
+const DEFAULT_SHOPIFY = '/Users/mbk-0107/Downloads/Frido_Shopify_Training_Manual_v1_updated (1).pdf';
+const DEFAULT_SLACK = '/Users/mbk-0107/Downloads/Frido_Slack_Training_Manual_v1.pdf';
 
 function getSupabase() {
     const url = String(process.env.SUPABASE_URL ?? '').trim();
@@ -143,12 +145,20 @@ async function uploadHrPdfs() {
     const marriagePath = process.argv.includes('--marriage')
         ? process.argv[process.argv.indexOf('--marriage') + 1]
         : DEFAULT_MARRIAGE;
+    const shopifyPath = process.argv.includes('--shopify')
+        ? process.argv[process.argv.indexOf('--shopify') + 1]
+        : DEFAULT_SHOPIFY;
+    const slackPath = process.argv.includes('--slack')
+        ? process.argv[process.argv.indexOf('--slack') + 1]
+        : DEFAULT_SLACK;
 
     console.log(`[hr-policy-pdfs] Backend: ${storageBackendLabel()}`);
 
     for (const [slug, filePath] of [
         ['leave-and-holiday-2026', leavePath],
         ['marriage-gifting-policy', marriagePath],
+        ['shopify-training-manual', shopifyPath],
+        ['slack-training-manual', slackPath],
     ]) {
         const meta = HR_POLICY_DOCUMENTS[slug];
         const resolved = path.resolve(filePath);
