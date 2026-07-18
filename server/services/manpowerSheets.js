@@ -20,7 +20,7 @@ function getAuth() {
     }
     return new google.auth.GoogleAuth({
         credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 }
 
@@ -110,4 +110,30 @@ export async function fetchAllManpowerSheets(spreadsheetId) {
 
 export function isManpowerConfigured() {
     return credentialsConfigured() && Boolean(process.env.MANPOWER_SPREADSHEET_ID);
+}
+
+/**
+ * Append a new row to the LOP tab
+ */
+export async function appendLopRow(spreadsheetId, data) {
+    if (!credentialsConfigured()) {
+        throw new Error('Google Sheets credentials are not configured');
+    }
+
+    const api = getSheetsApi();
+    const range = `'LOP'`;
+    
+    // Assuming columns: Timestamp, Email, Agent Name, Vertical Name, Date of LOP
+    const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+    const row = [timestamp, data.email, data.agentName, data.verticalName, data.dateOfLop];
+
+    await api.spreadsheets.values.append({
+        spreadsheetId,
+        range,
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: {
+            values: [row],
+        },
+    });
 }
