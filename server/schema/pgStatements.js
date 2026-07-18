@@ -168,5 +168,13 @@ export function schemaStatements() {
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS manpower_lop_records (
+            id TEXT PRIMARY KEY,
+            email TEXT NOT NULL,
+            agent_name TEXT NOT NULL,
+            vertical_name TEXT NOT NULL,
+            date_of_lop TEXT NOT NULL,
+            submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
     ];
 }

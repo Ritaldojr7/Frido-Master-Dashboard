@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { apiFetch, useAuth } from '../context/AuthContext';
 import './ManpowerDashboard.css';
 
@@ -28,7 +28,109 @@ function getPastDateIST(daysAgo) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
+const LOP_VERTICALS = [
+    "Abandoned High Cart",
+    "Abandoned Low Cart",
+    "Meta LeadGen",
+    "Shop on Video Call",
+    "Shop on WhatsApp",
+    "Immediate Retention Calling",
+    "Coupon Code Calling"
+];
 
+const LOP_AGENTS = [
+    "Arati Anjaney Hande", "Shahrukh Khan", "Akanksha Thakre", "Vishal Singh", 
+    "Janhavi Patil", "Ayushi Rathore", "Akanksha Sharma", "Kashish Jaiswal", 
+    "Fauziya Praveen", "Abdul Sohail", "Apurva Bagde", "Suyash Avaskar", 
+    "Isha Gite", "Vaishnavi Bhaduria", "Parth Ziprae", "Shamal Yeole", 
+    "Abhijeet Harde", "Gaurav Seolkar", "Harshal Mutthe", "Pranali Jadhao", 
+    "Yashasvi Jain", "Ishwar Walke", "Ankita Ade", "Bhavin Shrimankar", 
+    "Sanskruti Ranaware", "Palak Tiwari", "Priyanshi Pranami", "Shyamli Parmar", 
+    "Prince Singh", "Sandeep Barman", "Suraj Shinde", "Prathamesh Rathod", 
+    "Vimarsh Raina", "Shreyashi Jagtap", "Omkar Mali", "Pranav Shah", 
+    "Anjali Pal", "Oshina Mittal", "Kopal Tamrakar", "Shrushri Landge", 
+    "Sakshi Mehra", "Vayu Jain", "Vaishnavi Chougule", "Bushra Sheikh", 
+    "Akshat Sharma", "Subhalaxmi Satpathy", "Dona Sharma", "Mannaraj Agrawal", 
+    "Shilpi", "Khushboo Thawkar"
+].sort();
+
+function CustomDropdown({ options, value, onChange, placeholder, searchable }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+                setSearchQuery('');
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const filteredOptions = searchable 
+        ? options.filter(opt => opt.toLowerCase().includes(searchQuery.toLowerCase()))
+        : options;
+
+    return (
+        <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+            <div 
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                    padding: '0.65rem 0.85rem', borderRadius: '8px', border: isOpen ? '1px solid #eab308' : '1px solid #d1d5db', 
+                    background: '#fff', color: value ? '#111827' : '#9ca3af', fontSize: '0.95rem', 
+                    cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    transition: 'border-color 0.15s ease'
+                }}
+            >
+                {value || placeholder}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+            {isOpen && (
+                <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px',
+                    background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px',
+                    boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+                    maxHeight: '250px', overflowY: 'auto', zIndex: 50, display: 'flex', flexDirection: 'column'
+                }}>
+                    {searchable && (
+                        <div style={{ padding: '0.5rem', borderBottom: '1px solid #e5e7eb', position: 'sticky', top: 0, background: '#fff' }}>
+                            <input 
+                                type="text"
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                autoFocus
+                                style={{ width: '100%', padding: '0.4rem 0.6rem', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.9rem' }}
+                            />
+                        </div>
+                    )}
+                    {filteredOptions.length > 0 ? filteredOptions.map((opt) => (
+                        <div 
+                            key={opt}
+                            onClick={() => { onChange(opt); setIsOpen(false); setSearchQuery(''); }}
+                            style={{
+                                padding: '0.65rem 0.85rem', cursor: 'pointer', fontSize: '0.95rem',
+                                background: value === opt ? '#fef3c7' : '#fff', color: '#111827'
+                            }}
+                            onMouseOver={(e) => { if(value !== opt) e.target.style.background = '#f9fafb' }}
+                            onMouseOut={(e) => { if(value !== opt) e.target.style.background = '#fff' }}
+                        >
+                            {opt}
+                        </div>
+                    )) : (
+                        <div style={{ padding: '0.65rem 0.85rem', color: '#9ca3af', fontSize: '0.9rem', textAlign: 'center' }}>No results found</div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function ManpowerDashboard() {
     const { user } = useAuth();
@@ -36,6 +138,7 @@ export default function ManpowerDashboard() {
     
     // States for API data
     const [attendance, setAttendance] = useState([]);
+    const [dbLopRecords, setDbLopRecords] = useState([]);
     const [warnings, setWarnings] = useState([]);
     const [fetchedAt, setFetchedAt] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -60,6 +163,33 @@ export default function ManpowerDashboard() {
     const [leaderboardData, setLeaderboardData] = useState(null);
     const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
+    // States for LOP Form
+    const [lopFormData, setLopFormData] = useState({ email: user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || '', agentName: '', verticalName: '', dateOfLop: '' });
+    const [lopSubmitting, setLopSubmitting] = useState(false);
+    const [lopSuccess, setLopSuccess] = useState(false);
+    const [lopError, setLopError] = useState(null);
+
+    const handleLopSubmit = async (e) => {
+        e.preventDefault();
+        setLopSubmitting(true);
+        setLopSuccess(false);
+        setLopError(null);
+        try {
+            await apiFetch('/api/manpower/lop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(lopFormData)
+            });
+            setLopSuccess(true);
+            setLopFormData(prev => ({ ...prev, agentName: '', verticalName: '', dateOfLop: '' }));
+            fetchData();
+        } catch (err) {
+            setLopError(err.message || 'Failed to submit LOP record.');
+        } finally {
+            setLopSubmitting(false);
+        }
+    };
+
     // Fetch master attendance dataset
     const fetchData = async () => {
         setLoading(true);
@@ -69,6 +199,12 @@ export default function ManpowerDashboard() {
             setAttendance(data.attendance || []);
             setFetchedAt(data.fetchedAt);
             setWarnings(data.warnings || []);
+
+            // Also fetch LOP records from DB
+            const lopRes = await apiFetch('/api/manpower/lop');
+            if (lopRes && lopRes.data) {
+                setDbLopRecords(lopRes.data);
+            }
 
             // Set default date filter to today's date or the first available date
             const today = getTodayIST();
@@ -153,6 +289,10 @@ export default function ManpowerDashboard() {
         return [...new Set(attendance.map(r => r.vertical))].sort();
     }, [attendance]);
 
+    const uniqueAgents = useMemo(() => {
+        return [...new Set(attendance.map(r => r.agent_name))].sort();
+    }, [attendance]);
+
     const uniqueMonths = useMemo(() => {
         return [...new Set(attendance.map(r => r.date.substring(0, 7)))].sort((a, b) => b.localeCompare(a));
     }, [attendance]);
@@ -165,6 +305,19 @@ export default function ManpowerDashboard() {
             return matchesDate && matchesVertical;
         });
     }, [attendance, dateFilter, verticalFilter]);
+
+    const lopTrackerData = useMemo(() => {
+        const grouped = {};
+        dbLopRecords.forEach(r => {
+            if (!grouped[r.date_of_lop]) grouped[r.date_of_lop] = [];
+            grouped[r.date_of_lop].push(r);
+        });
+        const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+        return sortedDates.map(date => ({
+            date,
+            records: grouped[date].sort((a, b) => (a.agent_name || '').localeCompare(b.agent_name || ''))
+        }));
+    }, [dbLopRecords]);
 
     // Stat Cards calculations for filtered daily attendance
     const dailyStats = useMemo(() => {
@@ -478,6 +631,12 @@ export default function ManpowerDashboard() {
                     onClick={() => setActiveTab('lop')}
                 >
                     Mark LOP
+                </button>
+                <button
+                    className={`manpower__tab-btn ${activeTab === 'lop-tracker' ? 'manpower__tab-btn--active' : ''}`}
+                    onClick={() => setActiveTab('lop-tracker')}
+                >
+                    LOP Tracker
                 </button>
             </nav>
 
@@ -965,15 +1124,126 @@ export default function ManpowerDashboard() {
 
                 {/* ── Tab 4: Mark LOP ── */}
                 {activeTab === 'lop' && (
-                    <div className="iframe-dashboard" style={{ height: '700px', padding: 0, border: 'none', background: 'transparent' }}>
-                        <div className="iframe-dashboard__frame-wrap" style={{ height: '100%', border: 'none', boxShadow: 'none', background: 'transparent' }}>
-                            <iframe
-                                className="iframe-dashboard__frame"
-                                src={LOP_FORM_URL}
-                                title="Mark Loss of Pay (LOP) Form"
-                                allow="clipboard-write"
-                                style={{ width: '100%', height: '100%', borderRadius: 'var(--radius-md)', border: 'none' }}
-                            />
+                    <div className="lop-tab-container" style={{ padding: '3rem 1rem', background: '#f3f4f6', minHeight: 'calc(100vh - 220px)', borderRadius: 'var(--radius-lg)' }}>
+                        <div className="lop-tab" style={{ maxWidth: '440px', margin: '0 auto', background: '#ffffff', padding: '2.5rem 2.5rem', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                            <h2 style={{ marginBottom: '2rem', fontSize: '1.4rem', fontWeight: 600, color: '#000' }}>Mark Loss of Pay (LOP)</h2>
+                            
+                            {lopSuccess && (
+                                <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-emerald)', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--accent-emerald)' }}>
+                                    LOP record submitted successfully!
+                                </div>
+                            )}
+                            {lopError && (
+                                <div style={{ padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-rose)', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid var(--accent-rose)' }}>
+                                    {lopError}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleLopSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                <div className="manpower__filter-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontWeight: 500, fontSize: '0.9rem', color: '#4b5563' }}>Email <span style={{ color: '#ef4444' }}>*</span></label>
+                                    <input
+                                        type="email"
+                                        value={lopFormData.email}
+                                        onChange={(e) => setLopFormData({ ...lopFormData, email: e.target.value })}
+                                        required
+                                        style={{ padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', background: '#fff', color: '#111827', fontSize: '0.95rem', outline: 'none', transition: 'border-color 0.15s ease' }}
+                                        onFocus={(e) => e.target.style.borderColor = '#eab308'}
+                                        onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                                    />
+                                </div>
+
+                                <div className="manpower__filter-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontWeight: 500, fontSize: '0.9rem', color: '#4b5563' }}>Agent Name <span style={{ color: '#ef4444' }}>*</span></label>
+                                    <CustomDropdown 
+                                        options={LOP_AGENTS} 
+                                        value={lopFormData.agentName} 
+                                        onChange={(val) => setLopFormData({ ...lopFormData, agentName: val })} 
+                                        placeholder="Choose" 
+                                        searchable={true}
+                                    />
+                                </div>
+
+                                <div className="manpower__filter-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontWeight: 500, fontSize: '0.9rem', color: '#4b5563' }}>Vertical Name <span style={{ color: '#ef4444' }}>*</span></label>
+                                    <CustomDropdown 
+                                        options={LOP_VERTICALS} 
+                                        value={lopFormData.verticalName} 
+                                        onChange={(val) => setLopFormData({ ...lopFormData, verticalName: val })} 
+                                        placeholder="Choose" 
+                                    />
+                                </div>
+
+                                <div className="manpower__filter-group" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <label style={{ fontWeight: 500, fontSize: '0.9rem', color: '#4b5563' }}>Date of LOP <span style={{ color: '#ef4444' }}>*</span></label>
+                                    <input
+                                        type="date"
+                                        value={lopFormData.dateOfLop}
+                                        onChange={(e) => setLopFormData({ ...lopFormData, dateOfLop: e.target.value })}
+                                        required
+                                        style={{ padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', background: '#fff', color: '#111827', fontSize: '0.95rem', outline: 'none' }}
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={lopSubmitting}
+                                    style={{ marginTop: '1.5rem', padding: '0.85rem', fontSize: '1.05rem', fontWeight: 600, width: '100%', display: 'flex', justifyContent: 'center', background: '#eab308', color: '#000', border: 'none', borderRadius: '8px', cursor: lopSubmitting ? 'not-allowed' : 'pointer', transition: 'background 0.2s ease' }}
+                                    onMouseOver={(e) => { if (!lopSubmitting) e.target.style.background = '#ca8a04'; }}
+                                    onMouseOut={(e) => { if (!lopSubmitting) e.target.style.background = '#eab308'; }}
+                                >
+                                    {lopSubmitting ? 'Submitting...' : 'Submit LOP'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Tab 5: LOP Tracker ── */}
+                {activeTab === 'lop-tracker' && (
+                    <div className="manpower__tab-content manpower__fade-in">
+                        <div className="manpower__header" style={{ marginBottom: '1.5rem' }}>
+                            <h1 className="manpower__title">LOP Tracker</h1>
+                            <p className="manpower__subtitle">Loss of Pay records grouped by date</p>
+                        </div>
+                        
+                        <div className="manpower__card" style={{ padding: '2rem' }}>
+                            {lopTrackerData.length === 0 ? (
+                                <p style={{ color: 'var(--text-secondary)' }}>No LOP records found.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                    {lopTrackerData.map(group => (
+                                        <div key={group.date} style={{ border: '1px solid var(--border-primary)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                                            <div style={{ background: 'var(--bg-elevated)', padding: '1rem', borderBottom: '1px solid var(--border-primary)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '1.1rem' }}>{group.date}</span>
+                                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', background: 'var(--bg-surface)', padding: '0.2rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-primary)' }}>
+                                                    {group.records.length} Record{group.records.length > 1 ? 's' : ''}
+                                                </span>
+                                            </div>
+                                            <div style={{ padding: '0', overflowX: 'auto' }}>
+                                                <table className="manpower__table" style={{ margin: 0, width: '100%' }}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th style={{ textAlign: 'left', padding: '1rem' }}>Agent Name</th>
+                                                            <th style={{ textAlign: 'left', padding: '1rem' }}>Vertical Name</th>
+                                                            <th style={{ textAlign: 'left', padding: '1rem' }}>Email</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {group.records.map((record, i) => (
+                                                            <tr key={i} style={{ borderBottom: i < group.records.length - 1 ? '1px solid var(--border-primary)' : 'none' }}>
+                                                                <td style={{ fontWeight: 500, padding: '1rem' }}>{record.agent_name}</td>
+                                                                <td style={{ padding: '1rem' }}>{record.vertical_name}</td>
+                                                                <td style={{ color: 'var(--text-secondary)', padding: '1rem' }}>{record.email}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

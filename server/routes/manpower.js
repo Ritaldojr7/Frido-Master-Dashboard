@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.js';
-import { isManpowerConfigured } from '../services/manpowerSheets.js';
+import { isManpowerConfigured, appendLopRow } from '../services/manpowerSheets.js';
 import { aggregateLeaderboard } from '../services/manpowerData.js';
+import db, { now } from '../db.js';
+import { v4 as uuid } from 'uuid';
 import {
     getManpowerSyncStatus,
     loadManpowerFromDb,
@@ -147,6 +149,58 @@ router.get('/leaderboard', async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ error: err.message || 'Failed to generate leaderboard' });
+    }
+});
+
+/**
+ * GET /lop — Get all LOP records directly from the database
+ */
+router.get('/lop', async (_req, res) => {
+    try {
+        const rows = await db.all(
+            `SELECT id, email, agent_name, vertical_name, date_of_lop, submitted_at
+             FROM manpower_lop_records
+             ORDER BY date_of_lop DESC, submitted_at DESC`
+        );
+        res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error('[manpower/lop GET]', err);
+        res.status(500).json({ error: 'Failed to fetch LOP records' });
+    }
+});
+
+/**
+ * POST /lop — Submit a Loss of Pay record to Google Sheets and DB
+ */
+router.post('/lop', async (req, res) => {
+    try {
+        const { email, agentName, verticalName, dateOfLop } = req.body;
+        if (!email || !agentName || !verticalName || !dateOfLop) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // 1. Save to local database (production grade tracking)
+        const recordId = uuid();
+        await db.run(
+            `INSERT INTO manpower_lop_records (id, email, agent_name, vertical_name, date_of_lop, submitted_at)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [recordId, email, agentName, verticalName, dateOfLop, now()]
+        );
+
+        // 2. Also append to Google Sheets if configured (legacy / backup)
+        if (isManpowerConfigured()) {
+            const spreadsheetId = process.env.MANPOWER_SPREADSHEET_ID;
+            if (spreadsheetId) {
+                await appendLopRow(spreadsheetId, { email, agentName, verticalName, dateOfLop }).catch(err => {
+                    console.error('[manpower/lop] Sheets append failed, but DB saved:', err);
+                });
+            }
+        }
+        
+        res.json({ success: true, message: 'LOP record added successfully' });
+    } catch (err) {
+        console.error('[manpower/lop]', err);
+        res.status(500).json({ error: err.message || 'Failed to submit LOP record' });
     }
 });
 
