@@ -34,6 +34,14 @@ services:
         sync: false
       - key: ALLOWED_EMAIL_DOMAINS
         value: myfrido.com
+      # Server-side static dashboard authorization (protectStaticDashboards.js).
+      # Authoritative — the VITE_ equivalents are client-readable and must not gate access.
+      - key: SALARY_ANALYSIS_EMAILS
+        sync: false
+      - key: ISD_DASHBOARD_EMAILS
+        sync: false
+      - key: STORE_EMAIL_MAP
+        sync: false
       - key: MS_TENANT_ID
         sync: false
       - key: MS_CLIENT_ID
