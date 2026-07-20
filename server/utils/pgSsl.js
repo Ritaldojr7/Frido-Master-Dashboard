@@ -26,10 +26,13 @@ export function buildPgSslConfig(env = process.env) {
         }
     }
 
-    // Supabase's endpoints present a publicly-trusted certificate, so Node's bundled CA
-    // store is normally sufficient. Opt in explicitly rather than defaulting to it, so an
-    // environment with a private CA fails loudly at connect time instead of silently
-    // downgrading.
+    // Verify against Node's bundled CA store.
+    //
+    // NOTE: this does NOT work with Supabase's connection pooler, which presents a
+    // self-signed chain — it fails at boot with SELF_SIGNED_CERT_IN_CHAIN. For Supabase,
+    // download the project CA (Dashboard → Project Settings → Database → SSL Configuration)
+    // and set PGSSLROOTCERT instead. This flag is for providers that use a publicly-trusted
+    // certificate.
     if (String(env.PGSSL_VERIFY ?? '').trim().toLowerCase() === 'true') {
         return { rejectUnauthorized: true };
     }

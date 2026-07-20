@@ -36,7 +36,8 @@ services:
       - key: DATABASE_URL
         sync: false
       # Authenticate the DB certificate. Without one of these the connection is encrypted
-      # but unverified. PGSSL_VERIFY=true uses Node's CA store (works with Supabase).
+      # but unverified. For Supabase use PGSSLROOTCERT (its pooler is self-signed, so
+      # PGSSL_VERIFY=true fails at boot with SELF_SIGNED_CERT_IN_CHAIN).
       - key: PGSSL_VERIFY
         sync: false
       - key: PGSSLROOTCERT
