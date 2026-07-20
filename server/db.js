@@ -587,14 +587,43 @@ async function ensurePostgresUsersRoleConstraint() {
     }
 }
 
+/** TLS misconfiguration surfaces here as an opaque stack trace — make it actionable. */
+function explainIfTlsFailure(err) {
+    const TLS_CODES = [
+        'SELF_SIGNED_CERT_IN_CHAIN',
+        'DEPTH_ZERO_SELF_SIGNED_CERT',
+        'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+        'CERT_HAS_EXPIRED',
+    ];
+    if (!TLS_CODES.includes(err?.code)) return;
+
+    console.error(
+        `\n[db] Database TLS verification failed (${err.code}).\n` +
+            '     The server certificate could not be verified against the configured trust anchor.\n' +
+            '     Supabase\'s connection pooler uses a SELF-SIGNED chain, so PGSSL_VERIFY=true\n' +
+            '     (Node\'s bundled CA store) will not work with it.\n\n' +
+            '     Fix: Supabase Dashboard → Project Settings → Database → SSL Configuration →\n' +
+            '     download the CA certificate, then set PGSSLROOTCERT to its PEM contents\n' +
+            '     (or a file path) and unset PGSSL_VERIFY.\n\n' +
+            '     To restore service immediately, unset PGSSL_VERIFY. The connection is then\n' +
+            '     encrypted but NOT authenticated — treat that as temporary.\n'
+    );
+}
+
 migrateSqliteUsersTableIfNeeded();
 if (isPostgres) {
-    for (const stmt of schemaStatements()) {
-        await pool.query(stmt);
+    try {
+        for (const stmt of schemaStatements()) {
+            await pool.query(stmt);
+        }
+        await ensurePostgresOptionalColumns();
+        await ensurePostgresUsersRoleConstraint();
+        await ensurePostgresUsersStatusConstraint();
+    } catch (err) {
+        // Deliberately re-thrown: a database we cannot verify must not be silently accepted.
+        explainIfTlsFailure(err);
+        throw err;
     }
-    await ensurePostgresOptionalColumns();
-    await ensurePostgresUsersRoleConstraint();
-    await ensurePostgresUsersStatusConstraint();
 } else {
     await db.exec(schemaStatements().join(';\n') + ';');
     await ensureColumn('users', 'deleted_at', 'TEXT');
