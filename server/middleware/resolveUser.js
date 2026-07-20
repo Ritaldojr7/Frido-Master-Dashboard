@@ -12,7 +12,7 @@
  */
 import { createClerkClient, getAuth, verifyToken as clerkVerifyToken } from '@clerk/express';
 import db from '../db.js';
-import { normalizeEmail } from '../utils/security.js';
+import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
 import { parseRolesFromStorage } from '../utils/roles.js';
 
 const USER_COLUMNS = 'SELECT id, role, roles, email, status FROM users WHERE id = ?';
@@ -98,4 +98,35 @@ export async function resolveUserFromRequest(req) {
         roles: parseRolesFromStorage(row.roles, row.role),
         status: row.status,
     };
+}
+
+/**
+ * Express middleware: require an active admin, authenticated by cookie session or Bearer.
+ *
+ * Use this instead of `verifyToken` + `requireRole` on routes reachable from inside an
+ * <iframe>, which cannot set an Authorization header. Attaches `req.user` on success so
+ * downstream handlers and rate limiters can key off the identity.
+ */
+export async function requireAdminSession(req, res, next) {
+    try {
+        const user = await resolveUserFromRequest(req);
+
+        if (!user) {
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+        if (
+            user.status === 'disabled' ||
+            !isAllowedCompanyEmail(user.email) ||
+            !user.roles.includes('admin')
+        ) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        req.user = user;
+        return next();
+    } catch (err) {
+        // Fail closed rather than falling through to the route handler.
+        console.error('[requireAdminSession]', err.message);
+        return res.status(403).json({ error: 'Admin access required' });
+    }
 }

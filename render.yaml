@@ -50,14 +50,11 @@ services:
         sync: false
       - key: MS_INVITE_SENDER
         sync: false
-      # GitHub dispatch for dashboard "Edit with Claude" feature
+      # GitHub dispatch for dashboard "Edit with Claude" feature (admin-authenticated;
+      # the former IST_EDIT_PASS / EXEC_EDIT_PASS shared secrets have been removed)
       - key: GH_REPO
         sync: false
       - key: GH_TOKEN
-        sync: false
-      - key: IST_EDIT_PASS
-        sync: false
-      - key: EXEC_EDIT_PASS
         sync: false
       - key: MANPOWER_SPREADSHEET_ID
         sync: false

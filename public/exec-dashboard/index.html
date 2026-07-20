@@ -1744,7 +1744,6 @@ if (typeof module !== "undefined" && module.exports) module.exports = globalThis
       '<h4>Edit with Claude</h4>'
     + '<p>Describe a change to this dashboard. It opens a pull request on GitHub for you to review.</p>'
     + '<textarea id="aiedit-text" placeholder="e.g. Shorten the &quot;Coupon Code Calling&quot; label to &quot;Coupon Calling&quot;"></textarea>'
-    + '<input id="aiedit-pass" type="password" placeholder="Edit password" autocomplete="off">'
     + '<button id="aiedit-send">Request change</button>'
     + '<div id="aiedit-status"></div>';
   document.body.appendChild(fab); document.body.appendChild(panel);
@@ -1753,17 +1752,17 @@ if (typeof module !== "undefined" && module.exports) module.exports = globalThis
   fab.addEventListener("click", function () { panel.classList.toggle("open"); });
   document.getElementById("aiedit-send").addEventListener("click", function () {
     var text = document.getElementById("aiedit-text").value.trim();
-    var pass = document.getElementById("aiedit-pass").value;
     if (!text) { status("Describe the change first.", "#C23B57"); return; }
-    if (!pass) { status("Enter the edit password.", "#C23B57"); return; }
     var btn = document.getElementById("aiedit-send"); btn.disabled = true; status("Sending…");
-    fetch(FN, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ instruction: text, password: pass }) })
+    // Same-origin request — the Clerk session cookie authenticates it, so no password.
+    fetch(FN, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin", body: JSON.stringify({ instruction: text }) })
       .then(function (r) {
-        if (r.status === 401) { status("Wrong password.", "#C23B57"); btn.disabled = false; return null; }
+        if (r.status === 401) { status("Session expired. Reload the dashboard and sign in again.", "#C23B57"); btn.disabled = false; return null; }
+        if (r.status === 403) { status("Admin access is required to request changes.", "#C23B57"); btn.disabled = false; return null; }
+        if (r.status === 429) { status("Too many requests. Try again in a few minutes.", "#C23B57"); btn.disabled = false; return null; }
         if (!r.ok) throw new Error("HTTP " + r.status);
         status("\u2713 Sent. Claude will open a pull request shortly.", "#1E8E5A");
         document.getElementById("aiedit-text").value = "";
-        document.getElementById("aiedit-pass").value = "";
         btn.disabled = false;
       })
       .catch(function (e) { status("Couldn't send: " + (e.message || e), "#C23B57"); btn.disabled = false; });
