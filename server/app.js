@@ -79,9 +79,6 @@ export function createApp() {
     app.use(express.json());
     app.use(cookieParser());
 
-    // Broad backstop; tighter per-route limits are applied in the routers themselves.
-    app.use('/api', apiLimiter);
-
     const clerkSecretKey = String(process.env.CLERK_SECRET_KEY ?? '').trim();
     const clerkPublishableKey = getClerkPublishableKey();
 
@@ -97,6 +94,11 @@ export function createApp() {
             '[Frido Dashboard] CLERK_PUBLISHABLE_KEY (or VITE_CLERK_PUBLISHABLE_KEY) is missing — static dashboard auth middleware disabled.'
         );
     }
+
+    // Must come AFTER clerkMiddleware: the limiter keys on the Clerk session id so each user
+    // gets their own budget. Mounted earlier it would only ever see an IP, and Frido staff
+    // share an office NAT — one blocked key would lock out everyone at once.
+    app.use('/api', apiLimiter);
 
     app.use('/api/config/organization', organizationConfigRoutes);
     app.use('/api/auth', authRoutes);
