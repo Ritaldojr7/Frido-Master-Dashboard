@@ -467,6 +467,40 @@ export default function DailyInventory() {
                         ))}
                     </div>
 
+                    {/* Filters sit directly under the KPIs so the whole page can be scoped
+                        before scrolling — they drive the Full inventory table below. */}
+                    <div className="dinv__panel dinv__filters">
+                        <div className="dinv__controls">
+                            <input
+                                type="text"
+                                placeholder="Search product ID or name…"
+                                value={search}
+                                onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                                aria-label="Search inventory"
+                            />
+                            <select
+                                value={category}
+                                onChange={(e) => { setCategory(e.target.value); setPage(0); }}
+                                aria-label="Filter by category"
+                            >
+                                <option value="">All categories</option>
+                                {categories.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={status}
+                                onChange={(e) => { setStatus(e.target.value); setPage(0); }}
+                                aria-label="Filter by stock status"
+                            >
+                                <option value="">All statuses</option>
+                                <option value="Reorder">Reorder</option>
+                                <option value="Zero Sale">Zero Sale</option>
+                                <option value="Sufficient">Sufficient</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="dinv__grid">
                         <div className="dinv__panel">
                             <h4 className="dinv__panel-title">
@@ -538,36 +572,6 @@ export default function DailyInventory() {
                         <span className="dinv__count">{formatNumber(filtered.length)}</span>
                     </div>
                     <div className="dinv__panel">
-                        <div className="dinv__controls" style={{ marginBottom: 'var(--space-md)' }}>
-                            <input
-                                type="text"
-                                placeholder="Search product ID or name…"
-                                value={search}
-                                onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-                                aria-label="Search inventory"
-                            />
-                            <select
-                                value={category}
-                                onChange={(e) => { setCategory(e.target.value); setPage(0); }}
-                                aria-label="Filter by category"
-                            >
-                                <option value="">All categories</option>
-                                {categories.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
-                            </select>
-                            <select
-                                value={status}
-                                onChange={(e) => { setStatus(e.target.value); setPage(0); }}
-                                aria-label="Filter by stock status"
-                            >
-                                <option value="">All statuses</option>
-                                <option value="Reorder">Reorder</option>
-                                <option value="Zero Sale">Zero Sale</option>
-                                <option value="Sufficient">Sufficient</option>
-                            </select>
-                        </div>
-
                         <div className="dinv__table-scroll">
                             <table className="dinv__table">
                                 <thead>

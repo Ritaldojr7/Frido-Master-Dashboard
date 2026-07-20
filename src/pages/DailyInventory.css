@@ -318,6 +318,13 @@
 }
 
 /* ── Controls ─────────────────────────────── */
+/* Filter bar sits between the KPI row and the charts; tighter padding than a
+   content panel since it holds a single row of inputs. */
+.dinv__filters {
+    padding: 14px 18px;
+    margin-bottom: var(--space-md);
+}
+
 .dinv__controls {
     display: flex;
     gap: var(--space-sm);
