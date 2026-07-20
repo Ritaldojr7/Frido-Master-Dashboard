@@ -21,6 +21,7 @@ import {
     rolesToDbColumns,
 } from '../utils/roles.js';
 import { validateImportRow } from '../utils/userImport.js';
+import { userMutationLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
@@ -197,7 +198,7 @@ router.get('/', requireRole(['admin']), async (_req, res) => {
  * POST /api/users/invite — Invite a new user (admin only)
  * Body: { email, name, role }
  */
-router.post('/invite', requireRole(['admin']), async (req, res) => {
+router.post('/invite', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     try {
         const { email, name, role } = req.body;
         const normalizedEmail = normalizeEmail(email);
@@ -293,7 +294,7 @@ router.post('/invite', requireRole(['admin']), async (req, res) => {
  * POST /api/users/import — Stage users from CSV/XLSX (admin only). Rows are `import_pending` until bulk-invite.
  * Body: { rows: [{ email, name, role, department?, store_name? }, ...] }
  */
-router.post('/import', requireRole(['admin']), async (req, res) => {
+router.post('/import', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     try {
         const { rows } = req.body;
         if (!Array.isArray(rows) || rows.length === 0) {
@@ -370,7 +371,7 @@ router.post('/import', requireRole(['admin']), async (req, res) => {
  * POST /api/users/bulk-invite — Clerk + email for selected `import_pending` users (admin only).
  * Body: { userIds: string[] }
  */
-router.post('/bulk-invite', requireRole(['admin']), async (req, res) => {
+router.post('/bulk-invite', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     try {
         const { userIds } = req.body;
         if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -470,7 +471,7 @@ router.post('/bulk-invite', requireRole(['admin']), async (req, res) => {
  * Same rules as DELETE /:id/permanent: cannot target self; skip already-pending deletion.
  * Body: { userIds: string[] }
  */
-router.post('/bulk-delete', requireRole(['admin']), async (req, res) => {
+router.post('/bulk-delete', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     try {
         const { userIds } = req.body;
         if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -529,7 +530,7 @@ router.post('/bulk-delete', requireRole(['admin']), async (req, res) => {
  * PUT /api/users/:id/role — Change a user's role(s) (admin only)
  * Body: { role } or { roles: string[] } or { roles: "staff, feedback" }
  */
-router.put('/:id/role', requireRole(['admin']), async (req, res) => {
+router.put('/:id/role', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     const { id } = req.params;
     const parsedRoles = parseRolesFromRequest(req.body);
 
@@ -581,7 +582,7 @@ router.put('/:id/role', requireRole(['admin']), async (req, res) => {
 /**
  * DELETE /api/users/:id — Disable a user (admin only, reversible)
  */
-router.delete('/:id', requireRole(['admin']), async (req, res) => {
+router.delete('/:id', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     const { id } = req.params;
 
     if (id === req.user.id) {
@@ -605,7 +606,7 @@ router.delete('/:id', requireRole(['admin']), async (req, res) => {
  * DELETE /api/users/:id/permanent — Schedule a user for permanent deletion in 30 days.
  * The row is hard-purged automatically by the background job once `deleted_at` is older than 30 days.
  */
-router.delete('/:id/permanent', requireRole(['admin']), async (req, res) => {
+router.delete('/:id/permanent', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     const { id } = req.params;
 
     if (id === req.user.id) {
@@ -638,7 +639,7 @@ router.delete('/:id/permanent', requireRole(['admin']), async (req, res) => {
 /**
  * PUT /api/users/:id/reactivate — Re-enable a disabled user (admin only)
  */
-router.put('/:id/reactivate', requireRole(['admin']), async (req, res) => {
+router.put('/:id/reactivate', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     const { id } = req.params;
 
     const target = await db.get('SELECT id, status FROM users WHERE id = ?', [id]);
@@ -662,7 +663,7 @@ router.put('/:id/reactivate', requireRole(['admin']), async (req, res) => {
 /**
  * PUT /api/users/:id/restore — Cancel a pending deletion and reactivate the user.
  */
-router.put('/:id/restore', requireRole(['admin']), async (req, res) => {
+router.put('/:id/restore', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     const { id } = req.params;
 
     const target = await db.get('SELECT id, deleted_at FROM users WHERE id = ?', [id]);
@@ -706,7 +707,7 @@ router.get('/requests', requireRole(['admin']), async (_req, res) => {
 /**
  * POST /api/users/requests/:id/approve — Approve a request and invite the user (admin only)
  */
-router.post('/requests/:id/approve', requireRole(['admin']), async (req, res) => {
+router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     try {
         const { id } = req.params;
         const request = await db.get('SELECT * FROM access_requests WHERE id = ?', [id]);
@@ -798,7 +799,7 @@ router.post('/requests/:id/approve', requireRole(['admin']), async (req, res) =>
 /**
  * POST /api/users/requests/:id/reject — Reject a request (admin only)
  */
-router.post('/requests/:id/reject', requireRole(['admin']), async (req, res) => {
+router.post('/requests/:id/reject', requireRole(['admin']), userMutationLimiter, async (req, res) => {
     try {
         const { id } = req.params;
         const request = await db.get('SELECT * FROM access_requests WHERE id = ?', [id]);

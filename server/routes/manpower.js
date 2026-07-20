@@ -10,11 +10,12 @@ import {
     syncManpowerFromSheets,
     isSyncAuthorized,
 } from '../services/manpowerSync.js';
+import { syncLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
 /** External cron — secret token only (no Clerk session). Must be registered before verifyToken. */
-router.post('/sync/cron', async (req, res) => {
+router.post('/sync/cron', syncLimiter, async (req, res) => {
     const secret = String(process.env.MANPOWER_SYNC_SECRET ?? '').trim();
     if (!secret) {
         return res.status(503).json({ error: 'MANPOWER_SYNC_SECRET is not set' });
@@ -41,7 +42,7 @@ router.post('/sync/cron', async (req, res) => {
 });
 
 /** Shared secret bypass for POST /sync (runs before Clerk auth). */
-router.post('/sync', async (req, res, next) => {
+router.post('/sync', syncLimiter, async (req, res, next) => {
     if (isSyncAuthorized(req)) {
         try {
             const result = await syncManpowerFromSheets();

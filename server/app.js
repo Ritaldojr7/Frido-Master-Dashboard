@@ -3,10 +3,13 @@
  */
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { clerkMiddleware } from '@clerk/express';
+import { createCorsOriginCallback } from './utils/corsOrigins.js';
+import { apiLimiter } from './middleware/rateLimit.js';
 
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
@@ -35,13 +38,48 @@ export function createApp() {
     app.set('trust proxy', 1);
 
     app.use(
+        helmet({
+            // The SPA embeds its own static dashboards in iframes — DENY would break every
+            // one of them. Same-origin framing must stay permitted.
+            frameguard: { action: 'sameorigin' },
+            // Report-only for now: the static dashboards under public/ carry inline scripts
+            // and styles that a strict policy would block. Collect violations first, then
+            // tighten in a follow-up before enforcing.
+            contentSecurityPolicy: {
+                reportOnly: true,
+                directives: {
+                    defaultSrc: ["'self'"],
+                    frameAncestors: ["'self'"],
+                    scriptSrc: ["'self'", "'unsafe-inline'"],
+                    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+                    fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+                    imgSrc: ["'self'", 'data:', 'https:'],
+                    connectSrc: ["'self'", 'https:'],
+                    frameSrc: ["'self'", 'https:'],
+                },
+            },
+            // Third-party embeds (Locobuzz, Tangoeye, published Google Sheets) fail under COEP.
+            crossOriginEmbedderPolicy: false,
+            // Static dashboards are framed by the SPA and load cross-origin assets.
+            crossOriginResourcePolicy: { policy: 'cross-origin' },
+            hsts:
+                process.env.NODE_ENV === 'production'
+                    ? { maxAge: 15552000, includeSubDomains: true }
+                    : false,
+        })
+    );
+
+    app.use(
         cors({
-            origin: true,
+            origin: createCorsOriginCallback(process.env),
             credentials: true,
         })
     );
     app.use(express.json());
     app.use(cookieParser());
+
+    // Broad backstop; tighter per-route limits are applied in the routers themselves.
+    app.use('/api', apiLimiter);
 
     const clerkSecretKey = String(process.env.CLERK_SECRET_KEY ?? '').trim();
     const clerkPublishableKey = getClerkPublishableKey();
