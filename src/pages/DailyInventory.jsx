@@ -179,6 +179,15 @@ export default function DailyInventory() {
         [records]
     );
 
+    const zeroSaleItems = useMemo(
+        () =>
+            records
+                .filter((r) => r.status === 'Zero Sale')
+                .sort((a, b) => (b.totalInv || (b.totalNet + b.totalBlocked)) - (a.totalInv || (a.totalNet + a.totalBlocked)))
+                .slice(0, 25),
+        [records]
+    );
+
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const safePage = Math.min(page, totalPages - 1);
     const pageItems = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
@@ -206,119 +215,202 @@ export default function DailyInventory() {
         });
 
         function buildCharts(t) {
-        Chart.defaults.font.family = getComputedStyle(rootRef.current).fontFamily;
-        Chart.defaults.color = t.text;
+            Chart.defaults.font.family = getComputedStyle(rootRef.current).fontFamily;
+            Chart.defaults.color = t.text;
 
-        const statusCounts = {
-            Reorder: summary.reorder ?? 0,
-            'Zero Sale': summary.zeroSale ?? 0,
-            Sufficient: summary.sufficient ?? 0,
-        };
-        const statusLabels = Object.keys(statusCounts).filter((k) => statusCounts[k] > 0);
+            const statusCounts = {
+                Reorder: summary.reorder ?? 0,
+                'Zero Sale': summary.zeroSale ?? 0,
+                Sufficient: summary.sufficient ?? 0,
+            };
+            const statusLabels = Object.keys(statusCounts).filter((k) => statusCounts[k] > 0);
+            const totalStatusSkus = Object.values(statusCounts).reduce((a, b) => a + b, 0);
 
-        if (statusCanvas.current) {
-            chartRefs.current.status = new Chart(statusCanvas.current, {
-                type: 'doughnut',
-                data: {
-                    labels: statusLabels,
-                    datasets: [
-                        {
-                            data: statusLabels.map((k) => statusCounts[k]),
-                            backgroundColor: statusLabels.map(
-                                (k) =>
-                                    ({ Reorder: t.reorder, 'Zero Sale': t.zero, Sufficient: t.sufficient }[k])
-                            ),
-                            // 2px surface gap between segments.
-                            borderColor: t.surface,
-                            borderWidth: 2,
+            if (statusCanvas.current) {
+                chartRefs.current.status = new Chart(statusCanvas.current, {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [
+                            {
+                                data: statusLabels.map((k) => statusCounts[k]),
+                                backgroundColor: statusLabels.map(
+                                    (k) =>
+                                        ({ Reorder: t.reorder, 'Zero Sale': t.zero, Sufficient: t.sufficient }[k])
+                                ),
+                                borderColor: t.surface,
+                                borderWidth: 2,
+                                hoverOffset: 10,
+                                hoverBorderWidth: 3,
+                            },
+                        ],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        cutout: '62%',
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 1000,
+                            easing: 'easeOutQuart',
                         },
-                    ],
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    cutout: '62%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { boxWidth: 10, padding: 14, font: { size: 11.5 } },
+                        onHover: (e, elements) => {
+                            if (e.native && e.native.target) {
+                                e.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                            }
+                        },
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const idx = elements[0].index;
+                                const clickedStatus = statusLabels[idx];
+                                setStatus((prev) => (prev === clickedStatus ? '' : clickedStatus));
+                                setPage(0);
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { boxWidth: 10, padding: 14, font: { size: 11.5 } },
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        const val = context.raw || 0;
+                                        const pctVal = totalStatusSkus ? Math.round((val / totalStatusSkus) * 100) : 0;
+                                        return ` ${context.label}: ${formatNumber(val)} SKUs (${pctVal}%) — Click to filter`;
+                                    },
+                                },
+                            },
                         },
                     },
-                },
+                });
+            }
+
+            const catTotals = {};
+            records.forEach((r) => {
+                catTotals[r.category] = (catTotals[r.category] || 0) + (r.totalNet || 0);
             });
-        }
+            const catEntries = Object.entries(catTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
 
-        const catTotals = {};
-        records.forEach((r) => {
-            catTotals[r.category] = (catTotals[r.category] || 0) + (r.totalNet || 0);
-        });
-        const catEntries = Object.entries(catTotals)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 10);
-
-        if (categoryCanvas.current) {
-            chartRefs.current.category = new Chart(categoryCanvas.current, {
-                type: 'bar',
-                data: {
-                    labels: catEntries.map((e) => e[0]),
-                    datasets: [
-                        {
-                            label: 'Net inventory',
-                            data: catEntries.map((e) => e[1]),
-                            backgroundColor: t.bar,
-                            borderRadius: 4,
-                            maxBarThickness: 16,
-                        },
-                    ],
-                },
-                options: {
-                    indexAxis: 'y',
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: t.grid }, ticks: { font: { size: 10.5 } } },
-                        y: { grid: { display: false }, ticks: { font: { size: 10.5 } } },
+            if (categoryCanvas.current) {
+                chartRefs.current.category = new Chart(categoryCanvas.current, {
+                    type: 'bar',
+                    data: {
+                        labels: catEntries.map((e) => e[0]),
+                        datasets: [
+                            {
+                                label: 'Net inventory',
+                                data: catEntries.map((e) => e[1]),
+                                backgroundColor: t.bar,
+                                hoverBackgroundColor: t.reorder,
+                                borderRadius: 5,
+                                maxBarThickness: 16,
+                            },
+                        ],
                     },
-                },
-            });
-        }
-
-        const facTotals = {};
-        records.forEach((r) => {
-            Object.entries(r.netByFacility || {}).forEach(([fac, val]) => {
-                facTotals[fac] = (facTotals[fac] || 0) + val;
-            });
-        });
-        const facEntries = Object.entries(facTotals).sort((a, b) => b[1] - a[1]);
-
-        if (facilityCanvas.current) {
-            chartRefs.current.facility = new Chart(facilityCanvas.current, {
-                type: 'bar',
-                data: {
-                    labels: facEntries.map((e) => e[0]),
-                    datasets: [
-                        {
-                            label: 'Net inventory',
-                            data: facEntries.map((e) => e[1]),
-                            backgroundColor: t.bar,
-                            borderRadius: 4,
-                            maxBarThickness: 20,
+                    options: {
+                        indexAxis: 'y',
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 900,
+                            easing: 'easeOutCubic',
                         },
-                    ],
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 9.5 }, maxRotation: 60, minRotation: 40 },
+                        onHover: (e, elements) => {
+                            if (e.native && e.native.target) {
+                                e.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                            }
                         },
-                        y: { grid: { color: t.grid }, ticks: { font: { size: 10 } } },
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const idx = elements[0].index;
+                                const clickedCat = catEntries[idx]?.[0];
+                                if (clickedCat) {
+                                    setCategory((prev) => (prev === clickedCat ? '' : clickedCat));
+                                    setPage(0);
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => ` Net inventory: ${formatNumber(context.raw)} units — Click to filter`,
+                                },
+                            },
+                        },
+                        scales: {
+                            x: { grid: { color: t.grid }, ticks: { font: { size: 10.5 } } },
+                            y: { grid: { display: false }, ticks: { font: { size: 10.5 } } },
+                        },
                     },
-                },
-            });
-        }
+                });
+            }
 
+            const facTotals = {};
+            records.forEach((r) => {
+                Object.entries(r.netByFacility || {}).forEach(([fac, val]) => {
+                    facTotals[fac] = (facTotals[fac] || 0) + val;
+                });
+            });
+            const facEntries = Object.entries(facTotals).sort((a, b) => b[1] - a[1]);
+
+            if (facilityCanvas.current) {
+                chartRefs.current.facility = new Chart(facilityCanvas.current, {
+                    type: 'bar',
+                    data: {
+                        labels: facEntries.map((e) => e[0]),
+                        datasets: [
+                            {
+                                label: 'Net inventory',
+                                data: facEntries.map((e) => e[1]),
+                                backgroundColor: t.bar,
+                                hoverBackgroundColor: t.reorder,
+                                borderRadius: 5,
+                                maxBarThickness: 20,
+                            },
+                        ],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart',
+                        },
+                        onHover: (e, elements) => {
+                            if (e.native && e.native.target) {
+                                e.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                            }
+                        },
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const idx = elements[0].index;
+                                const clickedFac = facEntries[idx]?.[0];
+                                if (clickedFac) {
+                                    setSearch((prev) => (prev === clickedFac ? '' : clickedFac));
+                                    setPage(0);
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => ` Net inventory: ${formatNumber(context.raw)} units — Click to search facility`,
+                                },
+                            },
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 9.5 }, maxRotation: 60, minRotation: 40 },
+                            },
+                            y: { grid: { color: t.grid }, ticks: { font: { size: 10 } } },
+                        },
+                    },
+                });
+            }
         }
 
         return () => {
@@ -333,7 +425,7 @@ export default function DailyInventory() {
     const showUploader = canUpload && (!snapshot || replacing);
 
     const kpis = [
-        { label: 'Total SKUs', value: summary.totalSkus, sub: 'tracked', accent: 'var(--accent)' },
+        { label: 'Total SKUs', value: summary.totalSkus, sub: 'tracked today', accent: 'var(--accent)' },
         { label: 'Net Inventory', value: summary.totalNet, sub: 'units across facilities', accent: 'var(--dinv-sufficient)' },
         { label: 'Blocked Inventory', value: summary.totalBlocked, sub: 'units on hold', accent: 'var(--dinv-zero)' },
         { label: 'Reorder Alerts', value: summary.reorder, sub: pct(summary.reorder, summary.totalSkus), accent: 'var(--dinv-reorder)' },
@@ -351,7 +443,7 @@ export default function DailyInventory() {
         setSort((prev) =>
             prev.key === key
                 ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-                : { key, dir: ['totalNet', 'totalBlocked', 'avgSale'].includes(key) ? 'desc' : 'asc' }
+                : { key, dir: ['totalNet', 'totalBlocked', 'totalInv', 'avgSale'].includes(key) ? 'desc' : 'asc' }
         );
     }
 
@@ -418,9 +510,10 @@ export default function DailyInventory() {
                     </div>
                     <h3>{uploading ? 'Uploading…' : "Drop today's inventory sheet here"}</h3>
                     <p>
-                        Export the daily sheet from Google Sheets (File → Download → Microsoft Excel)
-                        and drop it here. It is parsed on the server and shared with everyone who has
-                        view access.
+                        Works with the daily export from your Google Sheet — save it as
+                        .xlsx (File &rarr; Download &rarr; Microsoft Excel) and drop it here, or click
+                        to browse. The file is parsed on the server and shared with everyone
+                        who has view access.
                     </p>
                     <button
                         type="button"
@@ -499,6 +592,52 @@ export default function DailyInventory() {
                                 <option value="Sufficient">Sufficient</option>
                             </select>
                         </div>
+
+                        {Boolean(search.trim() || category || status) && (
+                            <div className="dinv__search-results">
+                                <div className="dinv__search-match-count">
+                                    <strong style={{ color: 'var(--accent)' }}>{filtered.length}</strong> {filtered.length === 1 ? 'match' : 'matches'}
+                                    {search.trim() && <> for &ldquo;{search.trim()}&rdquo;</>}
+                                </div>
+                                <div className="dinv__table-scroll">
+                                    <table className="dinv__table">
+                                        <thead>
+                                            <tr>
+                                                <th>Product ID</th>
+                                                <th>Name</th>
+                                                <th>Category</th>
+                                                <th style={{ textAlign: 'right' }}>Net Invt</th>
+                                                <th style={{ textAlign: 'right' }}>Days of Invt</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filtered.length === 0 ? (
+                                                <tr className="dinv__empty-row">
+                                                    <td colSpan={6}>No SKUs match your search criteria.</td>
+                                                </tr>
+                                            ) : (
+                                                filtered.slice(0, 10).map((r) => (
+                                                    <tr key={r.id}>
+                                                        <td className="dinv__id">{r.id}</td>
+                                                        <td>{r.name}</td>
+                                                        <td>{r.category}</td>
+                                                        <td className="dinv__num">{formatNumber(r.totalNet)}</td>
+                                                        <td className="dinv__num">{r.daysInvt ?? '—'}</td>
+                                                        <td>
+                                                            <span className={`dinv__status dinv__status--${STATUS_CLASS[r.status] || 'zero'}`}>
+                                                                <span className="dinv__status-dot" />
+                                                                {r.status}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="dinv__grid">
@@ -539,6 +678,7 @@ export default function DailyInventory() {
                                     <tr>
                                         <th>Product ID</th>
                                         <th>Name</th>
+                                        <th>Type</th>
                                         <th>Category</th>
                                         <th style={{ textAlign: 'right' }}>Net Invt</th>
                                         <th style={{ textAlign: 'right' }}>Avg Daily Sale</th>
@@ -548,17 +688,59 @@ export default function DailyInventory() {
                                 <tbody>
                                     {reorderItems.length === 0 ? (
                                         <tr className="dinv__empty-row">
-                                            <td colSpan={6}>No SKUs are currently flagged for reorder.</td>
+                                            <td colSpan={7}>No SKUs are currently flagged for reorder.</td>
                                         </tr>
                                     ) : (
                                         reorderItems.map((r) => (
                                             <tr key={r.id}>
                                                 <td className="dinv__id">{r.id}</td>
                                                 <td>{r.name}</td>
+                                                <td>{r.type}</td>
                                                 <td>{r.category}</td>
                                                 <td className="dinv__num">{formatNumber(r.totalNet)}</td>
                                                 <td className="dinv__num">{formatNumber(r.avgSale)}</td>
                                                 <td className="dinv__num">{r.daysInvt ?? '—'}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="dinv__section-title">
+                        <h3>Zero sale items</h3>
+                        <span className="dinv__count">{formatNumber(summary.zeroSale)}</span>
+                    </div>
+                    <div className="dinv__panel" style={{ padding: '6px 18px 14px' }}>
+                        <div className="dinv__table-scroll">
+                            <table className="dinv__table">
+                                <thead>
+                                    <tr>
+                                        <th>Product ID</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Category</th>
+                                        <th style={{ textAlign: 'right' }}>Net Invt</th>
+                                        <th style={{ textAlign: 'right' }}>Blocked</th>
+                                        <th style={{ textAlign: 'right' }}>Total Invt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {zeroSaleItems.length === 0 ? (
+                                        <tr className="dinv__empty-row">
+                                            <td colSpan={7}>No SKUs are currently flagged as zero sale.</td>
+                                        </tr>
+                                    ) : (
+                                        zeroSaleItems.map((r) => (
+                                            <tr key={r.id}>
+                                                <td className="dinv__id">{r.id}</td>
+                                                <td>{r.name}</td>
+                                                <td>{r.type}</td>
+                                                <td>{r.category}</td>
+                                                <td className="dinv__num">{formatNumber(r.totalNet)}</td>
+                                                <td className="dinv__num">{formatNumber(r.totalBlocked)}</td>
+                                                <td className="dinv__num">{formatNumber(r.totalInv || (r.totalNet + r.totalBlocked))}</td>
                                             </tr>
                                         ))
                                     )}
@@ -579,9 +761,11 @@ export default function DailyInventory() {
                                         {[
                                             ['id', 'Product ID', false],
                                             ['name', 'Name', false],
+                                            ['type', 'Type', false],
                                             ['category', 'Category', false],
                                             ['totalNet', 'Net Invt', true],
                                             ['totalBlocked', 'Blocked', true],
+                                            ['totalInv', 'Total Invt', true],
                                             ['avgSale', 'Avg Daily Sale', true],
                                             ['daysInvt', 'Days of Invt', true],
                                             ['status', 'Status', false],
@@ -601,16 +785,18 @@ export default function DailyInventory() {
                                 <tbody>
                                     {pageItems.length === 0 ? (
                                         <tr className="dinv__empty-row">
-                                            <td colSpan={8}>No SKUs match these filters.</td>
+                                            <td colSpan={10}>No SKUs match these filters.</td>
                                         </tr>
                                     ) : (
                                         pageItems.map((r) => (
                                             <tr key={r.id}>
                                                 <td className="dinv__id">{r.id}</td>
                                                 <td>{r.name}</td>
+                                                <td>{r.type}</td>
                                                 <td>{r.category}</td>
                                                 <td className="dinv__num">{formatNumber(r.totalNet)}</td>
                                                 <td className="dinv__num">{formatNumber(r.totalBlocked)}</td>
+                                                <td className="dinv__num">{formatNumber(r.totalInv || (r.totalNet + r.totalBlocked))}</td>
                                                 <td className="dinv__num">{formatNumber(r.avgSale)}</td>
                                                 <td className="dinv__num">{r.daysInvt ?? '—'}</td>
                                                 <td>
