@@ -21,6 +21,7 @@ import hrPoliciesRoutes from './routes/hrPolicies.js';
 import orderDisputesRoutes from './routes/orderDisputes.js';
 import dashboardEditRoutes from './routes/dashboardEdit.js';
 import manpowerRoutes from './routes/manpower.js';
+import inventoryRoutes from './routes/inventory.js';
 import organizationConfigRoutes from './routes/organizationConfig.js';
 import { protectStaticDashboards } from './middleware/protectStaticDashboards.js';
 
@@ -109,6 +110,7 @@ export function createApp() {
     app.use('/api/hr-policies', hrPoliciesRoutes);
     app.use('/api/order-disputes', orderDisputesRoutes);
     app.use('/api/manpower', manpowerRoutes);
+    app.use('/api/inventory', inventoryRoutes);
     app.use('/api', dashboardEditRoutes);
 
     app.get('/api/health', (_req, res) => {

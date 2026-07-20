@@ -24,6 +24,7 @@ import SalaryAnalysisDashboard from './pages/SalaryAnalysisDashboard';
 import OrmDashboard from './pages/OrmDashboard';
 import LmsDashboard from './pages/LmsDashboard';
 import ManpowerDashboard from './pages/ManpowerDashboard';
+import DailyInventory from './pages/DailyInventory';
 import {
     ADMIN_ONLY,
     AI_CALLING_FEEDBACK_ROLES,
@@ -39,6 +40,7 @@ import {
     ISD_DASHBOARD_EMAILS,
     SALARY_ANALYSIS_EMAILS,
     MANPOWER_ROLES,
+    DAILY_INVENTORY_ROLES,
     defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
@@ -179,6 +181,14 @@ function App() {
                                         element={
                                             <RoleGuard roles={MANPOWER_ROLES}>
                                                 <ManpowerDashboard />
+                                            </RoleGuard>
+                                        }
+                                    />
+                                    <Route
+                                        path="/daily-inventory"
+                                        element={
+                                            <RoleGuard roles={DAILY_INVENTORY_ROLES}>
+                                                <DailyInventory />
                                             </RoleGuard>
                                         }
                                     />

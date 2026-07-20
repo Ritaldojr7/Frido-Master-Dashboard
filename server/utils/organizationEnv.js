@@ -65,6 +65,17 @@ export function getIsdDashboardEmailsServer(env = process.env) {
     return serverCsvList(env, 'ISD_DASHBOARD_EMAILS', 'VITE_ISD_DASHBOARD_EMAILS');
 }
 
+/**
+ * Emails permitted to UPLOAD a daily inventory sheet.
+ *
+ * Viewing is role-based (executives and admins); uploading replaces the snapshot everyone
+ * then reads, so it is restricted to named people. Empty list ⇒ admins only, never
+ * "everyone" — an unconfigured allowlist must not widen write access.
+ */
+export function getInventoryUploaderEmailsServer(env = process.env) {
+    return parseCsvList(env.INVENTORY_UPLOADER_EMAILS);
+}
+
 /** Store-manager email → store name. Empty map ⇒ role check. */
 export function getStoreEmailMapServer(env = process.env) {
     const serverValue = String(env.STORE_EMAIL_MAP ?? '').trim();

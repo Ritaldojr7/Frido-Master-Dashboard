@@ -48,6 +48,13 @@ export const RETAIL_STAFF_ACCESS_ROLES = [ROLES.ADMIN, ROLES.STAFF];
 /** ISD NM hub: executives, team leads, and admins */
 export const ISD_NM_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
 
+/**
+ * Daily Inventory dashboard — executives, team leads and admins may view.
+ * Uploading is a separate, narrower right enforced server-side against a named
+ * email allowlist (INVENTORY_UPLOADER_EMAILS), not by role.
+ */
+export const DAILY_INVENTORY_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_LEAD];
+
 /** Manpower Attendance & Performance dashboard: admins and team leads */
 export const MANPOWER_ROLES = [ROLES.ADMIN, ROLES.TEAM_LEAD];
 
@@ -133,6 +140,7 @@ export const routePermissions = {
     '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
     '/isd/salary-analysis': [], // Strict email check handles this, empty role list fallback
     '/manpower': MANPOWER_ROLES,
+    '/daily-inventory': DAILY_INVENTORY_ROLES,
     '/orm': ORM_ROLES,
     'https://harshikamyfrido-prog.github.io/ORM-Dashboard/': ORM_ROLES,
     'https://www.referrush.com/myfrido/dashboard': ADMIN_ONLY,

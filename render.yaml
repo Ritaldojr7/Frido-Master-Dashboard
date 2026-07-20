@@ -52,6 +52,9 @@ services:
         sync: false
       - key: STORE_EMAIL_MAP
         sync: false
+      # Who may upload a Daily Inventory sheet. Viewing is executive/admin by role.
+      - key: INVENTORY_UPLOADER_EMAILS
+        sync: false
       - key: MS_TENANT_ID
         sync: false
       - key: MS_CLIENT_ID
