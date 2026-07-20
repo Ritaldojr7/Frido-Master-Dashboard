@@ -35,6 +35,12 @@ services:
       # External Postgres (Neon / Supabase / etc.) — required for this free-tier layout
       - key: DATABASE_URL
         sync: false
+      # Authenticate the DB certificate. Without one of these the connection is encrypted
+      # but unverified. PGSSL_VERIFY=true uses Node's CA store (works with Supabase).
+      - key: PGSSL_VERIFY
+        sync: false
+      - key: PGSSLROOTCERT
+        sync: false
       - key: ALLOWED_EMAIL_DOMAINS
         value: myfrido.com
       # Server-side static dashboard authorization (protectStaticDashboards.js).
