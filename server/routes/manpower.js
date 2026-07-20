@@ -11,6 +11,7 @@ import {
     isSyncAuthorized,
 } from '../services/manpowerSync.js';
 import { syncLimiter } from '../middleware/rateLimit.js';
+import { bearerSecret, timingSafeCompare } from '../utils/security.js';
 
 const router = Router();
 
@@ -20,9 +21,7 @@ router.post('/sync/cron', syncLimiter, async (req, res) => {
     if (!secret) {
         return res.status(503).json({ error: 'MANPOWER_SYNC_SECRET is not set' });
     }
-    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
-    const token = bearer || String(req.query.token ?? '').trim();
-    if (token !== secret) {
+    if (!timingSafeCompare(bearerSecret(req), secret)) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 

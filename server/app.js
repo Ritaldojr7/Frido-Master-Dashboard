@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { clerkMiddleware } from '@clerk/express';
 import { createCorsOriginCallback } from './utils/corsOrigins.js';
 import { apiLimiter } from './middleware/rateLimit.js';
+import { bearerSecret, timingSafeCompare } from './utils/security.js';
 
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
@@ -118,9 +119,7 @@ export function createApp() {
         if (!secret) {
             return res.status(503).json({ error: 'DB_PING_SECRET is not set' });
         }
-        const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
-        const token = bearer || String(req.query.token ?? '').trim();
-        if (token !== secret) {
+        if (!timingSafeCompare(bearerSecret(req), secret)) {
             return res.status(403).json({ error: 'Forbidden' });
         }
         try {
