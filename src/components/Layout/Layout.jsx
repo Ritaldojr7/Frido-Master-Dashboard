@@ -88,6 +88,7 @@ const sidebarSections = [
                     { path: '/isd/performance-profitability', label: 'Performance Profitability Dashboard', icon: ICONS.profitDash },
                     { path: '/isd/salary-analysis', label: 'Salary Analysis', icon: ICONS.profitDash },
                     { path: '/manpower', label: 'Manpower Attendance', icon: ICONS.users },
+                    { path: '/daily-inventory', label: 'Daily Inventory', icon: ICONS.chart },
                 ],
             },
             {

@@ -168,6 +168,18 @@ export function schemaStatements() {
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS inventory_snapshots (
+            id TEXT PRIMARY KEY,
+            uploaded_by TEXT NOT NULL DEFAULT '',
+            uploaded_by_email TEXT NOT NULL DEFAULT '',
+            file_name TEXT NOT NULL DEFAULT '',
+            sheet_name TEXT NOT NULL DEFAULT '',
+            row_count INTEGER NOT NULL DEFAULT 0,
+            summary TEXT NOT NULL DEFAULT '{}',
+            payload TEXT NOT NULL DEFAULT '[]',
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_inventory_snapshots_created ON inventory_snapshots(created_at DESC)`,
         `CREATE TABLE IF NOT EXISTS manpower_lop_records (
             id TEXT PRIMARY KEY,
             email TEXT NOT NULL,
