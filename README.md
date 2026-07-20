@@ -19,6 +19,7 @@
 - [Data Pipelines](#data-pipelines)
 - [Database](#database)
 - [Authentication & Permissions](#authentication--permissions)
+- [Security](#security-audit)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [Scripts](#scripts)
@@ -185,14 +186,17 @@ External links (Google Sheets, third-party tools) are also gated by role — see
 
 Self-contained HTML dashboards bundled with the app. These load published Google Sheet CSV data directly in the browser and do not use the Express API:
 
-| Directory | Purpose |
-|-----------|---------|
-| `exec-dashboard/` | Executive performance |
-| `fes-sm-dashboard/` | FES social media |
-| `ist-console/` | IST console |
-| `orm-dashboard/` | ORM metrics |
-| `retail-feedback/` | Retail feedback |
-| `salary-analysis/` | Salary analysis |
+| Directory | Purpose | Who may open it |
+|-----------|---------|-----------------|
+| `exec-dashboard/` | Executive performance | `ISD_DASHBOARD_EMAILS`, else `admin` / `data_analyst` |
+| `fes-sm-dashboard/` | FES social media | `admin`, or an email in `STORE_EMAIL_MAP` |
+| `ist-console/` | IST console | `admin` / `data_analyst` |
+| `orm-dashboard/` | ORM metrics | `admin` / `data_analyst` / `orm_lead` |
+| `retail-feedback/` | Retail feedback | `admin` / `feedback` / `data_analyst` |
+| `salary-analysis/` | Salary analysis | `SALARY_ANALYSIS_EMAILS`, else `admin` |
+
+Access is enforced server-side in `server/middleware/protectStaticDashboards.js` — these
+pages have no auth of their own. See [Where authorization is actually enforced](#where-authorization-is-actually-enforced).
 
 ### API routes (`/api/*`)
 
@@ -307,9 +311,46 @@ Users may hold **multiple roles** (`user.roles` array). Admin always bypasses ro
 
 Some routes (ISD executive dashboards, salary analysis) use an **email allowlist** instead of roles.
 
+### Where authorization is actually enforced
+
+`src/config/permissions.js` is a **UI affordance layer** — it decides which links render and
+where a user lands. It is not a security boundary; anyone can bypass it by typing a URL.
+
+Enforcement lives in three server-side places:
+
+| Surface | Enforced by | Notes |
+|---------|-------------|-------|
+| `/api/*` routes | `verifyToken` + `requireRole` (`server/middleware/auth.js`) | Reads `Authorization: Bearer` |
+| Static HTML dashboards | `server/middleware/protectStaticDashboards.js` | Per-prefix policy; fails closed |
+| Admin-only actions on iframe pages | `requireAdminSession` (`server/middleware/resolveUser.js`) | Accepts the Clerk session cookie |
+
+`server/middleware/resolveUser.js` resolves identity from **either** the Clerk session cookie
+or a Bearer token. The cookie path exists because pages loaded in an `<iframe>` cannot set an
+`Authorization` header — `verifyToken` alone would reject them.
+
+**When adding a static dashboard**, add its prefix to `PROTECTED_STATIC_PREFIXES` *and* give
+it an entry in `STATIC_DASHBOARD_POLICIES`. A prefix with no policy is denied, so forgetting
+the second step fails safe rather than exposing the page.
+
+> ⚠️ Do not use `hasAnyRole` from `server/utils/roles.js` inside the static dashboard policy
+> checks. It grants admins unconditionally, which would silently defeat the email allowlists
+> whose purpose is to keep some admins out of salary data.
+
 ### Email domain restriction
 
 Only `@myfrido.com` addresses are allowed by default. Override with `ALLOWED_EMAIL_DOMAINS`.
+
+### Transport & abuse protection
+
+- **Security headers** via `helmet`. Framing is `SAMEORIGIN` (not `DENY`) because the SPA
+  iframes its own static dashboards. CSP ships **report-only** — the static dashboards carry
+  inline scripts a strict policy would block; collect violations before enforcing. COEP is
+  disabled because the third-party embeds fail under it.
+- **CORS** uses an explicit allowlist (`server/utils/corsOrigins.js`), never origin
+  reflection.
+- **Rate limiting** (`server/middleware/rateLimit.js`) keys on user id with an IPv6-safe IP
+  fallback — office NAT means one IP represents many staff, so a per-IP budget would lock out
+  the whole office at once.
 
 ---
 
@@ -395,7 +436,29 @@ Configure the demo identity with `VITE_DEMO_USER_EMAIL` and `VITE_DEMO_USER_NAME
 | `DEFAULT_ADMIN_PASSWORD` | Seed admin password (local dev only) |
 | `ACCESS_REQUEST_NOTIFY_EMAIL` | Optional override for access-request notification recipient |
 
+### Static dashboard access control (server-side — authoritative)
+
+Enforced by `server/middleware/protectStaticDashboards.js`. These gate the static HTML
+dashboards under `public/`, which have no auth of their own.
+
+| Variable | Empty-value behavior | Description |
+|----------|----------------------|-------------|
+| `SALARY_ANALYSIS_EMAILS` | admins only | Emails allowed to open `/salary-analysis` |
+| `ISD_DASHBOARD_EMAILS` | `admin` / `data_analyst` | Emails allowed to open `/exec-dashboard` |
+| `STORE_EMAIL_MAP` | `admin` / `staff` | Store-manager emails allowed to open `/fes-sm-dashboard` |
+
+Each falls back to its `VITE_` counterpart when unset, for backward compatibility only.
+
+> ⚠️ **Set the unprefixed variants in production.** The `VITE_` values are inlined into the
+> client bundle at build time and readable by any signed-in user, so they cannot be the
+> control. Keep `VITE_STORE_EMAIL_MAP` in sync with `STORE_EMAIL_MAP` — if the server list
+> is narrower than what the SPA lets users navigate to, they reach the page and get a 403
+> inside the iframe.
+
 ### Organization config (frontend — set at build time)
+
+These drive **UI affordances only** — which links appear, where a user lands, which contacts
+are shown. They are not access control; see the table above.
 
 | Variable | Description |
 |----------|-------------|
@@ -407,6 +470,23 @@ Configure the demo identity with `VITE_DEMO_USER_EMAIL` and `VITE_DEMO_USER_NAME
 | `VITE_STAFF_ESCALATION_CONTACTS` | JSON array of retail escalation contacts |
 | `VITE_RETAIL_STRUCTURE_CONTACTS` | JSON array of retail leadership contacts |
 | `VITE_DEMO_USER_EMAIL` / `VITE_DEMO_USER_NAME` | Demo mode identity |
+
+> Unset `VITE_*` values fail silently — the feature renders empty rather than erroring. If
+> escalation contacts or home-path overrides look blank in an environment, check these first.
+
+### Network & transport
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CORS_ALLOWED_ORIGINS` | — | Extra comma-separated browser origins. `APP_URL` and `FRONTEND_URL` are always included; localhost is added outside production. An empty allowlist in production rejects all cross-origin requests. |
+| `PGSSL_VERIFY` | — | `true` verifies the database certificate against Node's bundled CA store (sufficient for Supabase). |
+| `PGSSLROOTCERT` | — | Explicit CA for the database — inline PEM or file path. Use for a private CA. |
+| `PGSSLMODE` | — | `disable` turns TLS off entirely (local Postgres only). |
+
+> ⚠️ With neither `PGSSL_VERIFY` nor `PGSSLROOTCERT` set, the database connection is
+> encrypted but **not authenticated** — it is vulnerable to an active MITM. Set one in
+> production. The unverified path is the default only so existing deployments do not break
+> on upgrade.
 
 ### Email (Microsoft Graph)
 
@@ -457,7 +537,33 @@ Configure the demo identity with `VITE_DEMO_USER_EMAIL` and `VITE_DEMO_USER_NAME
 |----------|-------------|
 | `GH_REPO` | Target GitHub repo |
 | `GH_TOKEN` | PAT with repo dispatch permission |
-| `IST_EDIT_PASS` / `EXEC_EDIT_PASS` | Passphrases for edit workflows |
+
+`POST /api/exec-edit-trigger` requires an **authenticated admin** — the Clerk session cookie
+(the caller runs inside an iframe and cannot set an `Authorization` header) or a Bearer
+token. Rate limited to 5 requests per 15 minutes; every dispatch is logged with the actor
+and attributed in the GitHub payload.
+
+> `IST_EDIT_PASS` / `EXEC_EDIT_PASS` were **removed**. The shared-password path was an
+> unauthenticated route to a GitHub workflow dispatch. Delete them from any environment
+> where they linger. `/api/ist-edit-trigger` was removed entirely — it had no caller; the
+> `ist-console-edit` workflow is still runnable via `workflow_dispatch`.
+
+### Shared secrets — header only
+
+`DB_PING_SECRET`, `MANPOWER_SYNC_SECRET` and `ORDER_DISPUTE_SYNC_SECRET` are accepted
+**only** from the `Authorization: Bearer <secret>` header:
+
+```bash
+curl -X POST https://<host>/api/manpower/sync/cron \
+  -H "Authorization: Bearer $MANPOWER_SYNC_SECRET"
+```
+
+> ⚠️ The `?token=<secret>` query-string form was **removed**. Query strings are captured by
+> platform access logs, intermediary proxies and browser history. Any external scheduler
+> still using `?token=` will receive **403** — update it before deploying. Comparison is
+> constant-time (`timingSafeCompare`).
+>
+> An authenticated **admin** can still trigger a sync from the UI without knowing the secret.
 
 > **Security:** Never commit `.env` files or service account keys. Use Render/GitHub secrets for production values.
 
@@ -544,19 +650,32 @@ Add the repository secret `RENDER_DEPLOY_HOOK_URL` (from Render → Web Service 
 
 ## Security audit
 
-Run `npm audit --omit=dev` periodically. As of the last audit:
+Run `npm run audit:prod` periodically. As of the last audit — **4 moderate, 0 high**:
 
 | Package | Severity | Notes |
 |---------|----------|-------|
-| `xlsx` | High | No upstream fix — used only for admin CSV/XLS import; keep uploads admin-only |
-| `react-router-dom` | High/Critical | Run `npm audit fix` to pick up patched versions |
-| `@clerk/shared` → `js-cookie` | High | Transitive via Clerk — update `@clerk/react` / `@clerk/express` when patches ship |
-| `multer` | High | Run `npm audit fix` for notice upload middleware |
-| `googleapis` → `uuid` | Moderate | Transitive; `npm audit fix --force` may bump googleapis major |
+| `googleapis` → `googleapis-common` → `uuid` | Moderate | GHSA-w5hq-g745-h8pq — missing buffer bounds check in uuid `v3`/`v5`/`v6` when the caller supplies `buf`. **Not reachable here:** this app only calls `v4` with no buffer, and the vulnerable copies are nested under `gaxios`/`googleapis-common` rather than our own `uuid@13`. Clearing it needs `googleapis` 144 → 173, a major bump across the Sheets sync. Tracked as P1. |
 
-Safe fixes are applied via `npm audit fix`. Review remaining items before production deploy.
+`xlsx` is pinned to the **official SheetJS distribution** at an exact version
+(`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`), which patches GHSA-4r6h-8v6p-xvw6
+(prototype pollution) and GHSA-5pgg-2g8v-p4x9 (ReDoS). SheetJS stopped publishing to npm at
+0.18.5, so no registry version fixes these.
 
-Static HTML dashboards under `/exec-dashboard`, `/salary-analysis`, etc. require a Clerk session cookie — direct URL access without signing in returns 401.
+> ⚠️ Keep that URL pinned to an exact version. A floating `xlsx-latest` tarball makes
+> `npm ci` non-reproducible and trades a known CVE for a supply-chain hole.
+
+### Static dashboard access
+
+Static HTML dashboards under `/exec-dashboard`, `/salary-analysis`, `/ist-console`,
+`/orm-dashboard`, `/retail-feedback` and `/fes-sm-dashboard` are **authorized per prefix**,
+not merely gated on the existence of a session:
+
+- No session → **401**
+- Signed in but not permitted, disabled, or out-of-domain → **403**
+- Unknown prefix, backend error, or Clerk outage → **403** (fails closed)
+
+The 403 body deliberately names neither the policy nor the allowlist, so it cannot be used to
+probe membership.
 
 ---
 
