@@ -3,6 +3,7 @@
  */
 import { v4 as uuid } from 'uuid';
 import db, { now } from '../db.js';
+import { bearerSecret, timingSafeCompare } from '../utils/security.js';
 import { fetchAllManpowerSheets, isManpowerConfigured } from './manpowerSheets.js';
 import { transformManpowerData, normalizeKey } from './manpowerData.js';
 
@@ -291,9 +292,7 @@ export function startManpowerSyncScheduler() {
 export function isSyncAuthorized(req) {
     const secret = String(process.env.MANPOWER_SYNC_SECRET ?? '').trim();
     if (secret) {
-        const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
-        const token = bearer || String(req.query.token ?? '').trim();
-        if (token === secret) return true;
+        if (timingSafeCompare(bearerSecret(req), secret)) return true;
     }
     const user = req.user;
     if (!user) return false;

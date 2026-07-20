@@ -3,6 +3,7 @@
  */
 import { v4 as uuid } from 'uuid';
 import db, { now } from '../db.js';
+import { bearerSecret, timingSafeCompare } from '../utils/security.js';
 import { fetchOrderDisputeSheets, googleSheetsConfigured } from './googleSheets.js';
 
 export const ORDER_DISPUTE_SYNC_MS = Number(process.env.ORDER_DISPUTE_SYNC_MS ?? 60_000);
@@ -200,9 +201,7 @@ export function startOrderDisputeSyncScheduler() {
 export function isSyncAuthorized(req) {
     const secret = String(process.env.ORDER_DISPUTE_SYNC_SECRET ?? '').trim();
     if (secret) {
-        const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
-        const token = bearer || String(req.query.token ?? '').trim();
-        if (token === secret) return true;
+        if (timingSafeCompare(bearerSecret(req), secret)) return true;
     }
     const user = req.user;
     if (!user) return false;

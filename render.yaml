@@ -25,6 +25,9 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      # Extra cross-origin callers, comma-separated. APP_URL/FRONTEND_URL are implicit.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
       - key: DEFAULT_ADMIN_EMAIL
         sync: false
       - key: DEFAULT_ADMIN_PASSWORD
@@ -32,8 +35,22 @@ services:
       # External Postgres (Neon / Supabase / etc.) — required for this free-tier layout
       - key: DATABASE_URL
         sync: false
+      # Authenticate the DB certificate. Without one of these the connection is encrypted
+      # but unverified. PGSSL_VERIFY=true uses Node's CA store (works with Supabase).
+      - key: PGSSL_VERIFY
+        sync: false
+      - key: PGSSLROOTCERT
+        sync: false
       - key: ALLOWED_EMAIL_DOMAINS
         value: myfrido.com
+      # Server-side static dashboard authorization (protectStaticDashboards.js).
+      # Authoritative — the VITE_ equivalents are client-readable and must not gate access.
+      - key: SALARY_ANALYSIS_EMAILS
+        sync: false
+      - key: ISD_DASHBOARD_EMAILS
+        sync: false
+      - key: STORE_EMAIL_MAP
+        sync: false
       - key: MS_TENANT_ID
         sync: false
       - key: MS_CLIENT_ID
@@ -42,14 +59,11 @@ services:
         sync: false
       - key: MS_INVITE_SENDER
         sync: false
-      # GitHub dispatch for dashboard "Edit with Claude" feature
+      # GitHub dispatch for dashboard "Edit with Claude" feature (admin-authenticated;
+      # the former IST_EDIT_PASS / EXEC_EDIT_PASS shared secrets have been removed)
       - key: GH_REPO
         sync: false
       - key: GH_TOKEN
-        sync: false
-      - key: IST_EDIT_PASS
-        sync: false
-      - key: EXEC_EDIT_PASS
         sync: false
       - key: MANPOWER_SPREADSHEET_ID
         sync: false

@@ -3,6 +3,8 @@
  */
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.js';
+import { syncLimiter } from '../middleware/rateLimit.js';
+import { bearerSecret, timingSafeCompare } from '../utils/security.js';
 import {
     getOrderDisputeSyncStatus,
     loadOrderDisputeFromDb,
@@ -13,14 +15,12 @@ import {
 const router = Router();
 
 /** External cron — secret token only (no Clerk session). Must be registered before verifyToken. */
-router.post('/sync/cron', async (req, res) => {
+router.post('/sync/cron', syncLimiter, async (req, res) => {
     const secret = String(process.env.ORDER_DISPUTE_SYNC_SECRET ?? '').trim();
     if (!secret) {
         return res.status(503).json({ error: 'ORDER_DISPUTE_SYNC_SECRET is not set' });
     }
-    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '')?.trim();
-    const token = bearer || String(req.query.token ?? '').trim();
-    if (token !== secret) {
+    if (!timingSafeCompare(bearerSecret(req), secret)) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -65,7 +65,7 @@ router.get('/', async (_req, res) => {
     }
 });
 
-router.post('/sync', async (req, res) => {
+router.post('/sync', syncLimiter, async (req, res) => {
     if (!isSyncAuthorized(req)) {
         return res.status(403).json({ error: 'Admin role or sync secret required' });
     }

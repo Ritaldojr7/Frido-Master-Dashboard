@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import { createClerkClient } from '@clerk/express';
 import { schemaStatements } from './schema/pgStatements.js';
+import { buildPgSslConfig } from './utils/pgSsl.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -46,7 +47,7 @@ let pool = null;
 if (isPostgres) {
     pool = new Pool({
         connectionString: postgresUrl,
-        ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false },
+        ssl: buildPgSslConfig(process.env),
     });
 } else {
     if (!fs.existsSync(DATA_DIR)) {
