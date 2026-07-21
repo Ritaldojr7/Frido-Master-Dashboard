@@ -103,6 +103,8 @@ export async function createClerkInvitationFlow({
 
     if (invitation?.url) {
         inviteLink = invitation.url;
+    } else if (invitation?.id) {
+        inviteLink = `${origin}/?__clerk_ticket=${invitation.id}`;
     }
 
     return {
