@@ -84,6 +84,21 @@ export function getStoreEmailMapServer(env = process.env) {
     );
 }
 
+export const DEFAULT_STAFF_ESCALATION_CONTACTS = [
+    { name: 'Arsh', pocFor: 'Tech', email: 'arsh.a@myfrido.com', phone: '+917028154267' },
+    { name: 'Juned', pocFor: 'MIS', email: 'juned.m@myfrido.com', phone: '+917498931102' },
+    { name: 'Nishrit', pocFor: 'Overall', email: 'nishrit.p@myfrido.com', phone: '+917051780171' },
+    { name: 'Saiyed Abdal', pocFor: 'Highest Escalations', email: 'saiyed.a@myfrido.com', phone: '+917987962503' },
+];
+
+export const DEFAULT_RETAIL_STRUCTURE_CONTACTS = [
+    { name: 'Vikal Gupta', pocFor: 'Retail VP', email: 'Vikal.g@myfrido.com', phone: '' },
+    { name: 'Anirudha', pocFor: 'Customer Experience', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
+    { name: 'Anirudha', pocFor: 'Training & Development', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
+    { name: 'Rishab', pocFor: 'Retail Inside Sales', email: 'Rishab.d@myfrido.com', phone: '+919353558851' },
+    { name: 'Shernyl', pocFor: 'Retail Customer Support', email: 'Shernyl.r@myfrido.com', phone: '+919029929930' },
+];
+
 export function loadOrganizationConfigFromEnv(env = process.env) {
     return {
         isdDashboardEmails: parseCsvList(env.VITE_ISD_DASHBOARD_EMAILS),
@@ -93,7 +108,7 @@ export function loadOrganizationConfigFromEnv(env = process.env) {
         supportContactEmail:
             String(env.VITE_SUPPORT_CONTACT_EMAIL ?? 'support@myfrido.com').trim() ||
             'support@myfrido.com',
-        staffEscalationContacts: parseJsonArray(env.VITE_STAFF_ESCALATION_CONTACTS, []),
-        retailStructureContacts: parseJsonArray(env.VITE_RETAIL_STRUCTURE_CONTACTS, []),
+        staffEscalationContacts: parseJsonArray(env.VITE_STAFF_ESCALATION_CONTACTS, DEFAULT_STAFF_ESCALATION_CONTACTS),
+        retailStructureContacts: parseJsonArray(env.VITE_RETAIL_STRUCTURE_CONTACTS, DEFAULT_RETAIL_STRUCTURE_CONTACTS),
     };
 }
