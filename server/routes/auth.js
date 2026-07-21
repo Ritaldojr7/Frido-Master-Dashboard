@@ -8,7 +8,7 @@
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import db from '../db.js';
-import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
+import { normalizeEmail, isAllowedCompanyEmail, resolveRoleToValidSlug, VALID_ROLES } from '../utils/security.js';
 import { sendGraphMail } from '../services/graphEmail.js';
 
 const router = Router();
@@ -40,7 +40,8 @@ router.post('/request-access', async (req, res) => {
             return res.status(400).json({ error: 'Only emails ending with @myfrido.com are allowed to request access.' });
         }
 
-        if (role !== 'staff' && role !== 'executive') {
+        const roleSlug = resolveRoleToValidSlug(role) ?? (VALID_ROLES.includes(String(role)) ? String(role) : null);
+        if (!roleSlug) {
             return res.status(400).json({ error: 'Invalid role selection.' });
         }
 
@@ -50,19 +51,29 @@ router.post('/request-access', async (req, res) => {
             return res.status(400).json({ error: 'This email is already registered.' });
         }
 
-        // Check if there is already a pending request
-        const existingRequest = await db.get('SELECT id FROM access_requests WHERE email = ? AND status = ?', [normalizedEmail, 'pending']);
+        // Check if there is already an access request for this email
+        const existingRequest = await db.get('SELECT id, status FROM access_requests WHERE email = ?', [normalizedEmail]);
         if (existingRequest) {
-            return res.status(400).json({ error: 'A pending access request already exists for this email.' });
+            if (existingRequest.status === 'pending') {
+                return res.status(400).json({ error: 'A pending access request already exists for this email.' });
+            }
+            // Overwrite existing non-pending (e.g. rejected) request with new request details
+            const nowIso = new Date().toISOString();
+            await db.run(
+                `UPDATE access_requests
+                 SET name = ?, designation = ?, department = ?, role = ?, status = 'pending', updated_at = ?
+                 WHERE email = ?`,
+                [name.trim(), designation.trim(), department.trim(), roleSlug, nowIso, normalizedEmail]
+            );
+        } else {
+            const id = uuid();
+            const nowIso = new Date().toISOString();
+            await db.run(
+                `INSERT INTO access_requests (id, email, name, designation, department, role, status, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [id, normalizedEmail, name.trim(), designation.trim(), department.trim(), roleSlug, 'pending', nowIso, nowIso]
+            );
         }
-
-        const id = uuid();
-        const nowIso = new Date().toISOString();
-        await db.run(
-            `INSERT INTO access_requests (id, email, name, designation, department, role, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, normalizedEmail, name.trim(), designation.trim(), department.trim(), role, 'pending', nowIso, nowIso]
-        );
 
         // Send email to admin
         try {

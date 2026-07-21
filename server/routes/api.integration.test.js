@@ -55,4 +55,47 @@ describe('API integration', () => {
         expect(res.body).toHaveProperty('attendance');
         expect(Array.isArray(res.body.attendance)).toBe(true);
     });
+
+    it('POST /api/auth/request-access succeeds with new roles like feedback_head and td_head', async () => {
+        await db.run('DELETE FROM access_requests WHERE email = ?', ['candidate.test@myfrido.com']);
+        const res = await request(app)
+            .post('/api/auth/request-access')
+            .send({
+                name: 'Test Candidate',
+                email: 'candidate.test@myfrido.com',
+                designation: 'Feedback Specialist',
+                department: 'Feedback',
+                role: 'feedback_head',
+            });
+        expect(res.status).toBe(200);
+        expect(res.body.message).toContain('Access request submitted successfully');
+
+        // Verify inserted row in access_requests table
+        const reqRow = await db.get('SELECT * FROM access_requests WHERE email = ?', ['candidate.test@myfrido.com']);
+        expect(reqRow).toBeDefined();
+        expect(reqRow.role).toBe('feedback_head');
+        expect(reqRow.status).toBe('pending');
+    });
+
+    it('POST /api/auth/request-access allows resubmission if previous request was rejected', async () => {
+        // Mark previous request as rejected
+        await db.run("UPDATE access_requests SET status = 'rejected' WHERE email = ?", ['candidate.test@myfrido.com']);
+
+        // Resubmit request with a new role
+        const res = await request(app)
+            .post('/api/auth/request-access')
+            .send({
+                name: 'Test Candidate Updated',
+                email: 'candidate.test@myfrido.com',
+                designation: 'T&D Manager',
+                department: 'Training',
+                role: 'td_head',
+            });
+        expect(res.status).toBe(200);
+
+        const updatedRow = await db.get('SELECT * FROM access_requests WHERE email = ?', ['candidate.test@myfrido.com']);
+        expect(updatedRow.status).toBe('pending');
+        expect(updatedRow.role).toBe('td_head');
+        expect(updatedRow.designation).toBe('T&D Manager');
+    });
 });

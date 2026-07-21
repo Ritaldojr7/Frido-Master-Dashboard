@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Show, SignInButton, SignUp } from '@clerk/react';
 import { useAuth } from '../../context/AuthContext';
 import { getSupportContactEmail } from '../../config/organizationConfig';
+import { ROLE_OPTIONS } from '../../config/roleOptions';
 import './AuthGate.css';
 import fridoLogo from '../../assets/login_logo.png';
 

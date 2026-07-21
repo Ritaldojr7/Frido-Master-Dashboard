@@ -8,7 +8,7 @@ export function schemaStatements() {
             email TEXT UNIQUE NOT NULL,
             name TEXT NOT NULL,
             password_hash TEXT DEFAULT '',
-            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst', 'orm_lead')),
+            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head')),
             department TEXT DEFAULT '',
             designation TEXT DEFAULT '',
             store_name TEXT DEFAULT '',
@@ -163,7 +163,7 @@ export function schemaStatements() {
             name TEXT NOT NULL,
             designation TEXT NOT NULL,
             department TEXT NOT NULL,
-            role TEXT NOT NULL CHECK(role IN ('staff', 'executive')),
+            role TEXT NOT NULL CHECK(role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head')),
             status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
