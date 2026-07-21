@@ -275,8 +275,11 @@ export default function AuthGate({ children }) {
                                                 value={formRole}
                                                 onChange={(e) => setFormRole(e.target.value)}
                                             >
-                                                <option value="staff">Staff (Retail Staff)</option>
-                                                <option value="executive">Executive (ISD NM Dashboard)</option>
+                                                {ROLE_OPTIONS.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
 
@@ -457,8 +460,11 @@ export default function AuthGate({ children }) {
                                                 value={formRole}
                                                 onChange={(e) => setFormRole(e.target.value)}
                                             >
-                                                <option value="staff">Staff (Retail Staff)</option>
-                                                <option value="executive">Executive (ISD NM Dashboard)</option>
+                                                {ROLE_OPTIONS.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
 
