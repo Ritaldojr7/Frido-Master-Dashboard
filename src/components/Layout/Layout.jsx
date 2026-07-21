@@ -142,7 +142,6 @@ const sidebarSections = [
                 icon: ICONS.building,
                 children: [
                     { path: '/retail-staff', label: 'Retail Staff Portal', icon: ICONS.globe },
-                    { path: '/retail-staff/analytics-console', label: 'Store Analytics Console', icon: ICONS.chart },
                 ],
             },
             { path: '/retail-admin', label: 'Retail Admin', icon: ICONS.users },
@@ -320,7 +319,6 @@ export default function Layout({ children }) {
         location.pathname.startsWith('/isd/') ||
         location.pathname === '/orm' ||
         location.pathname === '/lms-dashboard' ||
-        location.pathname === '/retail-staff/analytics-console' ||
         location.pathname === '/retail-feedback';
 
     const staffStats = useMemo(() => {

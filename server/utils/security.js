@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-export const VALID_ROLES = ['admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst', 'orm_lead'];
+export const VALID_ROLES = ['admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head'];
 
 export function normalizeEmail(email) {
     return String(email || '').toLowerCase().trim();

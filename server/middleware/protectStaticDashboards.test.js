@@ -105,25 +105,23 @@ describe('isAuthorizedForPrefix', () => {
         }
     });
 
-    it('salary: admin allowed only when the allowlist is empty', () => {
+    it('salary: admin allowed, all others denied', () => {
         const admin = { email: 'admin@myfrido.com', roles: ['admin'] };
         expect(isAuthorizedForPrefix('/salary-analysis', admin)).toBe(true);
 
-        process.env.SALARY_ANALYSIS_EMAILS = 'cfo@myfrido.com';
-        expect(isAuthorizedForPrefix('/salary-analysis', admin)).toBe(false);
-        expect(
-            isAuthorizedForPrefix('/salary-analysis', { email: 'cfo@myfrido.com', roles: ['staff'] })
-        ).toBe(true);
+        const staff = { email: 'staff@myfrido.com', roles: ['staff'] };
+        expect(isAuthorizedForPrefix('/salary-analysis', staff)).toBe(false);
+
+        const dataAnalyst = { email: 'da@myfrido.com', roles: ['data_analyst'] };
+        expect(isAuthorizedForPrefix('/salary-analysis', dataAnalyst)).toBe(false);
     });
 
-    it('salary: falls back to the VITE_ variant when the server var is unset', () => {
-        process.env.VITE_SALARY_ANALYSIS_EMAILS = 'cfo@myfrido.com';
-        expect(
-            isAuthorizedForPrefix('/salary-analysis', { email: 'cfo@myfrido.com', roles: ['staff'] })
-        ).toBe(true);
-        expect(
-            isAuthorizedForPrefix('/salary-analysis', { email: 'other@myfrido.com', roles: ['admin'] })
-        ).toBe(false);
+    it('exec-dashboard: admin allowed, data_analyst denied', () => {
+        const admin = { email: 'admin@myfrido.com', roles: ['admin'] };
+        expect(isAuthorizedForPrefix('/exec-dashboard', admin)).toBe(true);
+
+        const dataAnalyst = { email: 'da@myfrido.com', roles: ['data_analyst'] };
+        expect(isAuthorizedForPrefix('/exec-dashboard', dataAnalyst)).toBe(false);
     });
 
     it('fes-sm: admins pass outright, others need store-map membership', () => {
@@ -158,8 +156,11 @@ describe('isAuthorizedForPrefix', () => {
             isAuthorizedForPrefix('/ist-console', { email: 's@myfrido.com', roles: ['staff'] })
         ).toBe(false);
         expect(
-            isAuthorizedForPrefix('/retail-feedback', { email: 'f@myfrido.com', roles: ['feedback'] })
+            isAuthorizedForPrefix('/retail-feedback', { email: 'f@myfrido.com', roles: ['feedback_head'] })
         ).toBe(true);
+        expect(
+            isAuthorizedForPrefix('/retail-feedback', { email: 'f@myfrido.com', roles: ['feedback'] })
+        ).toBe(false);
     });
 
     it('honours multi-role users', () => {
@@ -227,14 +228,15 @@ describe('protectStaticDashboards middleware', () => {
         }
     });
 
-    it('admits an allowlisted non-admin to the salary dashboard', async () => {
+    it('denies a non-admin to the salary dashboard even with email env set', async () => {
         process.env.SALARY_ANALYSIS_EMAILS = 'cfo@myfrido.com';
         signedInAs({ email: 'cfo@myfrido.com', roles: ['staff'] });
 
         const { req, res, next } = createMocks('/salary-analysis/index.html');
         await protectStaticDashboards(req, res, next);
 
-        expect(next).toHaveBeenCalledOnce();
+        expect(next).not.toHaveBeenCalled();
+        expect(res.statusCode).toBe(403);
     });
 
     it('returns 403 for a disabled user who would otherwise pass', async () => {
