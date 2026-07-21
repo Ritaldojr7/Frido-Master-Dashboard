@@ -73,7 +73,7 @@ export function getIsdDashboardEmailsServer(env = process.env) {
  * "everyone" — an unconfigured allowlist must not widen write access.
  */
 export function getInventoryUploaderEmailsServer(env = process.env) {
-    return parseCsvList(env.INVENTORY_UPLOADER_EMAILS);
+    return serverCsvList(env, 'INVENTORY_UPLOADER_EMAILS', 'VITE_INVENTORY_UPLOADER_EMAILS');
 }
 
 /** Store-manager email → store name. Empty map ⇒ role check. */

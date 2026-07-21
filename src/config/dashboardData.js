@@ -408,6 +408,7 @@ export const staffExperienceStoreData = {
                 { title: 'Raise a Inventory Request', url: 'https://form.asana.com/?k=2mNtWIMKNygDDxCSPiYbNQ&d=1207389811595677', variant: 'dark' },
                 { title: 'Raise a Reimbursement Request (New Joinees)', url: 'https://form.asana.com/?k=i-p9CI7ecwOX5u_8Hdz3tA&d=1207389811595677', variant: 'dark' },
                 { title: 'QC Issues : Reverse Pickup', url: 'https://form.asana.com/?k=2mNtWIMKNygDDxCSPiYbNQ&d=1207389811595677', variant: 'dark' },
+                { title: 'Retail Sales Assist App', url: 'https://retail-sales-assist-app-cbyx.onrender.com/sign-in', variant: 'dark' },
                 { title: 'Raise a Prebooking Request', url: '#', variant: 'dark', isComingSoon: true },
             ],
         },
