@@ -10,6 +10,7 @@ import { v4 as uuid } from 'uuid';
 import db from '../db.js';
 import { normalizeEmail, isAllowedCompanyEmail, resolveRoleToValidSlug, VALID_ROLES } from '../utils/security.js';
 import { sendGraphMail } from '../services/graphEmail.js';
+import { clerkClient } from '../services/userInvite.js';
 
 const router = Router();
 
@@ -45,10 +46,22 @@ router.post('/request-access', async (req, res) => {
             return res.status(400).json({ error: 'Invalid role selection.' });
         }
 
-        // Check if already registered in users
-        const existingUser = await db.get('SELECT id FROM users WHERE email = ? AND deleted_at IS NULL', [normalizedEmail]);
+        // Check if already registered and active in users & Clerk
+        const existingUser = await db.get('SELECT id, status FROM users WHERE email = ? AND deleted_at IS NULL', [normalizedEmail]);
         if (existingUser) {
-            return res.status(400).json({ error: 'This email is already registered.' });
+            let existsInClerk = false;
+            try {
+                const { data } = await clerkClient.users.getUserList({ emailAddress: [normalizedEmail] });
+                if (data && data.length > 0) {
+                    existsInClerk = true;
+                }
+            } catch (clerkErr) {
+                console.warn('[auth] Clerk user check failed:', clerkErr.message);
+            }
+
+            if (existingUser.status === 'active' && existsInClerk) {
+                return res.status(400).json({ error: 'This email is already registered and active. Please sign in.' });
+            }
         }
 
         // Check if there is already an access request for this email
