@@ -576,12 +576,68 @@ async function backfillLoggedInUsersStatus() {
     }
 }
 
-/** Widen `users.role` CHECK so `feedback` invites persist on existing Postgres databases. */
+/** Widen role CHECK for `feedback_head` and `td_head` on SQLite. */
+function migrateSqliteUsersRoleFeedbackHeadAndTdHead() {
+    if (isPostgres) return;
+
+    const row = sqlite
+        .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'")
+        .get();
+
+    if (!row?.sql || (row.sql.includes("'feedback_head'") && row.sql.includes("'td_head'"))) return;
+
+    sqlite.pragma('foreign_keys = OFF');
+    sqlite.exec(`
+        ALTER TABLE users RENAME TO users_old;
+
+        CREATE TABLE users (
+            id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            password_hash TEXT DEFAULT '',
+            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head')),
+            roles TEXT NOT NULL DEFAULT '[]',
+            department TEXT DEFAULT '',
+            store_name TEXT DEFAULT '',
+            avatar_url TEXT DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'invited', 'disabled', 'import_pending')),
+            last_login TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TEXT
+        );
+
+        INSERT INTO users (
+            id, email, name, password_hash, role, roles, department, store_name, avatar_url, status, last_login, created_at, updated_at, deleted_at
+        )
+        SELECT
+            id,
+            email,
+            name,
+            COALESCE(password_hash, ''),
+            role,
+            COALESCE(roles, '[]'),
+            COALESCE(department, ''),
+            COALESCE(store_name, ''),
+            COALESCE(avatar_url, ''),
+            status,
+            last_login,
+            created_at,
+            updated_at,
+            deleted_at
+        FROM users_old;
+
+        DROP TABLE users_old;
+    `);
+    sqlite.pragma('foreign_keys = ON');
+}
+
+/** Widen `users.role` CHECK so `feedback_head` and `td_head` invites and updates persist on Postgres. */
 async function ensurePostgresUsersRoleConstraint() {
     try {
         await pool.query('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
         await pool.query(
-            `ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst', 'orm_lead'))`
+            `ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head'))`
         );
     } catch (err) {
         console.warn('[db] Could not widen users.role CHECK constraint:', err.message);
@@ -639,6 +695,7 @@ if (isPostgres) {
     migrateSqliteUsersStatusImportPending();
     migrateSqliteUsersRoleDataAnalyst();
     migrateSqliteUsersRoleOrmLead();
+    migrateSqliteUsersRoleFeedbackHeadAndTdHead();
 }
 await backfillUsersRolesColumn();
 await backfillLoggedInUsersStatus();

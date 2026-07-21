@@ -8,7 +8,7 @@ export function schemaStatements() {
             email TEXT UNIQUE NOT NULL,
             name TEXT NOT NULL,
             password_hash TEXT DEFAULT '',
-            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'feedback', 'executive', 'team_lead', 'data_analyst', 'orm_lead')),
+            role TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head')),
             department TEXT DEFAULT '',
             designation TEXT DEFAULT '',
             store_name TEXT DEFAULT '',
