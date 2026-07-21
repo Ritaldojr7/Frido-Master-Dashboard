@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Show, SignInButton, SignUp } from '@clerk/react';
+import { Show, SignInButton, SignUpButton, SignUp } from '@clerk/react';
 import { useAuth } from '../../context/AuthContext';
 import { getSupportContactEmail } from '../../config/organizationConfig';
 import { ROLE_OPTIONS } from '../../config/roleOptions';
@@ -80,18 +80,21 @@ export default function AuthGate({ children }) {
         </div>
     );
     
-    // Check if the URL contains an invitation ticket
-    const isInvite = typeof window !== 'undefined' && window.location.href.includes('__clerk_ticket');
+    // Check if the URL contains an invitation ticket (via search or hash)
+    const isInvite = typeof window !== 'undefined' && (
+        window.location.href.includes('__clerk_ticket') ||
+        window.location.href.includes('clerk_ticket') ||
+        window.location.href.includes('ticket=')
+    );
 
     useEffect(() => {
-        // If the URL has __clerk_ticket in the hash (e.g. from an old invite link),
-        // redirect to the search param format so Clerk's SignUp can read it.
-        if (typeof window !== 'undefined' && window.location.hash.includes('__clerk_ticket')) {
-            const hash = window.location.hash;
-            const match = hash.match(/__clerk_ticket=([^&]+)/);
-            if (match && match[1]) {
-                const ticket = match[1];
-                const url = new URL(window.location.href);
+        if (typeof window === 'undefined') return;
+        const fullUrl = window.location.href;
+        const match = fullUrl.match(/(?:__clerk_ticket|clerk_ticket|ticket)=([^&#]+)/);
+        if (match && match[1]) {
+            const ticket = match[1];
+            const url = new URL(fullUrl);
+            if (url.searchParams.get('__clerk_ticket') !== ticket) {
                 url.searchParams.set('__clerk_ticket', ticket);
                 url.hash = ''; // Clear hash
                 window.location.replace(url.toString());
@@ -372,14 +375,21 @@ export default function AuthGate({ children }) {
                                             </div>
                                         ) : (
                                             <>
-                                                <SignInButton mode="modal">
-                                                    <button id="login-submit" type="button" className="login__submit">
-                                                        <span>Sign In</span>
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M5 12h14M12 5l7 7-7 7" />
-                                                        </svg>
-                                                    </button>
-                                                </SignInButton>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                    <SignInButton mode="modal">
+                                                        <button id="login-submit" type="button" className="login__submit">
+                                                            <span>Sign In</span>
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M5 12h14M12 5l7 7-7 7" />
+                                                            </svg>
+                                                        </button>
+                                                    </SignInButton>
+                                                    <SignUpButton mode="modal">
+                                                        <button type="button" className="login__submit" style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
+                                                            <span>Accept Invite / Sign Up</span>
+                                                        </button>
+                                                    </SignUpButton>
+                                                </div>
                                                 <button 
                                                     type="button" 
                                                     className="login__request-btn"
