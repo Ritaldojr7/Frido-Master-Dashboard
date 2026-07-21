@@ -7,6 +7,7 @@ const ORIGINAL_ENV = { ...process.env };
 
 beforeEach(() => {
     delete process.env.INVENTORY_UPLOADER_EMAILS;
+    delete process.env.VITE_INVENTORY_UPLOADER_EMAILS;
 });
 
 afterEach(() => {
@@ -57,6 +58,11 @@ describe('canUploadInventory', () => {
     it('is case- and whitespace-insensitive on the email', () => {
         process.env.INVENTORY_UPLOADER_EMAILS = UPLOADERS;
         expect(canUploadInventory({ email: '  ASMA.K@myfrido.com ', roles: ['executive'] })).toBe(true);
+    });
+
+    it('supports VITE_INVENTORY_UPLOADER_EMAILS fallback', () => {
+        process.env.VITE_INVENTORY_UPLOADER_EMAILS = UPLOADERS;
+        expect(canUploadInventory({ email: 'asma.k@myfrido.com', roles: ['executive'] })).toBe(true);
     });
 
     // The point of the two-tier split: viewers must not be able to write.
