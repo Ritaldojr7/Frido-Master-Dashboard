@@ -5,7 +5,7 @@
  */
 import { resolveRoleToValidSlug, VALID_ROLES } from './security.js';
 
-const PRIMARY_ROLE_ORDER = ['admin', 'data_analyst', 'feedback', 'executive', 'team_lead', 'orm_lead', 'staff'];
+const PRIMARY_ROLE_ORDER = ['admin', 'data_analyst', 'feedback_head', 'feedback', 'td_head', 'executive', 'team_lead', 'orm_lead', 'staff'];
 
 /** @param {unknown} rolesJson */
 export function parseRolesFromStorage(rolesJson, fallbackRole) {

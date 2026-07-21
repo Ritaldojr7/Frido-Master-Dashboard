@@ -13,11 +13,7 @@
  */
 import { resolveUserFromRequest } from './resolveUser.js';
 import { isAllowedCompanyEmail } from '../utils/security.js';
-import {
-    getIsdDashboardEmailsServer,
-    getSalaryAnalysisEmailsServer,
-    getStoreEmailMapServer,
-} from '../utils/organizationEnv.js';
+import { getStoreEmailMapServer } from '../utils/organizationEnv.js';
 
 export const PROTECTED_STATIC_PREFIXES = [
     '/exec-dashboard',
@@ -39,12 +35,10 @@ export const PROTECTED_STATIC_PREFIXES = [
  */
 export const STATIC_DASHBOARD_POLICIES = {
     '/salary-analysis': {
-        allowEmails: getSalaryAnalysisEmailsServer,
-        emptyEmailsFallbackRoles: ['admin'],
+        allowRoles: ['admin'],
     },
     '/exec-dashboard': {
-        allowEmails: getIsdDashboardEmailsServer,
-        emptyEmailsFallbackRoles: ['admin', 'data_analyst'],
+        allowRoles: ['admin'],
     },
     '/fes-sm-dashboard': {
         // SPA (`hasAccess`) admits admins outright, then store managers by email.
@@ -53,13 +47,13 @@ export const STATIC_DASHBOARD_POLICIES = {
         emptyEmailsFallbackRoles: ['admin', 'staff'],
     },
     '/ist-console': {
-        allowRoles: ['admin', 'data_analyst'],
+        allowRoles: ['admin'],
     },
     '/orm-dashboard': {
-        allowRoles: ['admin', 'data_analyst', 'orm_lead'],
+        allowRoles: ['admin', 'orm_lead'],
     },
     '/retail-feedback': {
-        allowRoles: ['admin', 'feedback', 'data_analyst'],
+        allowRoles: ['admin', 'feedback_head'],
     },
 };
 

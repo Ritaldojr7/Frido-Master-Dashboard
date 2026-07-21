@@ -1,15 +1,25 @@
 /** Assignable roles for admin user management (order = dropdown list). */
 export const ROLE_OPTIONS = [
     { value: 'staff', label: 'Staff' },
-    { value: 'feedback', label: 'Feedback' },
+    { value: 'feedback_head', label: 'Feedback Head' },
     { value: 'executive', label: 'Executive' },
     { value: 'team_lead', label: 'Team Lead' },
-    { value: 'data_analyst', label: 'Data Analyst' },
     { value: 'orm_lead', label: 'ORM Lead' },
+    { value: 'td_head', label: 'T&D Head' },
     { value: 'admin', label: 'Admin' },
 ];
 
-export const ROLE_LABELS = Object.fromEntries(ROLE_OPTIONS.map((o) => [o.value, o.label]));
+export const ROLE_LABELS = {
+    staff: 'Staff',
+    feedback_head: 'Feedback Head',
+    feedback: 'Feedback',
+    executive: 'Executive',
+    team_lead: 'Team Lead',
+    orm_lead: 'ORM Lead',
+    td_head: 'T&D Head',
+    admin: 'Admin',
+    data_analyst: 'Data Analyst',
+};
 
 export function formatRolesSummary(roles) {
     const list = Array.isArray(roles) ? roles : [roles].filter(Boolean);

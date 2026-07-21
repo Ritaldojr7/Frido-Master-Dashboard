@@ -12,6 +12,7 @@ import { Pool } from 'pg';
 import { createClerkClient } from '@clerk/express';
 import { schemaStatements } from './schema/pgStatements.js';
 import { buildPgSslConfig } from './utils/pgSsl.js';
+import { syncPhaseOneDashboardDefs } from './services/dashboardSeeder.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'data');
@@ -642,6 +643,7 @@ if (isPostgres) {
 await backfillUsersRolesColumn();
 await backfillLoggedInUsersStatus();
 await seedDefaultAdmin();
+await syncPhaseOneDashboardDefs(db);
 await purgeExpiredDeletedUsers();
 
 setInterval(() => {

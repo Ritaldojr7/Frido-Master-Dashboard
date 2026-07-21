@@ -6,22 +6,27 @@
  * Admin always has full access.
  *
  * Roles hierarchy:
- *   admin → Full product access including ISD NM (all link tiers), retail admin, analytics, feedback, user management
- *   staff → Retail staff and profile
- *   executive / team_lead → ISD NM only (role-filtered links) + profile
- *   feedback → Feedback department only (+ profile)
- *   data_analyst → Business Analytics (+ profile)
- *   viewer → Legacy alias (treated like staff for routes)
+ *   admin        → Full product access including user management, all dashboards, analytics
+ *   staff        → Retail Staff Portal and profile
+ *   executive    → ISD NM Staff + Daily Inventory (view only) + profile
+ *   team_lead    → ISD NM Staff + Manpower Attendance + Daily Inventory (view only) + profile
+ *   feedback_head→ Feedback section (Feedback Dashboard, AI Calling, Retail Feedback) + profile
+ *   td_head      → Training & Development (LMS) + profile
+ *   data_analyst → Profile only (legacy — no direct section access)
+ *   orm_lead     → ORM section + profile
+ *   feedback     → Legacy alias (kept for backward compatibility)
  */
 
 export const ROLES = {
     ADMIN: 'admin',
     STAFF: 'staff',
     FEEDBACK: 'feedback',
+    FEEDBACK_HEAD: 'feedback_head',
     EXECUTIVE: 'executive',
     TEAM_LEAD: 'team_lead',
     DATA_ANALYST: 'data_analyst',
     ORM_LEAD: 'orm_lead',
+    TD_HEAD: 'td_head',
 };
 
 import {
@@ -37,9 +42,11 @@ export {
     getSalaryAnalysisEmails as SALARY_ANALYSIS_EMAILS,
 };
 
-export const ALL_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
+export const ALL_ROLES = [
+    ROLES.ADMIN, ROLES.STAFF, ROLES.FEEDBACK, ROLES.FEEDBACK_HEAD,
+    ROLES.EXECUTIVE, ROLES.TEAM_LEAD, ROLES.DATA_ANALYST, ROLES.ORM_LEAD, ROLES.TD_HEAD,
+];
 export const ADMIN_ONLY = [ROLES.ADMIN];
-export const BUSINESS_ANALYTICS_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
 export const STAFF_ONLY = [ROLES.STAFF];
 
 /** Retail – Staff dashboard: staff and admins. */
@@ -58,21 +65,30 @@ export const DAILY_INVENTORY_ROLES = [ROLES.ADMIN, ROLES.EXECUTIVE, ROLES.TEAM_L
 /** Manpower Attendance & Performance dashboard: admins and team leads */
 export const MANPOWER_ROLES = [ROLES.ADMIN, ROLES.TEAM_LEAD];
 
-/** Who may open the Feedback Department page (admins retain full access). */
-export const FEEDBACK_DEPARTMENT_ROLES = [ROLES.ADMIN, ROLES.FEEDBACK, ROLES.DATA_ANALYST];
+/** Feedback section: admins and feedback_head only. */
+export const FEEDBACK_DEPARTMENT_ROLES = [ROLES.ADMIN, ROLES.FEEDBACK_HEAD];
 
-/** Order Dispute (Google Sheets) — only admin */
+/** Order Dispute — only admin */
 export const ORDER_DISPUTE_ROLES = [ROLES.ADMIN];
 
 /** AI Calling (Feedback) — same access as Feedback Department. */
 export const AI_CALLING_FEEDBACK_ROLES = FEEDBACK_DEPARTMENT_ROLES;
 
-/** ISD sub-dashboards — Executive Performance and Performance Profitability. */
-export const ISD_EXEC_PERF_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
-export const ISD_PROFITABILITY_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST];
+/** ISD sub-dashboards — admin only. */
+export const ISD_EXEC_PERF_ROLES = ADMIN_ONLY;
+export const ISD_PROFITABILITY_ROLES = ADMIN_ONLY;
 
-/** ORM — blank placeholder for now, admin and data_analyst. */
-export const ORM_ROLES = [ROLES.ADMIN, ROLES.DATA_ANALYST, ROLES.ORM_LEAD];
+/** Training & Development — admin and td_head. */
+export const TD_ROLES = [ROLES.ADMIN, ROLES.TD_HEAD];
+
+/** ORM — admin, orm_lead, and specific email (harshika.s@myfrido.com). */
+export const ORM_ROLES = [ROLES.ADMIN, ROLES.ORM_LEAD];
+
+/** ORM additional email allowlist — users with these emails can also access ORM regardless of role. */
+export const ORM_ALLOWED_EMAILS = ['harshika.s@myfrido.com'];
+
+/** Business Analytics / Data & Analytics — admin only. */
+export const BUSINESS_ANALYTICS_ROLES = ADMIN_ONLY;
 
 /** Any authenticated dashboard role that may edit their profile. */
 export const PROFILE_ROLES = [...ALL_ROLES];
@@ -111,39 +127,61 @@ export function hasAnyRole(userOrRole, allowedRoles) {
  */
 export const routePermissions = {
     '/profile': PROFILE_ROLES,
+
+    // ── User Management ──
     '/admin': ADMIN_ONLY,
-    '/retail-admin': ADMIN_ONLY,
-    '/business-analytics': BUSINESS_ANALYTICS_ROLES,
-    'https://dashboard.tangoeye.ai': BUSINESS_ANALYTICS_ROLES,
-    'https://pilot.goyoyo.ai': BUSINESS_ANALYTICS_ROLES,
-    'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk': BUSINESS_ANALYTICS_ROLES,
-    'https://docs.google.com/spreadsheets/d/13nrONpvuSQ1_OpEHhsY44p-k2TqfC_jFZjXvGVLoFlA': BUSINESS_ANALYTICS_ROLES,
-    'https://darling-pithivier-0b906d.netlify.app': BUSINESS_ANALYTICS_ROLES,
-    'https://illustrious-bubblegum-509fc4.netlify.app': ADMIN_ONLY,
-    'https://analytics-dashboard-frontend-x2da.onrender.com': BUSINESS_ANALYTICS_ROLES,
-    'https://discount-manager-frontend.onrender.com': BUSINESS_ANALYTICS_ROLES,
-    'https://cx.locobuzz.com': ORM_ROLES,
+
+    // ── ISD Team & Bandwidth (whole section) — admin only ──
     'https://docs.google.com/spreadsheets/d/1_CT5fe9uI6VjJSx685RX3fEDTVVy0nRBMxXyhRMBo6I': ADMIN_ONLY,
     'https://whimsical.com/PCns3cFh6JdKE69XtYkenY': ADMIN_ONLY,
     'https://employee.dice.tech/': ADMIN_ONLY,
-    '/lms-dashboard': ADMIN_ONLY,
-    'https://academy.myfrido.com/login': ADMIN_ONLY,
     '/expense-tracker': ADMIN_ONLY,
+
+    // ── Training & Development — admin + td_head ──
+    '/lms-dashboard': TD_ROLES,
+    'https://academy.myfrido.com/login': TD_ROLES,
+
+    // ── Analytics > Data & Analytics — admin only ──
+    '/business-analytics': ADMIN_ONLY,
+    'https://analytics-dashboard-frontend-x2da.onrender.com': ADMIN_ONLY,
+    'https://discount-manager-frontend.onrender.com': ADMIN_ONLY,
+
+    // ── Analytics > ISD ──
+    '/isd/executive-performance': ADMIN_ONLY,
+    '/isd/performance-profitability': ADMIN_ONLY,
+    '/isd/salary-analysis': ADMIN_ONLY,
+    '/manpower': MANPOWER_ROLES,
+    '/daily-inventory': DAILY_INVENTORY_ROLES,
+
+    // ── Analytics > Retail Analytics (whole section) — admin only ──
+    'https://dashboard.tangoeye.ai': ADMIN_ONLY,
+    'https://pilot.goyoyo.ai': ADMIN_ONLY,
+    'https://docs.google.com/spreadsheets/d/1vDtjeVr60T3zQvFovHXMz6km_H46YkL91_C45SeiQAk': ADMIN_ONLY,
+    'https://docs.google.com/spreadsheets/d/13nrONpvuSQ1_OpEHhsY44p-k2TqfC_jFZjXvGVLoFlA': ADMIN_ONLY,
+    'https://darling-pithivier-0b906d.netlify.app': ADMIN_ONLY,
+    'https://illustrious-bubblegum-509fc4.netlify.app': ADMIN_ONLY,
+    'https://claude.ai/public/artifacts/ff06101d-6b15-4dce-95e5-6ec8d7871419': ADMIN_ONLY,
+
+    // ── Analytics > Feedback — admin + feedback_head ──
     '/feedback-department': FEEDBACK_DEPARTMENT_ROLES,
     '/ai-calling-feedback': AI_CALLING_FEEDBACK_ROLES,
     '/retail-feedback': FEEDBACK_DEPARTMENT_ROLES,
-    '/order-dispute': ORDER_DISPUTE_ROLES,
-    '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
-    '/retail-staff/analytics-console': RETAIL_STAFF_ACCESS_ROLES,
-    '/isd-nm': ISD_NM_ROLES,
-    '/isd/executive-performance': ISD_EXEC_PERF_ROLES,
-    '/isd/performance-profitability': ISD_PROFITABILITY_ROLES,
-    '/isd/salary-analysis': [], // Strict email check handles this, empty role list fallback
-    '/manpower': MANPOWER_ROLES,
-    '/daily-inventory': DAILY_INVENTORY_ROLES,
+
+    // ── Analytics > ORM — admin + orm_lead (+ email check in hasAccess) ──
     '/orm': ORM_ROLES,
+    'https://cx.locobuzz.com': ORM_ROLES,
     'https://harshikamyfrido-prog.github.io/ORM-Dashboard/': ORM_ROLES,
+
+    // ── DOP (whole section) — admin only ──
     'https://www.referrush.com/myfrido/dashboard': ADMIN_ONLY,
+
+    // ── Aggregator ──
+    '/retail-staff': RETAIL_STAFF_ACCESS_ROLES,
+    '/retail-admin': ADMIN_ONLY,
+    '/isd-nm': ISD_NM_ROLES,
+
+    // ── Others ──
+    '/order-dispute': ORDER_DISPUTE_ROLES,
 };
 
 /**
@@ -157,7 +195,7 @@ export const sidebarPermissions = { ...routePermissions };
  */
 export function canSeeIsdResource(userOrRole, minRole) {
     const roles = getUserRoles(userOrRole);
-    if (roles.includes(ROLES.ADMIN) || roles.includes(ROLES.DATA_ANALYST)) return true;
+    if (roles.includes(ROLES.ADMIN)) return true;
     if (minRole === ROLES.ADMIN) return false;
     const hasTeamLead = roles.includes(ROLES.TEAM_LEAD);
     const hasExecutive = roles.includes(ROLES.EXECUTIVE);
@@ -176,38 +214,16 @@ export function hasAccess(userOrRole, path) {
     // Normalize path: strip query/hash and trailing slashes
     const cleanPath = String(path).trim().split(/[?#]/)[0].replace(/\/+$/, '');
 
-    // Strictly check ISD dashboards email list (Executive Performance, Performance & Profitability) and Salary Analysis
-    const isSalaryDashboard = cleanPath === '/isd/salary-analysis';
-    const isOtherIsdDashboard = cleanPath === '/isd/executive-performance' ||
-                                 cleanPath === '/isd/performance-profitability';
-
-    if (isSalaryDashboard) {
-        if (!userOrRole || typeof userOrRole !== 'object') return false;
-        const salaryAnalysisEmails = getSalaryAnalysisEmails();
-        if (salaryAnalysisEmails.length === 0) {
-            return hasAnyRole(userOrRole, ADMIN_ONLY);
+    // ── ORM: role check OR email allowlist ──
+    const isOrmPath = cleanPath === '/orm' || cleanPath.startsWith('https://cx.locobuzz.com');
+    if (isOrmPath) {
+        if (hasAnyRole(userOrRole, ORM_ROLES)) return true;
+        // Allow specific email(s) regardless of role
+        if (userOrRole && typeof userOrRole === 'object') {
+            const email = String(userOrRole.email || '').trim().toLowerCase();
+            if (ORM_ALLOWED_EMAILS.includes(email)) return true;
         }
-        const email = String(userOrRole.email || '').trim().toLowerCase();
-        return salaryAnalysisEmails.includes(email);
-    }
-
-    if (isOtherIsdDashboard) {
-        if (!userOrRole || typeof userOrRole !== 'object') return false;
-        const isdDashboardEmails = getIsdDashboardEmails();
-        if (isdDashboardEmails.length === 0) {
-            return hasAnyRole(userOrRole, ISD_EXEC_PERF_ROLES);
-        }
-        const email = String(userOrRole.email || '').trim().toLowerCase();
-        return isdDashboardEmails.includes(email);
-    }
-
-    // Strictly check Store Analytics Console email list + admins
-    const isStoreAnalyticsConsole = cleanPath === '/retail-staff/analytics-console';
-    if (isStoreAnalyticsConsole) {
-        if (!userOrRole || typeof userOrRole !== 'object') return false;
-        if (userOrRole.role === 'admin') return true;
-        const email = String(userOrRole.email || '').trim().toLowerCase();
-        return Object.prototype.hasOwnProperty.call(getStoreEmailMap(), email);
+        return false;
     }
 
     // 1. Direct match (original path or clean normalized path)
@@ -238,10 +254,12 @@ export function defaultHomePath(userOrRole) {
 
     const roles = getUserRoles(userOrRole);
     if (roles.includes(ROLES.ADMIN)) return '/admin';
-    if (roles.includes(ROLES.DATA_ANALYST)) return '/business-analytics';
     if (roles.includes(ROLES.EXECUTIVE) || roles.includes(ROLES.TEAM_LEAD)) return '/isd-nm';
-    if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
+    if (roles.includes(ROLES.FEEDBACK_HEAD)) return '/feedback-department';
+    if (roles.includes(ROLES.TD_HEAD)) return '/lms-dashboard';
     if (roles.includes(ROLES.ORM_LEAD)) return '/orm';
+    if (roles.includes(ROLES.DATA_ANALYST)) return '/business-analytics';
+    if (roles.includes(ROLES.FEEDBACK)) return '/feedback-department';
     if (roles.includes(ROLES.STAFF)) return '/retail-staff';
     return '/retail-staff';
 }

@@ -54,6 +54,21 @@ function normalizeHomePaths(record) {
     );
 }
 
+export const DEFAULT_STAFF_ESCALATION_CONTACTS = [
+    { name: 'Arsh', pocFor: 'Tech', email: 'arsh.a@myfrido.com', phone: '+917028154267' },
+    { name: 'Juned', pocFor: 'MIS', email: 'juned.m@myfrido.com', phone: '+917498931102' },
+    { name: 'Nishrit', pocFor: 'Overall', email: 'nishrit.p@myfrido.com', phone: '+917051780171' },
+    { name: 'Saiyed Abdal', pocFor: 'Highest Escalations', email: 'saiyed.a@myfrido.com', phone: '+917987962503' },
+];
+
+export const DEFAULT_RETAIL_STRUCTURE_CONTACTS = [
+    { name: 'Vikal Gupta', pocFor: 'Retail VP', email: 'Vikal.g@myfrido.com', phone: '' },
+    { name: 'Anirudha', pocFor: 'Customer Experience', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
+    { name: 'Anirudha', pocFor: 'Training & Development', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
+    { name: 'Rishab', pocFor: 'Retail Inside Sales', email: 'Rishab.d@myfrido.com', phone: '+919353558851' },
+    { name: 'Shernyl', pocFor: 'Retail Customer Support', email: 'Shernyl.r@myfrido.com', phone: '+919029929930' },
+];
+
 const buildTimeConfig = {
     isdDashboardEmails: parseCsvList(readEnv('VITE_ISD_DASHBOARD_EMAILS')),
     salaryAnalysisEmails: parseCsvList(readEnv('VITE_SALARY_ANALYSIS_EMAILS')),
@@ -64,8 +79,8 @@ const buildTimeConfig = {
         'support@myfrido.com',
     demoUserEmail: String(readEnv('VITE_DEMO_USER_EMAIL') ?? 'demo@myfrido.com').trim() || 'demo@myfrido.com',
     demoUserName: String(readEnv('VITE_DEMO_USER_NAME') ?? 'Demo User').trim() || 'Demo User',
-    staffEscalationContacts: parseJsonArray(readEnv('VITE_STAFF_ESCALATION_CONTACTS'), []),
-    retailStructureContacts: parseJsonArray(readEnv('VITE_RETAIL_STRUCTURE_CONTACTS'), []),
+    staffEscalationContacts: parseJsonArray(readEnv('VITE_STAFF_ESCALATION_CONTACTS'), DEFAULT_STAFF_ESCALATION_CONTACTS),
+    retailStructureContacts: parseJsonArray(readEnv('VITE_RETAIL_STRUCTURE_CONTACTS'), DEFAULT_RETAIL_STRUCTURE_CONTACTS),
 };
 
 let runtimeConfig = null;
@@ -76,8 +91,8 @@ export function applyRuntimeOrgConfig(config) {
 
 function pick(key) {
     const runtimeValue = runtimeConfig?.[key];
-    if (Array.isArray(runtimeValue)) return runtimeValue;
-    if (runtimeValue && typeof runtimeValue === 'object') return runtimeValue;
+    if (Array.isArray(runtimeValue) && runtimeValue.length > 0) return runtimeValue;
+    if (runtimeValue && typeof runtimeValue === 'object' && Object.keys(runtimeValue).length > 0) return runtimeValue;
     if (typeof runtimeValue === 'string' && runtimeValue) return runtimeValue;
     return buildTimeConfig[key];
 }
