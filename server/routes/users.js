@@ -218,14 +218,28 @@ router.post('/invite', requireRole(['admin']), userMutationLimiter, async (req, 
         const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
 
         const existing = await db.get(
-            'SELECT id, deleted_at FROM users WHERE email = ?',
+            'SELECT id, status, deleted_at FROM users WHERE email = ?',
             [normalizedEmail]
         );
-        if (existing && !existing.deleted_at) {
-            return res.status(409).json({ error: 'A user with this email already exists' });
-        }
-        if (existing?.deleted_at) {
-            await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
+        if (existing) {
+            if (existing.deleted_at) {
+                await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
+            } else {
+                let existsInClerk = false;
+                try {
+                    const { data } = await clerkClient.users.getUserList({ emailAddress: [normalizedEmail] });
+                    if (data && data.length > 0) {
+                        existsInClerk = true;
+                    }
+                } catch {
+                    /* ignore */
+                }
+                if (existing.status === 'active' && existsInClerk) {
+                    return res.status(409).json({ error: 'A user with this email already exists and is active.' });
+                }
+                // If inactive / pending / missing in Clerk, remove orphan row to issue fresh invite
+                await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
+            }
         }
 
         const department = req.body.department != null ? String(req.body.department).trim() : '';
@@ -744,12 +758,25 @@ router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter
         const userId = existingClerkUser ? existingClerkUser.id : uuid();
 
         // 1. Create or reactivate the user row
-        const existing = await db.get('SELECT id, deleted_at FROM users WHERE email = ?', [normalizedEmail]);
+        const existing = await db.get('SELECT id, status, deleted_at FROM users WHERE email = ?', [normalizedEmail]);
         if (existing) {
             if (existing.deleted_at) {
                 await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
             } else {
-                return res.status(409).json({ error: 'A user with this email already exists' });
+                let existsInClerk = false;
+                try {
+                    const { data } = await clerkClient.users.getUserList({ emailAddress: [normalizedEmail] });
+                    if (data && data.length > 0) {
+                        existsInClerk = true;
+                    }
+                } catch {
+                    /* ignore */
+                }
+                if (existing.status === 'active' && existsInClerk) {
+                    return res.status(409).json({ error: 'A user with this email already exists and is active.' });
+                }
+                // If inactive / pending / missing in Clerk, remove orphan row to create fresh invited user
+                await db.run('DELETE FROM users WHERE id = ?', [existing.id]);
             }
         }
 
