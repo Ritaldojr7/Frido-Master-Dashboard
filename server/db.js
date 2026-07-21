@@ -644,6 +644,56 @@ async function ensurePostgresUsersRoleConstraint() {
     }
 }
 
+/** Widen `access_requests.role` CHECK for all valid roles on Postgres. */
+async function ensurePostgresAccessRequestsRoleConstraint() {
+    try {
+        await pool.query('ALTER TABLE access_requests DROP CONSTRAINT IF EXISTS access_requests_role_check');
+        await pool.query(
+            `ALTER TABLE access_requests ADD CONSTRAINT access_requests_role_check CHECK (role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head'))`
+        );
+    } catch (err) {
+        console.warn('[db] Could not widen access_requests.role CHECK constraint:', err.message);
+    }
+}
+
+/** Widen role CHECK for access_requests on SQLite. */
+function migrateSqliteAccessRequestsRoleWiden() {
+    if (isPostgres) return;
+
+    const row = sqlite
+        .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'access_requests'")
+        .get();
+
+    if (!row?.sql || (row.sql.includes("'feedback_head'") && row.sql.includes("'td_head'"))) return;
+
+    sqlite.pragma('foreign_keys = OFF');
+    sqlite.exec(`
+        ALTER TABLE access_requests RENAME TO access_requests_old;
+
+        CREATE TABLE access_requests (
+            id TEXT PRIMARY KEY,
+            email TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            designation TEXT NOT NULL,
+            department TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head')),
+            status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        INSERT INTO access_requests (
+            id, email, name, designation, department, role, status, created_at, updated_at
+        )
+        SELECT
+            id, email, name, designation, department, role, status, created_at, updated_at
+        FROM access_requests_old;
+
+        DROP TABLE access_requests_old;
+    `);
+    sqlite.pragma('foreign_keys = ON');
+}
+
 /** TLS misconfiguration surfaces here as an opaque stack trace — make it actionable. */
 function explainIfTlsFailure(err) {
     const TLS_CODES = [
@@ -675,6 +725,7 @@ if (isPostgres) {
         }
         await ensurePostgresOptionalColumns();
         await ensurePostgresUsersRoleConstraint();
+        await ensurePostgresAccessRequestsRoleConstraint();
         await ensurePostgresUsersStatusConstraint();
     } catch (err) {
         // Deliberately re-thrown: a database we cannot verify must not be silently accepted.
@@ -696,6 +747,7 @@ if (isPostgres) {
     migrateSqliteUsersRoleDataAnalyst();
     migrateSqliteUsersRoleOrmLead();
     migrateSqliteUsersRoleFeedbackHeadAndTdHead();
+    migrateSqliteAccessRequestsRoleWiden();
 }
 await backfillUsersRolesColumn();
 await backfillLoggedInUsersStatus();

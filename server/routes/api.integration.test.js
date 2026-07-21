@@ -55,4 +55,24 @@ describe('API integration', () => {
         expect(res.body).toHaveProperty('attendance');
         expect(Array.isArray(res.body.attendance)).toBe(true);
     });
+
+    it('POST /api/auth/request-access succeeds with new roles like feedback_head and td_head', async () => {
+        const res = await request(app)
+            .post('/api/auth/request-access')
+            .send({
+                name: 'Test Candidate',
+                email: 'candidate.test@myfrido.com',
+                designation: 'Feedback Specialist',
+                department: 'Feedback',
+                role: 'feedback_head',
+            });
+        expect(res.status).toBe(200);
+        expect(res.body.message).toContain('Access request submitted successfully');
+
+        // Verify inserted row in access_requests table
+        const reqRow = await db.get('SELECT * FROM access_requests WHERE email = ?', ['candidate.test@myfrido.com']);
+        expect(reqRow).toBeDefined();
+        expect(reqRow.role).toBe('feedback_head');
+        expect(reqRow.status).toBe('pending');
+    });
 });

@@ -11,7 +11,7 @@ import {
 } from '../utils/adminImportNormalize';
 import { apiFetch, useAuth } from '../context/AuthContext';
 import RoleMultiSelect from '../components/RoleMultiSelect/RoleMultiSelect';
-import { ROLE_OPTIONS } from '../config/roleOptions';
+import { ROLE_OPTIONS, ROLE_LABELS } from '../config/roleOptions';
 import './Admin.css';
 
 const USERS_PAGE_SIZE = 10;
@@ -1088,7 +1088,7 @@ export default function Admin() {
                                                     <td>{req.department}</td>
                                                     <td>
                                                         <span className="user-menu__role" style={{ fontSize: '12px', padding: '2px 6px', borderRadius: '4px', background: req.role === 'executive' ? 'rgba(245,158,11,0.1)' : 'rgba(59,130,246,0.1)', color: req.role === 'executive' ? '#f59e0b' : '#3b82f6', border: '1px solid currentColor' }}>
-                                                            {req.role}
+                                                             {ROLE_LABELS[req.role] || req.role}
                                                         </span>
                                                     </td>
                                                     <td>

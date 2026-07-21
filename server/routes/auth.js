@@ -8,7 +8,7 @@
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
 import db from '../db.js';
-import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
+import { normalizeEmail, isAllowedCompanyEmail, resolveRoleToValidSlug, VALID_ROLES } from '../utils/security.js';
 import { sendGraphMail } from '../services/graphEmail.js';
 
 const router = Router();
@@ -40,7 +40,8 @@ router.post('/request-access', async (req, res) => {
             return res.status(400).json({ error: 'Only emails ending with @myfrido.com are allowed to request access.' });
         }
 
-        if (role !== 'staff' && role !== 'executive') {
+        const roleSlug = resolveRoleToValidSlug(role) ?? (VALID_ROLES.includes(String(role)) ? String(role) : null);
+        if (!roleSlug) {
             return res.status(400).json({ error: 'Invalid role selection.' });
         }
 
@@ -61,7 +62,7 @@ router.post('/request-access', async (req, res) => {
         await db.run(
             `INSERT INTO access_requests (id, email, name, designation, department, role, status, created_at, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, normalizedEmail, name.trim(), designation.trim(), department.trim(), role, 'pending', nowIso, nowIso]
+            [id, normalizedEmail, name.trim(), designation.trim(), department.trim(), roleSlug, 'pending', nowIso, nowIso]
         );
 
         // Send email to admin
