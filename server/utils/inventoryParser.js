@@ -90,7 +90,7 @@ export function sanitizeXlsxBuffer(buffer) {
         for (const [fn, content] of Object.entries(files)) {
             if (fn.startsWith('xl/worksheets/sheet') && fn.endsWith('.xml')) {
                 const xml = content.toString('utf8');
-                const re = /<c[^>]*\bt=\"s\"[^>]*>\s*<v>(\d+)<\/v>/g;
+                const re = /<c[^>]*\bt="s"[^>]*>\s*<v>(\d+)<\/v>/g;
                 let m;
                 while ((m = re.exec(xml)) !== null) {
                     const idx = parseInt(m[1], 10);
