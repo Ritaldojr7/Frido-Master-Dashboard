@@ -9,6 +9,7 @@
  * several columns (e.g. "Total Net Inventory" over one column per facility), and row 2
  * carries the facility names underneath.
  */
+import zlib from 'node:zlib';
 import * as XLSX from 'xlsx';
 
 /** Rows beyond this are rejected rather than silently truncated. */
@@ -19,6 +20,160 @@ export const STOCK_STATUSES = ['Reorder', 'Zero Sale', 'Sufficient'];
 function toNumber(value) {
     const n = parseFloat(value);
     return Number.isNaN(n) ? 0 : n;
+}
+
+function crc32(buf) {
+    let crc = -1;
+    for (let i = 0; i < buf.length; i += 1) {
+        let byte = buf[i];
+        for (let j = 0; j < 8; j += 1) {
+            const bit = (byte ^ crc) & 1;
+            crc = (crc >>> 1) ^ (bit ? 0xedb88320 : 0);
+            byte >>>= 1;
+        }
+    }
+    return (crc ^ -1) >>> 0;
+}
+
+/**
+ * Some export tools (e.g. Google Sheets exports / third-party tools) produce .xlsx files
+ * where a cell references a shared string index beyond xl/sharedStrings.xml bounds.
+ * SheetJS throws a TypeError internally when looking up out-of-bounds string indices,
+ * silently setting wb.Sheets[name] = undefined.
+ *
+ * This sanitizer pre-scans .xlsx buffers for out-of-bounds shared string references and
+ * pads xl/sharedStrings.xml with empty <si> elements so SheetJS never throws.
+ */
+export function sanitizeXlsxBuffer(buffer) {
+    if (!Buffer.isBuffer(buffer) && !(buffer instanceof Uint8Array)) return buffer;
+    const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+
+    // ZIP magic header check (0x04034b50)
+    if (buf.length < 30 || buf.readUInt32LE(0) !== 0x04034b50) {
+        return buffer;
+    }
+
+    try {
+        const files = {};
+        let pos = 0;
+        let foundSharedStrings = false;
+
+        while (pos < buf.length - 4) {
+            const sig = buf.readUInt32LE(pos);
+            if (sig === 0x04034b50) {
+                const compMethod = buf.readUInt16LE(pos + 8);
+                const compSize = buf.readUInt32LE(pos + 18);
+                const fileNameLen = buf.readUInt16LE(pos + 26);
+                const extraLen = buf.readUInt16LE(pos + 28);
+                const fileName = buf.toString('utf8', pos + 30, pos + 30 + fileNameLen);
+                const dataStart = pos + 30 + fileNameLen + extraLen;
+                if (dataStart + compSize > buf.length) break;
+
+                const compData = buf.slice(dataStart, dataStart + compSize);
+                files[fileName] = compMethod === 8 ? zlib.inflateRawSync(compData) : compData;
+                if (fileName === 'xl/sharedStrings.xml') foundSharedStrings = true;
+                pos = dataStart + compSize;
+            } else {
+                pos += 1;
+            }
+        }
+
+        if (!foundSharedStrings || !files['xl/sharedStrings.xml']) {
+            return buffer;
+        }
+
+        let ssStr = files['xl/sharedStrings.xml'].toString('utf8');
+        const countMatches = ssStr.match(/<si>/g) || [];
+        const count = countMatches.length;
+
+        let maxRef = -1;
+        for (const [fn, content] of Object.entries(files)) {
+            if (fn.startsWith('xl/worksheets/sheet') && fn.endsWith('.xml')) {
+                const xml = content.toString('utf8');
+                const re = /<c[^>]*\bt=\"s\"[^>]*>\s*<v>(\d+)<\/v>/g;
+                let m;
+                while ((m = re.exec(xml)) !== null) {
+                    const idx = parseInt(m[1], 10);
+                    if (idx > maxRef) maxRef = idx;
+                }
+            }
+        }
+
+        if (maxRef < count) {
+            return buffer;
+        }
+
+        const pad = '<si><t></t></si>'.repeat(maxRef - count + 1);
+        ssStr = ssStr.replace('</sst>', `${pad}</sst>`);
+        files['xl/sharedStrings.xml'] = Buffer.from(ssStr, 'utf8');
+
+        const localHeaders = [];
+        const cdHeaders = [];
+        let offset = 0;
+
+        for (const [fileName, content] of Object.entries(files)) {
+            const nameBuf = Buffer.from(fileName, 'utf8');
+            const compData = zlib.deflateRawSync(content);
+            const crc = crc32(content);
+            const uncompSize = content.length;
+            const compSize = compData.length;
+
+            const lh = Buffer.alloc(30 + nameBuf.length);
+            lh.writeUInt32LE(0x04034b50, 0);
+            lh.writeUInt16LE(20, 4);
+            lh.writeUInt16LE(0, 6);
+            lh.writeUInt16LE(8, 8);
+            lh.writeUInt16LE(0, 10);
+            lh.writeUInt16LE(0, 12);
+            lh.writeUInt32LE(crc, 14);
+            lh.writeUInt32LE(compSize, 18);
+            lh.writeUInt32LE(uncompSize, 22);
+            lh.writeUInt16LE(nameBuf.length, 26);
+            lh.writeUInt16LE(0, 28);
+            nameBuf.copy(lh, 30);
+            localHeaders.push(lh, compData);
+
+            const cd = Buffer.alloc(46 + nameBuf.length);
+            cd.writeUInt32LE(0x02014b50, 0);
+            cd.writeUInt16LE(20, 4);
+            cd.writeUInt16LE(20, 6);
+            cd.writeUInt16LE(0, 8);
+            cd.writeUInt16LE(8, 10);
+            cd.writeUInt16LE(0, 12);
+            cd.writeUInt16LE(0, 14);
+            cd.writeUInt32LE(crc, 16);
+            cd.writeUInt32LE(compSize, 20);
+            cd.writeUInt32LE(uncompSize, 24);
+            cd.writeUInt16LE(nameBuf.length, 28);
+            cd.writeUInt16LE(0, 30);
+            cd.writeUInt16LE(0, 32);
+            cd.writeUInt16LE(0, 34);
+            cd.writeUInt16LE(0, 36);
+            cd.writeUInt32LE(0, 38);
+            cd.writeUInt32LE(offset, 42);
+            nameBuf.copy(cd, 46);
+            cdHeaders.push(cd);
+            offset += lh.length + compData.length;
+        }
+
+        const cdStart = offset;
+        let cdSize = 0;
+        for (const cd of cdHeaders) cdSize += cd.length;
+
+        const eocd = Buffer.alloc(22);
+        eocd.writeUInt32LE(0x06054b50, 0);
+        eocd.writeUInt16LE(0, 4);
+        eocd.writeUInt16LE(0, 6);
+        eocd.writeUInt16LE(cdHeaders.length, 8);
+        eocd.writeUInt16LE(cdHeaders.length, 10);
+        eocd.writeUInt32LE(cdSize, 12);
+        eocd.writeUInt32LE(cdStart, 16);
+        eocd.writeUInt16LE(0, 20);
+
+        return Buffer.concat([...localHeaders, ...cdHeaders, eocd]);
+    } catch {
+        return buffer;
+    }
 }
 
 /**
@@ -61,12 +216,24 @@ function findCol(cols, re) {
  * @throws {Error} when no sheet carries a recognisable "Product ID" header
  */
 export function parseInventoryWorkbook(buffer) {
-    const wb = XLSX.read(buffer, { type: 'buffer', cellDates: false });
+    const sanitized = sanitizeXlsxBuffer(buffer);
+    const wb = XLSX.read(sanitized, { type: 'buffer', cellDates: false });
 
-    const preferred = wb.SheetNames.find((n) => n.toLowerCase() === 'inventory');
-    const candidates = preferred ? [preferred, ...wb.SheetNames.filter((n) => n !== preferred)] : wb.SheetNames;
+    const hiddenSheetNames = new Set(
+        (wb.Workbook?.Sheets || [])
+            .filter((s) => s.Hidden)
+            .map((s) => s.name)
+    );
+
+    const visibleSheetNames = wb.SheetNames.filter((n) => !hiddenSheetNames.has(n));
+    const allSheets = visibleSheetNames.length ? visibleSheetNames : wb.SheetNames;
+
+    const preferred = allSheets.find((n) => n.toLowerCase() === 'inventory');
+    const candidates = preferred ? [preferred, ...allSheets.filter((n) => n !== preferred)] : allSheets;
 
     for (const name of candidates) {
+        if (!wb.Sheets[name]) continue;
+
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {
             header: 1,
             defval: null,
@@ -177,3 +344,4 @@ export function summarizeInventory(records) {
         sufficient: byStatus.Sufficient || 0,
     };
 }
+

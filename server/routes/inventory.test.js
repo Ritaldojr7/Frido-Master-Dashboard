@@ -146,6 +146,13 @@ describe('parseInventoryWorkbook', () => {
         const [rec] = parseInventoryWorkbook(buildWorkbook({ rows })).records;
         expect(rec.category).toBe('Uncategorized');
     });
+
+    it('successfully parses workbooks with out-of-bounds shared string references', () => {
+        const buffer = buildWorkbook();
+        const { records, sheetName } = parseInventoryWorkbook(buffer);
+        expect(sheetName).toBe('Inventory');
+        expect(records).toHaveLength(3);
+    });
 });
 
 describe('summarizeInventory', () => {
