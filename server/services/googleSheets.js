@@ -6,6 +6,7 @@
  */
 import { google } from 'googleapis';
 import { ORDER_DISPUTE_SHEET_GIDS, ORDER_DISPUTE_SPREADSHEET_ID } from '../constants/orderDisputeSheet.js';
+import { parseGoogleServiceAccountJson } from '../utils/parseGoogleJson.js';
 
 let sheetsClient = null;
 let cachedMeta = null;
@@ -21,12 +22,7 @@ function getAuth() {
     if (!raw) {
         throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not configured');
     }
-    let credentials;
-    try {
-        credentials = JSON.parse(raw);
-    } catch {
-        throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is invalid JSON');
-    }
+    const credentials = parseGoogleServiceAccountJson(raw);
     return new google.auth.GoogleAuth({
         credentials,
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],

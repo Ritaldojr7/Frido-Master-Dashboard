@@ -215,7 +215,7 @@ router.post('/invite', requireRole(['admin']), userMutationLimiter, async (req, 
         const roleCols = rolesToDbColumns(inviteRoles);
         const userRole = roleCols.role;
 
-        const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
+        const origin = process.env.FRONTEND_URL || process.env.APP_URL || req.headers.origin || 'http://localhost:4000';
 
         const existing = await db.get(
             'SELECT id, status, deleted_at FROM users WHERE email = ?',
@@ -735,7 +735,7 @@ router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter
         const normalizedEmail = normalizeEmail(request.email);
 
         // Run invitation flow
-        const origin = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:4000';
+        const origin = process.env.FRONTEND_URL || process.env.APP_URL || req.headers.origin || 'http://localhost:4000';
         
         // Roles details (role cols and roles list matching request role)
         const inviteRoles = parseRolesFromRequest({ role: request.role }) ?? normalizeRolesArray([request.role]);

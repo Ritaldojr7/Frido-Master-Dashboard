@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { parseGoogleServiceAccountJson } from '../utils/parseGoogleJson.js';
 
 function credentialsConfigured() {
     return Boolean(String(process.env.GOOGLE_SERVICE_ACCOUNT_JSON ?? '').trim());
@@ -9,15 +10,7 @@ function getAuth() {
     if (!raw) {
         throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not configured');
     }
-    let credentials;
-    try {
-        credentials = JSON.parse(raw);
-        if (credentials.private_key) {
-            credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
-        }
-    } catch (err) {
-        throw new Error(`GOOGLE_SERVICE_ACCOUNT_JSON is invalid JSON: ${err.message}`);
-    }
+    const credentials = parseGoogleServiceAccountJson(raw);
     return new google.auth.GoogleAuth({
         credentials,
         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
