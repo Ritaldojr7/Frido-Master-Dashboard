@@ -314,8 +314,8 @@ export function transformManpowerData(sheetsData) {
     };
 }
 
-export function parseSlaBreaches(slaBreachesTab = [], warnings = []) {
-    return (slaBreachesTab || []).map((row, index) => {
+export function parseSlaBreaches(slaBreachesTab = [], _warnings = []) {
+    return (slaBreachesTab || []).map((row) => {
         const clean = cleanRowKeys(row);
         const dateRaw = getVal(clean, ['date']);
         const date = normalizeDateStr(dateRaw) || dateRaw;

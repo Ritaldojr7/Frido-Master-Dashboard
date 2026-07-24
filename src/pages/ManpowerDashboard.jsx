@@ -174,7 +174,6 @@ export default function ManpowerDashboard() {
     const [slaSearchQuery, setSlaSearchQuery] = useState('');
     const [slaReasonFilter, setSlaReasonFilter] = useState('all');
     const [slaSeverityFilter, setSlaSeverityFilter] = useState('all');
-    const [hoveredSlaSlice, setHoveredSlaSlice] = useState(null);
     const [hoveredSeveritySlice, setHoveredSeveritySlice] = useState(null);
 
     const handleLopSubmit = async (e) => {
