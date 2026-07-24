@@ -1,6 +1,10 @@
 /**
  * Parse organization env vars — shared by API route and tests.
  */
+import { DEFAULT_RETAIL_STRUCTURE_CONTACTS } from '../modules/retail/organization.js';
+
+export { DEFAULT_RETAIL_STRUCTURE_CONTACTS };
+
 export function parseCsvList(value) {
     return String(value ?? '')
         .split(',')
@@ -89,14 +93,6 @@ export const DEFAULT_STAFF_ESCALATION_CONTACTS = [
     { name: 'Juned', pocFor: 'MIS', email: 'juned.m@myfrido.com', phone: '+917498931102' },
     { name: 'Nishrit', pocFor: 'Overall', email: 'nishrit.p@myfrido.com', phone: '+917051780171' },
     { name: 'Saiyed Abdal', pocFor: 'Highest Escalations', email: 'saiyed.a@myfrido.com', phone: '+917987962503' },
-];
-
-export const DEFAULT_RETAIL_STRUCTURE_CONTACTS = [
-    { name: 'Vikal Gupta', pocFor: 'Retail VP', email: 'Vikal.g@myfrido.com', phone: '' },
-    { name: 'Anirudha', pocFor: 'Customer Experience', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
-    { name: 'Anirudha', pocFor: 'Training & Development', email: 'aniruddha.b@myfrido.com', phone: '+919527907966' },
-    { name: 'Rishab', pocFor: 'Retail Inside Sales', email: 'Rishab.d@myfrido.com', phone: '+919353558851' },
-    { name: 'Shernyl', pocFor: 'Retail Customer Support', email: 'Shernyl.r@myfrido.com', phone: '+919029929930' },
 ];
 
 export function loadOrganizationConfigFromEnv(env = process.env) {

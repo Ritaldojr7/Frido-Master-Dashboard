@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid';
 import {
     getManpowerSyncStatus,
     loadManpowerFromDb,
+    loadSlaBreachesFromDb,
     syncManpowerFromSheets,
     isSyncAuthorized,
 } from '../services/manpowerSync.js';
@@ -201,6 +202,23 @@ router.post('/lop', async (req, res) => {
     } catch (err) {
         console.error('[manpower/lop]', err);
         res.status(500).json({ error: err.message || 'Failed to submit LOP record' });
+    }
+});
+
+/**
+ * GET /sla-breaches — Get all SLA Breach records directly from database
+ */
+router.get('/sla-breaches', async (_req, res) => {
+    try {
+        let breaches = await loadSlaBreachesFromDb();
+        if ((!breaches || !breaches.length) && isManpowerConfigured()) {
+            await syncManpowerFromSheets();
+            breaches = await loadSlaBreachesFromDb();
+        }
+        res.json({ success: true, data: breaches });
+    } catch (err) {
+        console.error('[manpower/sla-breaches GET]', err);
+        res.status(500).json({ error: 'Failed to fetch SLA breach records' });
     }
 });
 

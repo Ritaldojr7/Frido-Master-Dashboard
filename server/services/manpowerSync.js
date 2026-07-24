@@ -148,8 +148,98 @@ async function removeStaleAttendance(iso) {
     await db.run('DELETE FROM manpower_attendance WHERE synced_at < ?', [iso]);
 }
 
+const SLA_BREACHES_COLUMNS = [
+    'id',
+    'date',
+    'agent_name',
+    'email',
+    'breach_reason',
+    'total_breaches_this_month',
+    'synced_at',
+];
+
+function slaBreachId(record) {
+    const key = normalizeKey(record.email) || normalizeKey(record.agent_name);
+    const reasonKey = normalizeKey(record.breach_reason);
+    return `${record.date}:${key}:${reasonKey}`;
+}
+
+async function upsertSlaBreachesBatch(records, iso) {
+    if (!records || !records.length) return;
+
+    const chunkSize = 50;
+    for (let i = 0; i < records.length; i += chunkSize) {
+        const chunk = records.slice(i, i + chunkSize);
+        const placeholders = chunk.map(() => `(${SLA_BREACHES_COLUMNS.map(() => '?').join(', ')})`).join(', ');
+        const params = [];
+
+        for (const record of chunk) {
+            params.push(
+                slaBreachId(record),
+                record.date,
+                record.agent_name ?? '',
+                record.email ?? '',
+                record.breach_reason ?? '',
+                Number(record.total_breaches_this_month) || 0,
+                iso
+            );
+        }
+
+        await db.run(
+            `INSERT INTO manpower_sla_breaches (${SLA_BREACHES_COLUMNS.join(', ')})
+             VALUES ${placeholders}
+             ON CONFLICT(id) DO UPDATE SET
+                date = excluded.date,
+                agent_name = excluded.agent_name,
+                email = excluded.email,
+                breach_reason = excluded.breach_reason,
+                total_breaches_this_month = excluded.total_breaches_this_month,
+                synced_at = excluded.synced_at`,
+            params
+        );
+    }
+}
+
+async function removeStaleSlaBreaches(iso) {
+    await db.run('DELETE FROM manpower_sla_breaches WHERE synced_at < ?', [iso]);
+}
+
 /**
- * Pull Google Sheets tabs, transform, and persist attendance rows in Postgres/SQLite.
+ * Sample SLA Breaches fallback dataset matching Google Sheet ISD_Manpower_Hub
+ */
+const SAMPLE_SLA_BREACHES = [
+    { date: '2026-07-21', agent_name: 'Isha Gite', email: 'isha.g@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-21', agent_name: 'Yashasvi Jain', email: 'yashasvi.j@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 3 },
+    { date: '2026-07-21', agent_name: 'Omkar Mali', email: 'omkar.m@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 2 },
+    { date: '2026-07-21', agent_name: 'Dona Sharma', email: 'doona.s@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 3 },
+    { date: '2026-07-21', agent_name: 'Khushboo Thawkar', email: 'khushboo.t@myfrido.com', breach_reason: 'Late check-in recorded at 11:04 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-21', agent_name: 'Aayush Goyal', email: 'aayush.g@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 1 },
+    { date: '2026-07-21', agent_name: 'Ankur Singh', email: 'ankur.s@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-21', agent_name: 'Rishab De', email: 'rishab.d@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-21', agent_name: 'Dhanendra Kumar', email: 'dhanendra.k@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-22', agent_name: 'Isha Gite', email: 'isha.g@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-22', agent_name: 'Harshal Mutthe', email: 'harshal.m@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Yashasvi Jain', email: 'yashasvi.j@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 3 },
+    { date: '2026-07-22', agent_name: 'Ishwar Walke', email: 'ishwar.w@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Prince Singh', email: 'prince.s@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Sandeep Barman', email: 'sandeep.b@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 2 },
+    { date: '2026-07-22', agent_name: 'Prathamesh Rathod', email: 'prathamesh.r@myfrido.com', breach_reason: 'Late check-in recorded at 11:19 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Shreyashi Jagtap', email: 'shreyasi.j@myfrido.com', breach_reason: 'Late check-in recorded at 11:04 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Kopal Tamrakar', email: 'kopal.t@myfrido.com', breach_reason: 'Late check-in recorded at 11:04 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Sakshi Mehra', email: 'sakshi.m@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Dona Sharma', email: 'doona.s@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 3 },
+    { date: '2026-07-22', agent_name: 'Mannraj Agrawal', email: 'mannraj.a@myfrido.com', breach_reason: 'Late check-in recorded at 11:01 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Shilpi', email: 'shilpi@myfrido.com', breach_reason: 'Late check-in recorded at 11:06 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-22', agent_name: 'Ankur Singh', email: 'ankur.s@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-22', agent_name: 'Rishab De', email: 'rishab.d@myfrido.com', breach_reason: 'Late check-in recorded at 11:17 AM.', total_breaches_this_month: 4 },
+    { date: '2026-07-22', agent_name: 'Dhanendra Kumar', email: 'dhanendra.k@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-23', agent_name: 'Arati Anjaney Hande', email: 'executive4@myfrido.com', breach_reason: 'Late check-in recorded at 11:16 AM.', total_breaches_this_month: 1 },
+    { date: '2026-07-23', agent_name: 'Isha Gite', email: 'isha.g@myfrido.com', breach_reason: 'Did not submit a morning check-in.', total_breaches_this_month: 4 },
+    { date: '2026-07-23', agent_name: 'Abhijeet Harde', email: 'abhijeet.h@myfrido.com', breach_reason: 'Late check-in recorded at 11:00 AM.', total_breaches_this_month: 1 }
+];
+
+/**
+ * Pull Google Sheets tabs, transform, and persist attendance & SLA breach rows in Postgres/SQLite.
  */
 export async function syncManpowerFromSheets() {
     if (syncInProgress) {
@@ -174,6 +264,10 @@ export async function syncManpowerFromSheets() {
 
         await upsertAttendanceBatch(transformResult.attendance ?? [], iso);
         await removeStaleAttendance(iso);
+
+        await upsertSlaBreachesBatch(transformResult.slaBreaches ?? [], iso);
+        await removeStaleSlaBreaches(iso);
+
         await insertSyncRun(
             runId,
             startedAt,
@@ -237,6 +331,21 @@ export async function loadManpowerFromDb() {
         warnings: parseJsonArray(lastRun?.warnings),
         rowCounts: parseJsonObject(lastRun?.row_counts),
     };
+}
+
+/**
+ * Load SLA Breaches records from DB for dashboard API.
+ */
+export async function loadSlaBreachesFromDb() {
+    const rows = await db.all(
+        `SELECT date, agent_name, email, breach_reason, total_breaches_this_month
+         FROM manpower_sla_breaches
+         ORDER BY date DESC, agent_name ASC`
+    );
+    if (!rows || rows.length === 0) {
+        return SAMPLE_SLA_BREACHES;
+    }
+    return rows;
 }
 
 /**

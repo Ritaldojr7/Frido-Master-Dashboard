@@ -75,7 +75,7 @@ export async function fetchAllManpowerSheets(spreadsheetId) {
         throw new Error('MANPOWER_SPREADSHEET_ID is not configured');
     }
 
-    const tabsToFetch = ['Roster', 'Morning', 'Evening', 'LOP'];
+    const tabsToFetch = ['Roster', 'Morning', 'Evening', 'LOP', 'SLA Breaches'];
     const results = {};
     const warnings = [];
     const rowCounts = {};

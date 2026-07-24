@@ -157,6 +157,17 @@ export function schemaStatements() {
             warnings TEXT NOT NULL DEFAULT '[]',
             records_synced INTEGER NOT NULL DEFAULT 0
         )`,
+        `CREATE TABLE IF NOT EXISTS manpower_sla_breaches (
+            id TEXT PRIMARY KEY,
+            date TEXT NOT NULL,
+            agent_name TEXT NOT NULL DEFAULT '',
+            email TEXT NOT NULL DEFAULT '',
+            breach_reason TEXT NOT NULL DEFAULT '',
+            total_breaches_this_month INTEGER NOT NULL DEFAULT 0,
+            synced_at TEXT NOT NULL
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_manpower_sla_breaches_date ON manpower_sla_breaches(date)`,
+        `CREATE INDEX IF NOT EXISTS idx_manpower_sla_breaches_email ON manpower_sla_breaches(email)`,
         `CREATE TABLE IF NOT EXISTS access_requests (
             id TEXT PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,

@@ -303,10 +303,37 @@ export function transformManpowerData(sheetsData) {
         }
     }
 
+    // 5. Parse SLA Breaches rows
+    const slaBreachesTab = sheetsData?.['SLA Breaches']?.rows ?? [];
+    const slaBreaches = parseSlaBreaches(slaBreachesTab, warnings);
+
     return {
         attendance,
+        slaBreaches,
         warnings
     };
+}
+
+export function parseSlaBreaches(slaBreachesTab = [], _warnings = []) {
+    return (slaBreachesTab || []).map((row) => {
+        const clean = cleanRowKeys(row);
+        const dateRaw = getVal(clean, ['date']);
+        const date = normalizeDateStr(dateRaw) || dateRaw;
+        const agentName = getVal(clean, ['agent name', 'name']);
+        const email = getVal(clean, ['email', 'email address']);
+        const breachReason = getVal(clean, ['breach reason', 'reason']);
+        const totalBreachesThisMonth = parseInt(getVal(clean, ['total breaches this month', 'total breaches']), 10) || 0;
+
+        if (!agentName && !email && !breachReason) return null;
+
+        return {
+            date: date || '',
+            agent_name: agentName || 'Unknown Agent',
+            email: email || '',
+            breach_reason: breachReason || '',
+            total_breaches_this_month: totalBreachesThisMonth
+        };
+    }).filter(Boolean);
 }
 
 export function aggregateLeaderboard(attendanceRecords, period, verticalFilter, sortBy, startDate = null, endDate = null) {

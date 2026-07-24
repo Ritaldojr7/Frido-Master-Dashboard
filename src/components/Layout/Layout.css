@@ -486,7 +486,7 @@
     align-items: center;
     padding: var(--space-xl) var(--space-xl) var(--space-3xl);
     width: 100%;
-    max-width: 1400px;
+    max-width: min(1750px, 120vw);
     margin: 0 auto;
 }
 
@@ -582,7 +582,8 @@
 
 .sidebar__link--subparent {
     font-size: 12.5px !important;
-    padding: 6px 10px 6px 20px !important; /* slight extra indentation */
+    padding: 6px 10px 6px 20px !important;
+    /* slight extra indentation */
 }
 
 .sidebar__link--subparent .sidebar__link-icon {
@@ -597,7 +598,8 @@
     gap: 1px;
     margin-top: 2px;
     border-left: 1px solid var(--border-primary);
-    margin-left: 28px; /* aligns under text of subparent */
+    margin-left: 28px;
+    /* aligns under text of subparent */
 }
 
 .sidebar__link--subchild {

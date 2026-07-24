@@ -1,8 +1,8 @@
 import React from 'react';
-import { retailAdminData, ICONS } from '../config/dashboardData';
-import SectionGroup from '../components/SectionGroup/SectionGroup';
-import Typewriter from '../components/Typewriter/Typewriter';
-import './SubPage.css';
+import { retailAdminData } from '../config/retailData';
+import SectionGroup from '../../../components/SectionGroup/SectionGroup';
+import Typewriter from '../../../components/Typewriter/Typewriter';
+import '../../../pages/SubPage.css';
 
 export default function RetailAdminDashboard() {
     const data = retailAdminData;
