@@ -1,7 +1,7 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import { getStoreEmailMap } from '../config/organizationConfig';
-import './IframeDashboard.css';
+import { useAuth } from '../../../context/AuthContext';
+import { getStoreEmailMap } from '../../../config/organizationConfig';
+import '../../../pages/IframeDashboard.css';
 
 export default function StoreAnalyticsConsole() {
     const { user } = useAuth();

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
     transformManpowerData,
+    parseSlaBreaches,
     aggregateLeaderboard,
     aggregateMonthlyAnalytics,
     getTodayIST,
@@ -29,6 +30,31 @@ describe('Manpower Data Service Logic', () => {
         const parsed2 = parseTimestampToIST('7/9/2026 13:39:42');
         expect(parsed2.date).toBe('2026-07-09');
         expect(parsed2.time).toBe('01:39 PM');
+    });
+
+    it('should correctly parse SLA Breaches tab data', () => {
+        const slaRows = [
+            {
+                'Date': '2026-07-21',
+                'Agent Name': 'Isha Gite',
+                'Email': 'isha.g@myfrido.com',
+                'Breach Reason': 'Did not submit a morning check-in.',
+                'Total Breaches This Month': '4'
+            },
+            {
+                'Date': '2026-07-22',
+                'Agent Name': 'Prathamesh Rathod',
+                'Email': 'prathamesh.r@myfrido.com',
+                'Breach Reason': 'Late check-in recorded at 11:19 AM.',
+                'Total Breaches This Month': '1'
+            }
+        ];
+
+        const breaches = parseSlaBreaches(slaRows);
+        expect(breaches.length).toBe(2);
+        expect(breaches[0].agent_name).toBe('Isha Gite');
+        expect(breaches[0].total_breaches_this_month).toBe(4);
+        expect(breaches[1].breach_reason).toBe('Late check-in recorded at 11:19 AM.');
     });
 
     it('should transform manpower data, inject today in IST, and classify OFF/DS', () => {

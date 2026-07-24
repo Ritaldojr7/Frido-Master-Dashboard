@@ -169,6 +169,14 @@ export default function ManpowerDashboard() {
     const [lopSuccess, setLopSuccess] = useState(false);
     const [lopError, setLopError] = useState(null);
 
+    // States for SLA Breaches & Interactive Charts
+    const [slaBreachesData, setSlaBreachesData] = useState([]);
+    const [slaSearchQuery, setSlaSearchQuery] = useState('');
+    const [slaReasonFilter, setSlaReasonFilter] = useState('all');
+    const [slaSeverityFilter, setSlaSeverityFilter] = useState('all');
+    const [hoveredSlaSlice, setHoveredSlaSlice] = useState(null);
+    const [hoveredSeveritySlice, setHoveredSeveritySlice] = useState(null);
+
     const handleLopSubmit = async (e) => {
         e.preventDefault();
         setLopSubmitting(true);
@@ -204,6 +212,12 @@ export default function ManpowerDashboard() {
             const lopRes = await apiFetch('/api/manpower/lop');
             if (lopRes && lopRes.data) {
                 setDbLopRecords(lopRes.data);
+            }
+
+            // Also fetch SLA breach records from DB
+            const slaRes = await apiFetch('/api/manpower/sla-breaches');
+            if (slaRes && slaRes.data) {
+                setSlaBreachesData(slaRes.data);
             }
 
             // Set default date filter to today's date or the first available date
@@ -315,6 +329,81 @@ export default function ManpowerDashboard() {
             records: grouped[date].sort((a, b) => (a.agent_name || '').localeCompare(b.agent_name || ''))
         }));
     }, [dbLopRecords]);
+
+    // SLA Breaches computations
+    const uniqueSlaReasons = useMemo(() => {
+        const set = new Set();
+        slaBreachesData.forEach(r => {
+            if (r.breach_reason) set.add(r.breach_reason);
+        });
+        return Array.from(set).sort();
+    }, [slaBreachesData]);
+
+    const filteredSlaBreaches = useMemo(() => {
+        return slaBreachesData.filter(r => {
+            const matchesQuery = !slaSearchQuery || 
+                (r.agent_name && r.agent_name.toLowerCase().includes(slaSearchQuery.toLowerCase())) ||
+                (r.email && r.email.toLowerCase().includes(slaSearchQuery.toLowerCase())) ||
+                (r.breach_reason && r.breach_reason.toLowerCase().includes(slaSearchQuery.toLowerCase()));
+            
+            const matchesReason = slaReasonFilter === 'all' || r.breach_reason === slaReasonFilter;
+
+            let matchesSeverity = true;
+            if (slaSeverityFilter === 'critical') matchesSeverity = r.total_breaches_this_month >= 4;
+            else if (slaSeverityFilter === 'high') matchesSeverity = r.total_breaches_this_month === 3;
+            else if (slaSeverityFilter === 'moderate') matchesSeverity = r.total_breaches_this_month < 3;
+
+            return matchesQuery && matchesReason && matchesSeverity;
+        });
+    }, [slaBreachesData, slaSearchQuery, slaReasonFilter, slaSeverityFilter]);
+
+    const slaStats = useMemo(() => {
+        const total = filteredSlaBreaches.length;
+        const uniqueAgents = new Set(filteredSlaBreaches.map(r => r.email || r.agent_name)).size;
+        const morningBreaches = filteredSlaBreaches.filter(r => (r.breach_reason || '').toLowerCase().includes('morning')).length;
+        const lateBreaches = filteredSlaBreaches.filter(r => (r.breach_reason || '').toLowerCase().includes('late')).length;
+
+        return {
+            total,
+            uniqueAgents,
+            morningBreaches,
+            lateBreaches
+        };
+    }, [filteredSlaBreaches]);
+
+    const repeatBreachers = useMemo(() => {
+        const agentMap = {};
+        slaBreachesData.forEach(r => {
+            const key = r.email || r.agent_name;
+            if (!agentMap[key]) {
+                agentMap[key] = {
+                    agent_name: r.agent_name,
+                    email: r.email,
+                    max_breaches: 0
+                };
+            }
+            if (r.total_breaches_this_month > agentMap[key].max_breaches) {
+                agentMap[key].max_breaches = r.total_breaches_this_month;
+            }
+        });
+        return Object.values(agentMap)
+            .filter(a => a.max_breaches >= 3)
+            .sort((a, b) => b.max_breaches - a.max_breaches);
+    }, [slaBreachesData]);
+
+    const groupedSlaBreaches = useMemo(() => {
+        const grouped = {};
+        filteredSlaBreaches.forEach(r => {
+            const date = r.date || 'Unknown Date';
+            if (!grouped[date]) grouped[date] = [];
+            grouped[date].push(r);
+        });
+        const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+        return sortedDates.map(date => ({
+            date,
+            records: grouped[date].sort((a, b) => (a.agent_name || '').localeCompare(b.agent_name || ''))
+        }));
+    }, [filteredSlaBreaches]);
 
     // Stat Cards calculations for filtered daily attendance
     const dailyStats = useMemo(() => {
@@ -529,6 +618,137 @@ export default function ManpowerDashboard() {
         );
     }, [monthlyAnalytics, hoveredCategory, analyticsTableFilter]);
 
+
+    // SLA Breaches Severity Pie/Doughnut Chart Renderer
+    const renderSlaSeverityPieChart = () => {
+        let critical = 0, high = 0, moderate = 0;
+        slaBreachesData.forEach(r => {
+            if (r.total_breaches_this_month >= 4) critical++;
+            else if (r.total_breaches_this_month === 3) high++;
+            else moderate++;
+        });
+
+        const total = slaBreachesData.length;
+        if (total === 0) return <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No breach data available</p>;
+
+        const entries = [
+            { severity: 'critical', label: 'Critical (≥4)', count: critical, color: '#dc2626' },
+            { severity: 'high', label: 'High Alert (3)', count: high, color: '#f97316' },
+            { severity: 'moderate', label: 'Moderate (1-2)', count: moderate, color: '#eab308' },
+        ].filter(e => e.count > 0).map(e => ({ ...e, percent: ((e.count / total) * 100).toFixed(1) }));
+
+        let cumulativePercent = 0;
+        const slices = entries.map((entry) => {
+            const startPercent = cumulativePercent;
+            cumulativePercent += entry.count / total;
+            const endPercent = cumulativePercent;
+
+            const startAngle = startPercent * 2 * Math.PI - Math.PI / 2;
+            const endAngle = endPercent * 2 * Math.PI - Math.PI / 2;
+
+            const cx = 100, cy = 100, rOuter = 82, rInner = 52;
+            const x1 = cx + rOuter * Math.cos(startAngle);
+            const y1 = cy + rOuter * Math.sin(startAngle);
+            const x2 = cx + rOuter * Math.cos(endAngle);
+            const y2 = cy + rOuter * Math.sin(endAngle);
+            const x1In = cx + rInner * Math.cos(startAngle);
+            const y1In = cy + rInner * Math.sin(startAngle);
+            const x2In = cx + rInner * Math.cos(endAngle);
+            const y2In = cy + rInner * Math.sin(endAngle);
+            const largeArcFlag = (endPercent - startPercent) > 0.5 ? 1 : 0;
+
+            let pathData;
+            if (entries.length === 1) {
+                pathData = `M 100 18 A 82 82 0 1 1 99.99 18 L 99.99 48 A 52 52 0 1 0 100 48 Z`;
+            } else {
+                pathData = [
+                    `M ${x1.toFixed(2)} ${y1.toFixed(2)}`,
+                    `A ${rOuter} ${rOuter} 0 ${largeArcFlag} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`,
+                    `L ${x2In.toFixed(2)} ${y2In.toFixed(2)}`,
+                    `A ${rInner} ${rInner} 0 ${largeArcFlag} 0 ${x1In.toFixed(2)} ${y1In.toFixed(2)}`,
+                    'Z'
+                ].join(' ');
+            }
+
+            return { ...entry, pathData };
+        });
+
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                <div style={{ position: 'relative', width: '180px', height: '180px', flexShrink: 0 }}>
+                    <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                        {slices.map((slice, i) => {
+                            const isHovered = hoveredSeveritySlice === i;
+                            const isSelected = slaSeverityFilter === slice.severity;
+                            return (
+                                <path
+                                    key={i}
+                                    d={slice.pathData}
+                                    fill={slice.color}
+                                    stroke="var(--bg-card)"
+                                    strokeWidth="2.5"
+                                    style={{
+                                        cursor: 'pointer',
+                                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        transform: isHovered || isSelected ? 'scale(1.06)' : 'scale(1)',
+                                        transformOrigin: '100px 100px',
+                                        filter: isHovered || isSelected ? 'drop-shadow(0px 4px 8px rgba(0,0,0,0.3))' : 'none',
+                                        opacity: hoveredSeveritySlice !== null && !isHovered ? 0.45 : 1
+                                    }}
+                                    onMouseEnter={() => setHoveredSeveritySlice(i)}
+                                    onMouseLeave={() => setHoveredSeveritySlice(null)}
+                                    onClick={() => setSlaSeverityFilter(slaSeverityFilter === slice.severity ? 'all' : slice.severity)}
+                                />
+                            );
+                        })}
+                    </svg>
+                    <div style={{
+                        position: 'absolute', top: '50%', left: '50%',
+                        transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none'
+                    }}>
+                        <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', display: 'block', lineHeight: 1 }}>
+                            {hoveredSeveritySlice !== null ? slices[hoveredSeveritySlice].count : total}
+                        </span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600, marginTop: '2px', display: 'block' }}>
+                            {hoveredSeveritySlice !== null ? slices[hoveredSeveritySlice].percent + '%' : 'Incidents'}
+                        </span>
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '320px', maxWidth: '100%' }}>
+                    {slices.map((slice, i) => {
+                        const isSelected = slaSeverityFilter === slice.severity;
+                        const isHovered = hoveredSeveritySlice === i;
+                        return (
+                            <div
+                                key={i}
+                                onMouseEnter={() => setHoveredSeveritySlice(i)}
+                                onMouseLeave={() => setHoveredSeveritySlice(null)}
+                                onClick={() => setSlaSeverityFilter(slaSeverityFilter === slice.severity ? 'all' : slice.severity)}
+                                style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '0.5rem 0.75rem', borderRadius: '6px',
+                                    background: isSelected ? 'var(--bg-elevated)' : isHovered ? 'var(--bg-surface)' : 'transparent',
+                                    border: isSelected ? `1px solid ${slice.color}` : '1px solid transparent',
+                                    cursor: 'pointer', transition: 'all 0.15s ease'
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: slice.color, flexShrink: 0 }} />
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{slice.label}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>{slice.count}</span>
+                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>({slice.percent}%)</span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
     // Attendance badges resolver
     const renderBadge = (r) => {
         if (r.is_lop) {
@@ -635,6 +855,12 @@ export default function ManpowerDashboard() {
                     onClick={() => setActiveTab('lop-tracker')}
                 >
                     LOP Tracker
+                </button>
+                <button
+                    className={`manpower__tab-btn ${activeTab === 'sla-breaches' ? 'manpower__tab-btn--active' : ''}`}
+                    onClick={() => setActiveTab('sla-breaches')}
+                >
+                    SLA Breaches
                 </button>
             </nav>
 
@@ -1235,6 +1461,227 @@ export default function ManpowerDashboard() {
                                                                 <td style={{ color: 'var(--text-secondary)', padding: '1rem' }}>{record.email}</td>
                                                             </tr>
                                                         ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Tab 6: SLA Breaches ── */}
+                {activeTab === 'sla-breaches' && (
+                    <div className="manpower__tab-content manpower__fade-in">
+                        <div className="manpower__header" style={{ marginBottom: '1.5rem' }}>
+                            <div>
+                                <h1 className="manpower__title">SLA Breaches</h1>
+                                <p className="manpower__subtitle">Real-time SLA breach records & escalation metrics synchronized from ISD Manpower Hub.</p>
+                            </div>
+                        </div>
+
+                        {/* KPI Stats Grid */}
+                        <div className="manpower__stats-grid" style={{ marginBottom: '1.5rem' }}>
+                            <div className="manpower__stat-card manpower__stat-card--evening-pending">
+                                <span className="manpower__stat-card-title">Total Breaches</span>
+                                <span className="manpower__stat-card-val text-rose">{slaStats.total}</span>
+                                <span className="manpower__stat-card-sub">Recorded incidents</span>
+                            </div>
+                            <div className="manpower__stat-card manpower__stat-card--morning-pending">
+                                <span className="manpower__stat-card-title">Unique Agents</span>
+                                <span className="manpower__stat-card-val text-amber">{slaStats.uniqueAgents}</span>
+                                <span className="manpower__stat-card-sub">With SLA breaches</span>
+                            </div>
+                            <div className="manpower__stat-card">
+                                <span className="manpower__stat-card-title">Morning Check-In Missed</span>
+                                <span className="manpower__stat-card-val text-rose">{slaStats.morningBreaches}</span>
+                                <span className="manpower__stat-card-sub">No morning submission</span>
+                            </div>
+                            <div className="manpower__stat-card">
+                                <span className="manpower__stat-card-title">Late Check-Ins</span>
+                                <span className="manpower__stat-card-val text-amber">{slaStats.lateBreaches}</span>
+                                <span className="manpower__stat-card-sub">Recorded past 11:00 AM</span>
+                            </div>
+                        </div>
+
+                        {/* Single Interactive Pie Chart: Severity Distribution */}
+                        <div className="manpower__card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    🎯 Monthly Breach Severity Distribution
+                                </h3>
+                                {slaSeverityFilter !== 'all' && (
+                                    <button
+                                        onClick={() => setSlaSeverityFilter('all')}
+                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-primary)', color: 'var(--text-secondary)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}
+                                    >
+                                        Reset Severity Filter
+                                    </button>
+                                )}
+                            </div>
+                            <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Click any pie slice or legend item to filter incident records by repeat level</p>
+                            {renderSlaSeverityPieChart()}
+                        </div>
+
+                        {/* High Repeat Breachers / Escalations Section */}
+                        {repeatBreachers.length > 0 && (
+                            <div className="manpower__card" style={{ padding: '1.25rem 1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid #ef4444' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem', flexWrap: 'wrap' }}>
+                                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span style={{ color: '#ef4444', fontSize: '1.2rem' }}>⚠️</span> High Repeat Breachers (Monthly Breaches ≥ 3)
+                                    </h3>
+                                    <span style={{ background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca', fontSize: '0.75rem', padding: '0.2rem 0.65rem', borderRadius: '12px', fontWeight: 600 }}>
+                                        {repeatBreachers.length} Escalation Candidate{repeatBreachers.length > 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
+                                    {repeatBreachers.map((agent, i) => (
+                                        <div key={i} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-primary)', borderRadius: 'var(--radius-md)', padding: '0.65rem 0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                                            <div style={{ overflow: 'hidden' }}>
+                                                <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{agent.agent_name}</div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{agent.email}</div>
+                                            </div>
+                                            <span style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontWeight: 700, fontSize: '0.75rem', padding: '0.2rem 0.55rem', borderRadius: '12px', flexShrink: 0 }}>
+                                                {agent.max_breaches} Breaches
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Search & Filter Panel */}
+                        <div className="manpower__filter-panel" style={{ marginBottom: '1.5rem' }}>
+                            <div className="manpower__filter-group" style={{ flex: 1 }}>
+                                <label className="manpower__filter-label">Search Agent or Email:</label>
+                                <input
+                                    type="text"
+                                    className="manpower__select"
+                                    placeholder="Type agent name, email, or reason..."
+                                    value={slaSearchQuery}
+                                    onChange={(e) => setSlaSearchQuery(e.target.value)}
+                                    style={{ width: '100%' }}
+                                />
+                            </div>
+                            <div className="manpower__filter-group" style={{ minWidth: '240px' }}>
+                                <label className="manpower__filter-label">Breach Reason:</label>
+                                <select
+                                    className="manpower__select"
+                                    value={slaReasonFilter}
+                                    onChange={(e) => setSlaReasonFilter(e.target.value)}
+                                >
+                                    <option value="all">All Breach Reasons</option>
+                                    {uniqueSlaReasons.map(reason => (
+                                        <option key={reason} value={reason}>{reason}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="manpower__filter-group" style={{ minWidth: '180px' }}>
+                                <label className="manpower__filter-label">Severity:</label>
+                                <select
+                                    className="manpower__select"
+                                    value={slaSeverityFilter}
+                                    onChange={(e) => setSlaSeverityFilter(e.target.value)}
+                                >
+                                    <option value="all">All Severity</option>
+                                    <option value="critical">Critical (≥4)</option>
+                                    <option value="high">High Alert (3)</option>
+                                    <option value="moderate">Moderate (1-2)</option>
+                                </select>
+                            </div>
+                            {(slaReasonFilter !== 'all' || slaSeverityFilter !== 'all' || slaSearchQuery) && (
+                                <div className="manpower__filter-group" style={{ alignSelf: 'flex-end' }}>
+                                    <button
+                                        onClick={() => { setSlaReasonFilter('all'); setSlaSeverityFilter('all'); setSlaSearchQuery(''); }}
+                                        style={{
+                                            background: 'var(--bg-elevated)', border: '1px solid var(--border-primary)',
+                                            color: 'var(--text-secondary)', padding: '0.5rem 1rem', borderRadius: '6px',
+                                            fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        ✕ Clear All Filters
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Data Cards Grouped by Date */}
+                        <div className="manpower__card" style={{ padding: '2rem' }}>
+                            {groupedSlaBreaches.length === 0 ? (
+                                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', margin: '1.5rem 0' }}>No SLA Breach records found matching current filters.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                    {groupedSlaBreaches.map(group => (
+                                        <div key={group.date} style={{ border: '1px solid var(--border-primary)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                                            <div style={{ background: 'var(--bg-elevated)', padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-primary)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    📅 {group.date}
+                                                </span>
+                                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', background: 'var(--bg-surface)', padding: '0.2rem 0.6rem', borderRadius: '4px', border: '1px solid var(--border-primary)' }}>
+                                                    {group.records.length} Breach{group.records.length > 1 ? 'es' : ''}
+                                                </span>
+                                            </div>
+                                            <div style={{ padding: '0', overflowX: 'auto' }}>
+                                                <table className="manpower__table" style={{ margin: 0, width: '100%' }}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th style={{ textAlign: 'left', padding: '0.85rem 1rem' }}>Agent Name</th>
+                                                            <th style={{ textAlign: 'left', padding: '0.85rem 1rem' }}>Email</th>
+                                                            <th style={{ textAlign: 'left', padding: '0.85rem 1rem' }}>Breach Reason</th>
+                                                            <th style={{ textAlign: 'center', padding: '0.85rem 1rem' }}>Total Breaches This Month</th>
+                                                            <th style={{ textAlign: 'center', padding: '0.85rem 1rem' }}>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {group.records.map((record, i) => {
+                                                            const isMorningMiss = (record.breach_reason || '').toLowerCase().includes('morning');
+                                                            const isHighBreacher = record.total_breaches_this_month >= 3;
+                                                            return (
+                                                                <tr key={i} style={{ borderBottom: i < group.records.length - 1 ? '1px solid var(--border-primary)' : 'none' }}>
+                                                                    <td style={{ fontWeight: 600, padding: '0.85rem 1rem' }}>{record.agent_name}</td>
+                                                                    <td style={{ color: 'var(--text-secondary)', padding: '0.85rem 1rem' }}>{record.email}</td>
+                                                                    <td style={{ padding: '0.85rem 1rem' }}>
+                                                                        <span style={{
+                                                                            display: 'inline-block',
+                                                                            padding: '0.2rem 0.65rem',
+                                                                            borderRadius: '4px',
+                                                                            fontSize: '0.825rem',
+                                                                            fontWeight: 500,
+                                                                            background: isMorningMiss ? '#fef2f2' : '#fffbe6',
+                                                                            color: isMorningMiss ? '#991b1b' : '#92400e',
+                                                                            border: isMorningMiss ? '1px solid #fecaca' : '1px solid #ffe58f'
+                                                                        }}>
+                                                                            {record.breach_reason}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td style={{ textAlign: 'center', padding: '0.85rem 1rem' }}>
+                                                                        <span style={{
+                                                                            fontWeight: 700,
+                                                                            fontSize: '0.9rem',
+                                                                            color: isHighBreacher ? '#ef4444' : 'var(--text-primary)'
+                                                                        }}>
+                                                                            {record.total_breaches_this_month}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td style={{ textAlign: 'center', padding: '0.85rem 1rem' }}>
+                                                                        <span style={{
+                                                                            fontSize: '0.75rem',
+                                                                            fontWeight: 600,
+                                                                            padding: '0.25rem 0.6rem',
+                                                                            borderRadius: '12px',
+                                                                            textTransform: 'uppercase',
+                                                                            letterSpacing: '0.03em',
+                                                                            background: isHighBreacher ? '#fee2e2' : '#fef3c7',
+                                                                            color: isHighBreacher ? '#b91c1c' : '#b45309'
+                                                                        }}>
+                                                                            {isHighBreacher ? 'High Alert' : 'Warning'}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
                                                     </tbody>
                                                 </table>
                                             </div>

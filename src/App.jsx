@@ -10,9 +10,6 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
-import StaffDashboard from './pages/StaffDashboard';
-import StoreAnalyticsConsole from './pages/StoreAnalyticsConsole';
-import RetailAdminDashboard from './pages/RetailAdminDashboard';
 import IsdNmDashboard from './pages/IsdNmDashboard';
 import FeedbackDepartment from './pages/FeedbackDepartment';
 import OrderDispute from './pages/OrderDispute';
@@ -36,7 +33,6 @@ import {
     ORM_ROLES,
     ORDER_DISPUTE_ROLES,
     PROFILE_ROLES,
-    RETAIL_STAFF_ACCESS_ROLES,
     ISD_DASHBOARD_EMAILS,
     SALARY_ANALYSIS_EMAILS,
     MANPOWER_ROLES,
@@ -44,6 +40,7 @@ import {
     defaultHomePath,
 } from './config/permissions';
 import { businessAnalyticsCategories } from './config/dashboardData';
+import { retailRoutes } from './modules/retail';
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 const Router = DEMO_MODE ? HashRouter : BrowserRouter;
@@ -76,30 +73,7 @@ function App() {
                                             </RoleGuard>
                                         }
                                     />
-                                    <Route
-                                        path="/retail-staff"
-                                        element={
-                                            <RoleGuard roles={RETAIL_STAFF_ACCESS_ROLES}>
-                                                <StaffDashboard />
-                                            </RoleGuard>
-                                        }
-                                    />
-                                    <Route
-                                        path="/retail-staff/analytics-console"
-                                        element={
-                                            <RoleGuard roles={RETAIL_STAFF_ACCESS_ROLES}>
-                                                <StoreAnalyticsConsole />
-                                            </RoleGuard>
-                                        }
-                                    />
-                                    <Route
-                                        path="/retail-admin"
-                                        element={
-                                            <RoleGuard roles={ADMIN_ONLY}>
-                                                <RetailAdminDashboard />
-                                            </RoleGuard>
-                                        }
-                                    />
+                                    {retailRoutes}
                                     <Route
                                         path="/business-analytics"
                                         element={

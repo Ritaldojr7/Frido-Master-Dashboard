@@ -1,9 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- context + hooks in one module */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import {
-    isdNmData,
-    staffExperienceStoreData,
-} from '../config/dashboardData';
+import { isdNmData } from '../config/dashboardData';
+import { staffExperienceStoreData } from '../modules/retail';
 import { apiFetch, useAuth } from './AuthContext';
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';

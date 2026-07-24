@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useDashboardData } from '../context/DashboardDataContext';
-import SectionGroup from '../components/SectionGroup/SectionGroup';
-import NoticeAttachmentList from '../components/NoticeAttachmentList/NoticeAttachmentList';
-import Typewriter from '../components/Typewriter/Typewriter';
-import { apiFetch } from '../context/AuthContext';
+import { useDashboardData } from '../../../context/DashboardDataContext';
+import SectionGroup from '../../../components/SectionGroup/SectionGroup';
+import NoticeAttachmentList from '../../../components/NoticeAttachmentList/NoticeAttachmentList';
+import Typewriter from '../../../components/Typewriter/Typewriter';
+import { apiFetch } from '../../../context/AuthContext';
 import {
     getRetailStructureContacts,
     getStaffEscalationContacts,
-} from '../config/organizationConfig';
-import './SubPage.css';
+} from '../../../config/organizationConfig';
+import '../../../pages/SubPage.css';
 
 function ContactTable({ rows, namePrefix }) {
     return (

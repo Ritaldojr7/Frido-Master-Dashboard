@@ -3,8 +3,6 @@ import {
   dashboardCategories,
   insideSalesIndiaData,
   insideSalesMiddleEastData,
-  experienceStoreData,
-  retentionCallingData,
   onlineReputationManagementData,
   feedbackCustomerExperienceData,
   ICONS,
@@ -40,20 +38,13 @@ describe('dashboardData', () => {
     expect(Array.isArray(insideSalesIndiaData.sections)).toBe(true);
   });
 
-  it('exports experienceStoreData with title and sections', () => {
-    expect(experienceStoreData).toHaveProperty('title');
-    expect(experienceStoreData).toHaveProperty('backRoute');
-    expect(Array.isArray(experienceStoreData.sections)).toBe(true);
-  });
-
   it('exports insideSalesMiddleEastData with title and sections', () => {
     expect(insideSalesMiddleEastData).toHaveProperty('title');
     expect(insideSalesMiddleEastData).toHaveProperty('sections');
     expect(Array.isArray(insideSalesMiddleEastData.sections)).toBe(true);
   });
 
-  it('exports retentionCallingData, onlineReputationManagementData, feedbackCustomerExperienceData', () => {
-    expect(retentionCallingData.title).toBeDefined();
+  it('exports onlineReputationManagementData, feedbackCustomerExperienceData', () => {
     expect(onlineReputationManagementData.title).toBeDefined();
     expect(feedbackCustomerExperienceData.title).toBeDefined();
   });
