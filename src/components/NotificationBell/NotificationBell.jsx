@@ -66,16 +66,13 @@ export default function NotificationBell() {
     const fetchSummary = async () => {
         try {
             setLoading(true);
-            const res = await apiFetch('/api/notifications/summary');
-            if (res.ok) {
-                const data = await res.json();
-                setNotifications(data.recent || []);
-                setTotal(data.total || 0);
-                // Calculate unread count (recent within last 24h)
-                const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-                const recentCount = (data.recent || []).filter(n => new Date(n.created_at).getTime() > oneDayAgo).length;
-                setUnreadCount(recentCount);
-            }
+            const data = await apiFetch('/api/notifications/summary');
+            setNotifications(data.recent || []);
+            setTotal(data.total || 0);
+            // Calculate unread count (recent within last 24h)
+            const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+            const recentCount = (data.recent || []).filter(n => new Date(n.created_at).getTime() > oneDayAgo).length;
+            setUnreadCount(recentCount);
         } catch (err) {
             console.error('[NotificationBell] Fetch error:', err);
         } finally {

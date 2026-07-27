@@ -59,12 +59,7 @@ export default function Admin() {
             if (notifTypeFilter) query.set('type', notifTypeFilter);
             if (notifSearch) query.set('search', notifSearch);
 
-            const res = await apiFetch(`/api/notifications?${query.toString()}`);
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || 'Failed to fetch notifications.');
-            }
-            const data = await res.json();
+            const data = await apiFetch(`/api/notifications?${query.toString()}`);
             setNotifList(data.notifications || []);
             setNotifTotal(data.total || 0);
         } catch (err) {
