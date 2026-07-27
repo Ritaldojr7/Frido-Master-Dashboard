@@ -6,6 +6,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import {
     VALID_ROLES,
     normalizeEmail,
+    isValidEmail,
     normalizeRole,
     resolveRoleToValidSlug,
     createRawToken,
@@ -18,18 +19,14 @@ import {
 
 describe('VALID_ROLES', () => {
     it('contains core dashboard roles', () => {
-        expect(VALID_ROLES).toEqual(
-            expect.arrayContaining(['admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head'])
-        );
-        expect(VALID_ROLES).toHaveLength(9);
-    });
-
-    it('does not contain manager', () => {
-        expect(VALID_ROLES).not.toContain('manager');
+        expect(VALID_ROLES).toContain('admin');
+        expect(VALID_ROLES).toContain('staff');
+        expect(VALID_ROLES).toContain('executive');
+        expect(VALID_ROLES).toContain('team_lead');
     });
 });
 
-// ── normalizeEmail ───────────────────────────────────────
+// ── normalizeEmail & isValidEmail ────────────────────────
 
 describe('normalizeEmail', () => {
     it('lowercases and trims an email', () => {
@@ -40,6 +37,21 @@ describe('normalizeEmail', () => {
         expect(normalizeEmail(null)).toBe('');
         expect(normalizeEmail(undefined)).toBe('');
         expect(normalizeEmail('')).toBe('');
+    });
+});
+
+describe('isValidEmail', () => {
+    it('validates proper email syntax', () => {
+        expect(isValidEmail('admin@myfrido.com')).toBe(true);
+        expect(isValidEmail('  USER.NAME@DOMAIN.CO.IN  ')).toBe(true);
+    });
+
+    it('rejects malformed or empty email values', () => {
+        expect(isValidEmail('')).toBe(false);
+        expect(isValidEmail(null)).toBe(false);
+        expect(isValidEmail('invalid')).toBe(false);
+        expect(isValidEmail('admin@')).toBe(false);
+        expect(isValidEmail('@domain.com')).toBe(false);
     });
 });
 

@@ -10,6 +10,7 @@ import { createClerkInvitationFlow, deliverInviteEmail, clerkClient } from '../s
 import {
     isAllowedCompanyEmail,
     normalizeEmail,
+    isValidEmail,
     normalizeRole,
     VALID_ROLES,
 } from '../utils/security.js';
@@ -733,7 +734,7 @@ router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter
         }
 
         const reviewerEmail = normalizeEmail(req.user?.email);
-        if (!reviewerEmail) {
+        if (!isValidEmail(reviewerEmail)) {
             return res.status(400).json({ error: 'Authenticated admin email is missing or invalid.' });
         }
 
@@ -843,7 +844,7 @@ router.post('/requests/:id/reject', requireRole(['admin']), userMutationLimiter,
         }
 
         const reviewerEmail = normalizeEmail(req.user?.email);
-        if (!reviewerEmail) {
+        if (!isValidEmail(reviewerEmail)) {
             return res.status(400).json({ error: 'Authenticated admin email is missing or invalid.' });
         }
 
