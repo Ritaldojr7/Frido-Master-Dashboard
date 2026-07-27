@@ -19,6 +19,7 @@ import { normalizeEmail } from '../utils/security.js';
 import { getUserRoles } from '../utils/roles.js';
 import { getInventoryUploaderEmailsServer } from '../utils/organizationEnv.js';
 import { parseInventoryWorkbook, summarizeInventory } from '../utils/inventoryParser.js';
+import { createNotification } from '../services/notificationService.js';
 
 const router = Router();
 
@@ -195,6 +196,15 @@ router.post('/upload', userMutationLimiter, (req, res, next) => {
     console.warn(
         `[inventory] snapshot ${id} uploaded by ${req.user.email} — ${parsed.records.length} rows from ${req.file.originalname}`
     );
+
+    await createNotification({
+        type: 'upload',
+        title: 'Daily Inventory Uploaded',
+        message: `${req.user.email} uploaded inventory snapshot '${req.file.originalname}' (${parsed.records.length} rows)`,
+        actorEmail: req.user.email,
+        actorName: req.user.name || '',
+        metadata: { fileName: req.file.originalname, rowCount: parsed.records.length, sheetName: parsed.sheetName },
+    });
 
     return res.status(201).json({
         snapshot: {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import {
@@ -24,12 +25,60 @@ export default function Admin() {
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [showNoticeModal, setShowNoticeModal] = useState(false);
     
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTab = searchParams.get('tab') || 'users';
+    const [activeTab, setActiveTab] = useState(['users', 'requests', 'notices', 'notifications'].includes(initialTab) ? initialTab : 'users');
+
+    useEffect(() => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam && ['users', 'requests', 'notices', 'notifications'].includes(tabParam)) {
+            setActiveTab(tabParam);
+        }
+    }, [searchParams]);
+
     // Access Requests tab state
     const [requests, setRequests] = useState([]);
     const [requestsLoading, setRequestsLoading] = useState(false);
     const [requestsError, setRequestsError] = useState('');
-    const [activeTab, setActiveTab] = useState('users');
     const [requestsMessage, setRequestsMessage] = useState('');
+
+    // Notifications tab state
+    const [notifList, setNotifList] = useState([]);
+    const [notifTotal, setNotifTotal] = useState(0);
+    const [notifLoading, setNotifLoading] = useState(false);
+    const [notifError, setNotifError] = useState('');
+    const [notifTypeFilter, setNotifTypeFilter] = useState('');
+    const [notifSearch, setNotifSearch] = useState('');
+
+    const fetchNotifications = useCallback(async () => {
+        setNotifLoading(true);
+        setNotifError('');
+        try {
+            const query = new URLSearchParams();
+            query.set('limit', '100');
+            if (notifTypeFilter) query.set('type', notifTypeFilter);
+            if (notifSearch) query.set('search', notifSearch);
+
+            const res = await apiFetch(`/api/notifications?${query.toString()}`);
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to fetch notifications.');
+            }
+            const data = await res.json();
+            setNotifList(data.notifications || []);
+            setNotifTotal(data.total || 0);
+        } catch (err) {
+            setNotifError(err.message || 'Failed to fetch notifications.');
+        } finally {
+            setNotifLoading(false);
+        }
+    }, [notifTypeFilter, notifSearch]);
+
+    useEffect(() => {
+        if (activeTab === 'notifications') {
+            fetchNotifications();
+        }
+    }, [activeTab, fetchNotifications]);
 
     // Roster Filters
     const [filterRole, setFilterRole] = useState('');
@@ -734,23 +783,30 @@ export default function Admin() {
                 <button
                     type="button"
                     className={`admin__tab ${activeTab === 'users' ? 'admin__tab--active' : ''}`}
-                    onClick={() => setActiveTab('users')}
+                    onClick={() => { setActiveTab('users'); setSearchParams({ tab: 'users' }); }}
                 >
                     Team Roster
                 </button>
                 <button
                     type="button"
                     className={`admin__tab ${activeTab === 'requests' ? 'admin__tab--active' : ''}`}
-                    onClick={() => setActiveTab('requests')}
+                    onClick={() => { setActiveTab('requests'); setSearchParams({ tab: 'requests' }); }}
                 >
                     Access Requests
                 </button>
                 <button
                     type="button"
                     className={`admin__tab ${activeTab === 'notices' ? 'admin__tab--active' : ''}`}
-                    onClick={() => setActiveTab('notices')}
+                    onClick={() => { setActiveTab('notices'); setSearchParams({ tab: 'notices' }); }}
                 >
                     Staff Notices
+                </button>
+                <button
+                    type="button"
+                    className={`admin__tab ${activeTab === 'notifications' ? 'admin__tab--active' : ''}`}
+                    onClick={() => { setActiveTab('notifications'); setSearchParams({ tab: 'notifications' }); }}
+                >
+                    Notifications
                 </button>
             </div>
 
@@ -1235,6 +1291,132 @@ export default function Admin() {
                         </div>
                     </div>
                 </>
+            )}
+
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+                <div className="admin__section">
+                    <div className="admin__section-header">
+                        <div>
+                            <h2>Admin Activity Notifications</h2>
+                            <p>Universal audit log tracking dashboard uploads, user access requests, and logins.</p>
+                        </div>
+                        <button
+                            type="button"
+                            className="admin__invite-btn"
+                            onClick={fetchNotifications}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                <path d="M23 4v6h-6M1 20v-6h6" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                            </svg>
+                            Refresh Log
+                        </button>
+                    </div>
+
+                    {/* Filters */}
+                    <div className="admin__notif-filters" style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                                type="button"
+                                className={`admin__notif-pill ${notifTypeFilter === '' ? 'admin__notif-pill--active' : ''}`}
+                                onClick={() => setNotifTypeFilter('')}
+                            >
+                                All ({notifTotal})
+                            </button>
+                            <button
+                                type="button"
+                                className={`admin__notif-pill ${notifTypeFilter === 'upload' ? 'admin__notif-pill--active' : ''}`}
+                                onClick={() => setNotifTypeFilter('upload')}
+                            >
+                                📤 Uploads
+                            </button>
+                            <button
+                                type="button"
+                                className={`admin__notif-pill ${notifTypeFilter === 'access_request' ? 'admin__notif-pill--active' : ''}`}
+                                onClick={() => setNotifTypeFilter('access_request')}
+                            >
+                                🔑 Access Requests
+                            </button>
+                            <button
+                                type="button"
+                                className={`admin__notif-pill ${notifTypeFilter === 'user_login' ? 'admin__notif-pill--active' : ''}`}
+                                onClick={() => setNotifTypeFilter('user_login')}
+                            >
+                                👤 User Logins
+                            </button>
+                        </div>
+
+                        <div style={{ flex: 1, minWidth: '220px' }}>
+                            <input
+                                type="text"
+                                className="admin__search-input"
+                                placeholder="Search notifications by title, message, or user email..."
+                                value={notifSearch}
+                                onChange={(e) => setNotifSearch(e.target.value)}
+                                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-surface-2)', color: 'var(--text-primary)' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="admin__table-card">
+                        {notifLoading ? (
+                            <div className="admin__loading">Loading notification audit log...</div>
+                        ) : notifError ? (
+                            <div className="admin__error">{notifError}</div>
+                        ) : (
+                            <div className="admin__table-scroll">
+                                <table className="admin__table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Title</th>
+                                            <th>Message</th>
+                                            <th>Actor</th>
+                                            <th>Date & Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {notifList.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5}>
+                                                    <span className="admin__empty">No notifications found.</span>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            notifList.map((n) => (
+                                                <tr key={n.id}>
+                                                    <td>
+                                                        <span className={`admin__notif-badge admin__notif-badge--${n.type}`}>
+                                                            {n.type === 'upload'
+                                                                ? '📤 Upload'
+                                                                : n.type === 'access_request'
+                                                                  ? '🔑 Access Request'
+                                                                  : n.type === 'user_login'
+                                                                    ? '👤 User Login'
+                                                                    : '🔔 Notification'}
+                                                        </span>
+                                                    </td>
+                                                    <td><strong>{n.title}</strong></td>
+                                                    <td>{n.message}</td>
+                                                    <td>
+                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                            {n.actor_name && <strong style={{ fontSize: '13px' }}>{n.actor_name}</strong>}
+                                                            <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>{n.actor_email || 'System'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                                        {new Date(n.created_at).toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
 
             {/* ── Import users modal ── */}

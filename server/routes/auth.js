@@ -12,6 +12,8 @@ import { normalizeEmail, isAllowedCompanyEmail, resolveRoleToValidSlug, VALID_RO
 import { sendGraphMail } from '../services/graphEmail.js';
 import { clerkClient } from '../services/userInvite.js';
 
+import { createNotification } from '../services/notificationService.js';
+
 const router = Router();
 
 /**
@@ -87,6 +89,16 @@ router.post('/request-access', async (req, res) => {
                 [id, normalizedEmail, name.trim(), designation.trim(), department.trim(), roleSlug, 'pending', nowIso, nowIso]
             );
         }
+
+        // Record admin notification event
+        await createNotification({
+            type: 'access_request',
+            title: 'New Access Request',
+            message: `${name.trim()} (${normalizedEmail}) requested ${roleSlug} access (${department.trim()})`,
+            actorEmail: normalizedEmail,
+            actorName: name.trim(),
+            metadata: { role: roleSlug, department: department.trim(), designation: designation.trim() },
+        });
 
         // Send email to admin
         try {

@@ -23,6 +23,7 @@ import dashboardEditRoutes from './routes/dashboardEdit.js';
 import manpowerRoutes from './routes/manpower.js';
 import inventoryRoutes from './routes/inventory.js';
 import organizationConfigRoutes from './routes/organizationConfig.js';
+import notificationRoutes from './routes/notifications.js';
 import { protectStaticDashboards } from './middleware/protectStaticDashboards.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -111,6 +112,7 @@ export function createApp() {
     app.use('/api/order-disputes', orderDisputesRoutes);
     app.use('/api/manpower', manpowerRoutes);
     app.use('/api/inventory', inventoryRoutes);
+    app.use('/api/notifications', notificationRoutes);
     app.use('/api', dashboardEditRoutes);
 
     app.get('/api/health', (_req, res) => {

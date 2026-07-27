@@ -4,6 +4,7 @@ import { isManpowerConfigured, appendLopRow } from '../services/manpowerSheets.j
 import { aggregateLeaderboard } from '../services/manpowerData.js';
 import db, { now } from '../db.js';
 import { v4 as uuid } from 'uuid';
+import { createNotification } from '../services/notificationService.js';
 import {
     getManpowerSyncStatus,
     loadManpowerFromDb,
@@ -198,6 +199,15 @@ router.post('/lop', async (req, res) => {
             }
         }
         
+        await createNotification({
+            type: 'upload',
+            title: 'LOP Record Submitted',
+            message: `Loss of Pay record submitted for ${agentName} (${verticalName}) on ${dateOfLop}`,
+            actorEmail: email,
+            actorName: agentName,
+            metadata: { dateOfLop, verticalName },
+        });
+
         res.json({ success: true, message: 'LOP record added successfully' });
     } catch (err) {
         console.error('[manpower/lop]', err);

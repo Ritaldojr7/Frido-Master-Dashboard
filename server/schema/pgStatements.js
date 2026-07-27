@@ -200,5 +200,16 @@ export function schemaStatements() {
             date_of_lop TEXT NOT NULL,
             submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS dashboard_notifications (
+            id TEXT PRIMARY KEY,
+            type TEXT NOT NULL CHECK(type IN ('upload', 'access_request', 'user_login')),
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            actor_email TEXT DEFAULT '',
+            actor_name TEXT DEFAULT '',
+            metadata TEXT DEFAULT '{}',
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE INDEX IF NOT EXISTS idx_dashboard_notifications_created ON dashboard_notifications(created_at DESC)`
     ];
 }

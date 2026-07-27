@@ -23,6 +23,7 @@ import {
 } from '../utils/roles.js';
 import { validateImportRow } from '../utils/userImport.js';
 import { userMutationLimiter } from '../middleware/rateLimit.js';
+import { createNotification } from '../services/notificationService.js';
 
 const router = Router();
 
@@ -368,6 +369,17 @@ router.post('/import', requireRole(['admin']), userMutationLimiter, async (req, 
                     errors: [e.message || 'insert failed'],
                 });
             }
+        }
+
+        if (created.length > 0) {
+            await createNotification({
+                type: 'upload',
+                title: 'User Batch Imported',
+                message: `${req.user.email} imported ${created.length} user(s) into team roster`,
+                actorEmail: req.user.email,
+                actorName: req.user.name || '',
+                metadata: { createdCount: created.length },
+            });
         }
 
         res.status(201).json({

@@ -1031,4 +1031,55 @@
     pointer-events: none;
 }
 
+/* ── Admin Notifications Tab ── */
+.admin__notif-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    color: var(--text-secondary, #94a3b8);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.admin__notif-pill:hover {
+    background: var(--bg-tertiary, rgba(255, 255, 255, 0.1));
+    color: var(--text-primary, #f8fafc);
+}
+
+.admin__notif-pill--active {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.admin__notif-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid currentColor;
+}
+
+.admin__notif-badge--upload {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.admin__notif-badge--access_request {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.admin__notif-badge--user_login {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+
 
