@@ -74,7 +74,7 @@ router.post('/request-access', async (req, res) => {
             const nowIso = new Date().toISOString();
             await db.run(
                 `UPDATE access_requests
-                 SET name = ?, designation = ?, department = ?, role = ?, status = 'pending', updated_at = ?
+                 SET name = ?, designation = ?, department = ?, role = ?, status = 'pending', reviewed_by = '', updated_at = ?
                  WHERE email = ?`,
                 [name.trim(), designation.trim(), department.trim(), roleSlug, nowIso, normalizedEmail]
             );

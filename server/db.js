@@ -548,6 +548,7 @@ async function ensurePostgresOptionalColumns() {
     await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS roles TEXT NOT NULL DEFAULT '[]'");
     await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
     await pool.query("ALTER TABLE notices ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'retail_staff'");
+    await pool.query("ALTER TABLE access_requests ADD COLUMN IF NOT EXISTS reviewed_by TEXT DEFAULT ''");
 }
 
 /** Backfill users.roles from legacy users.role — existing users keep the same access. */
@@ -678,15 +679,16 @@ function migrateSqliteAccessRequestsRoleWiden() {
             department TEXT NOT NULL,
             role TEXT NOT NULL CHECK(role IN ('admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head')),
             status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+            reviewed_by TEXT DEFAULT '',
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
 
         INSERT INTO access_requests (
-            id, email, name, designation, department, role, status, created_at, updated_at
+            id, email, name, designation, department, role, status, reviewed_by, created_at, updated_at
         )
         SELECT
-            id, email, name, designation, department, role, status, created_at, updated_at
+            id, email, name, designation, department, role, status, '', created_at, updated_at
         FROM access_requests_old;
 
         DROP TABLE access_requests_old;
@@ -741,6 +743,7 @@ if (isPostgres) {
     await ensureColumn('users', 'roles', "TEXT NOT NULL DEFAULT '[]'");
     await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
     await ensureColumn('notices', 'audience', 'TEXT NOT NULL DEFAULT \'retail_staff\'');
+    await ensureColumn('access_requests', 'reviewed_by', "TEXT DEFAULT ''");
     migrateSqliteUsersRoleFeedbackCheck();
     migrateSqliteUsersRoleWidenIsdNm();
     migrateSqliteUsersStatusImportPending();
