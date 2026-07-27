@@ -707,7 +707,7 @@ router.put('/:id/restore', requireRole(['admin']), userMutationLimiter, async (r
 router.get('/requests', requireRole(['admin']), async (_req, res) => {
     try {
         const requests = await db.all(
-            `SELECT id, email, name, designation, department, role, status, created_at, updated_at
+            `SELECT id, email, name, designation, department, role, status, reviewed_by, created_at, updated_at
              FROM access_requests
              ORDER BY created_at DESC`
         );
@@ -810,10 +810,11 @@ router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter
         });
 
         // Update the access request status to approved
+        const reviewer = req.user?.email || req.user?.name || 'Admin';
         const nowIso = new Date().toISOString();
         await db.run(
-            'UPDATE access_requests SET status = ?, updated_at = ? WHERE id = ?',
-            ['approved', nowIso, id]
+            'UPDATE access_requests SET status = ?, reviewed_by = ?, updated_at = ? WHERE id = ?',
+            ['approved', reviewer, nowIso, id]
         );
 
         res.json({ message: 'Request approved and invitation sent successfully.', emailWarning });
@@ -837,10 +838,11 @@ router.post('/requests/:id/reject', requireRole(['admin']), userMutationLimiter,
             return res.status(400).json({ error: `Request has already been ${request.status}` });
         }
 
+        const reviewer = req.user?.email || req.user?.name || 'Admin';
         const nowIso = new Date().toISOString();
         await db.run(
-            'UPDATE access_requests SET status = ?, updated_at = ? WHERE id = ?',
-            ['rejected', nowIso, id]
+            'UPDATE access_requests SET status = ?, reviewed_by = ?, updated_at = ? WHERE id = ?',
+            ['rejected', reviewer, nowIso, id]
         );
 
         res.json({ message: 'Request rejected successfully.' });

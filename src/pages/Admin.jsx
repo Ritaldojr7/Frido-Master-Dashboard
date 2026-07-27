@@ -1068,6 +1068,7 @@ export default function Admin() {
                                             <th>Department</th>
                                             <th>Role</th>
                                             <th>Status</th>
+                                            <th>Reviewed By</th>
                                             <th>Submitted At</th>
                                             <th>Actions</th>
                                         </tr>
@@ -1075,7 +1076,7 @@ export default function Admin() {
                                     <tbody>
                                         {requests.length === 0 ? (
                                             <tr>
-                                                <td colSpan={8}>
+                                                <td colSpan={9}>
                                                     <span className="admin__empty">No access requests found.</span>
                                                 </td>
                                             </tr>
@@ -1096,6 +1097,7 @@ export default function Admin() {
                                                             {req.status}
                                                         </span>
                                                     </td>
+                                                    <td>{req.reviewed_by ? req.reviewed_by : '—'}</td>
                                                     <td>{new Date(req.created_at).toLocaleDateString()}</td>
                                                     <td>
                                                         {req.status === 'pending' ? (

@@ -78,8 +78,8 @@ describe('API integration', () => {
     });
 
     it('POST /api/auth/request-access allows resubmission if previous request was rejected', async () => {
-        // Mark previous request as rejected
-        await db.run("UPDATE access_requests SET status = 'rejected' WHERE email = ?", ['candidate.test@myfrido.com']);
+        // Mark previous request as rejected by an admin
+        await db.run("UPDATE access_requests SET status = 'rejected', reviewed_by = 'admin@myfrido.com' WHERE email = ?", ['candidate.test@myfrido.com']);
 
         // Resubmit request with a new role
         const res = await request(app)
@@ -97,5 +97,6 @@ describe('API integration', () => {
         expect(updatedRow.status).toBe('pending');
         expect(updatedRow.role).toBe('td_head');
         expect(updatedRow.designation).toBe('T&D Manager');
+        expect(updatedRow.reviewed_by).toBe('');
     });
 });
