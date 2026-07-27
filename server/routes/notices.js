@@ -23,10 +23,6 @@ import {
     validateNoticePdfFiles,
 } from '../services/noticeService.js';
 import { readNoticePdfBuffer } from '../services/noticeAttachments.js';
-import {
-    NOTICE_ATTACHMENT_MIME_PDF,
-    NOTICE_MAX_PDF_SIZE_BYTES,
-} from '../constants/noticeAttachments.js';
 import { createNotification } from '../services/notificationService.js';
 
 export { NOTICE_AUDIENCE_RETAIL, NOTICE_AUDIENCE_ISD_NM } from '../constants/notices.js';
