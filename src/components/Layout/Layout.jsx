@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import SearchBar from '../SearchBar/SearchBar';
 import UserMenu from '../UserMenu/UserMenu';
+import NotificationBell from '../NotificationBell/NotificationBell';
 import { hasAccess, ADMIN_ONLY } from '../../config/permissions';
 import { retailAnalyticsNavGroup, retailAggregatorNavItems } from '../../modules/retail';
 import { useDashboardData } from '../../context/DashboardDataContext';
@@ -543,6 +544,7 @@ export default function Layout({ children }) {
                     <div className="header__right">
                         <div className="header__search-group">
                             <ThemeToggle />
+                            {hasRole('admin') && <NotificationBell />}
                             <div className="header__search">
                                 <SearchBar isAdmin={hasRole('admin')} userRoles={user?.roles ?? [user?.role]} />
                             </div>

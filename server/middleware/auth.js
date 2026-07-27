@@ -7,6 +7,7 @@ import { createClerkClient, verifyToken as clerkVerifyToken } from '@clerk/expre
 import db, { now } from '../db.js';
 import { normalizeEmail, isAllowedCompanyEmail } from '../utils/security.js';
 import { getUserRoles, parseRolesFromStorage, primaryRoleFromRoles } from '../utils/roles.js';
+import { createNotification } from '../services/notificationService.js';
 
 const clerkClient = createClerkClient({
     secretKey: process.env.CLERK_SECRET_KEY,
@@ -117,6 +118,19 @@ export async function verifyToken(req, res, next) {
                 } catch (clerkErr) {
                     console.error('Failed to sync name from Clerk on login:', clerkErr.message);
                 }
+            }
+
+            const lastLoginMs = userRow.last_login ? new Date(userRow.last_login).getTime() : 0;
+            const isNewLoginSession = !lastLoginMs || Number.isNaN(lastLoginMs) || (Date.now() - lastLoginMs > 15 * 60 * 1000);
+
+            if (isNewLoginSession) {
+                createNotification({
+                    type: 'user_login',
+                    title: 'User Logged In',
+                    message: `${nextName || userRow.name || userRow.email} logged into the dashboard`,
+                    actorEmail: userRow.email,
+                    actorName: nextName || userRow.name || '',
+                }).catch((err) => console.error('[auth] Failed to record login notification:', err.message));
             }
 
             // If the user is logging in but their status is still 'invited' or 'import_pending', update it to 'active' now.

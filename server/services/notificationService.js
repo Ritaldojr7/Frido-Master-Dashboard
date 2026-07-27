@@ -1,0 +1,112 @@
+import { v4 as uuid } from 'uuid';
+import db, { now } from '../db.js';
+import { normalizeEmail } from '../utils/security.js';
+
+export const NOTIFICATION_TYPES = {
+    UPLOAD: 'upload',
+    ACCESS_REQUEST: 'access_request',
+    USER_LOGIN: 'user_login',
+};
+
+/**
+ * Record a new admin notification event.
+ *
+ * @param {Object} params
+ * @param {'upload'|'access_request'|'user_login'} params.type
+ * @param {string} params.title
+ * @param {string} params.message
+ * @param {string} [params.actorEmail]
+ * @param {string} [params.actorName]
+ * @param {Object} [params.metadata]
+ */
+export async function createNotification({
+    type,
+    title,
+    message,
+    actorEmail = '',
+    actorName = '',
+    metadata = {},
+}) {
+    if (!Object.values(NOTIFICATION_TYPES).includes(type)) {
+        console.warn(`[notificationService] Invalid notification type '${type}', falling back to 'upload'`);
+        type = NOTIFICATION_TYPES.UPLOAD;
+    }
+
+    const id = uuid();
+    const createdAt = now();
+    const normalizedActorEmail = normalizeEmail(actorEmail);
+    const metadataStr = JSON.stringify(metadata || {});
+
+    try {
+        await db.run(
+            `INSERT INTO dashboard_notifications (id, type, title, message, actor_email, actor_name, metadata, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [id, type, title.trim(), message.trim(), normalizedActorEmail, String(actorName || '').trim(), metadataStr, createdAt]
+        );
+        return { id, type, title, message, actor_email: normalizedActorEmail, actor_name: actorName, metadata, created_at: createdAt };
+    } catch (err) {
+        console.error('[notificationService] Failed to record notification:', err.message);
+        return null;
+    }
+}
+
+/**
+ * Query notifications with optional filtering, limit, and offset.
+ */
+export async function listNotifications({ limit = 50, offset = 0, type = '', search = '' } = {}) {
+    const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
+    const parsedOffset = Math.max(parseInt(offset, 10) || 0, 0);
+
+    const conditions = [];
+    const params = [];
+
+    if (type && Object.values(NOTIFICATION_TYPES).includes(type)) {
+        conditions.push('type = ?');
+        params.push(type);
+    }
+
+    if (search && search.trim()) {
+        const term = `%${search.trim().toLowerCase()}%`;
+        conditions.push('(LOWER(title) LIKE ? OR LOWER(message) LIKE ? OR LOWER(actor_email) LIKE ? OR LOWER(actor_name) LIKE ?)');
+        params.push(term, term, term, term);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const countRow = await db.get(
+        `SELECT COUNT(*) as total FROM dashboard_notifications ${whereClause}`,
+        params
+    );
+    const total = countRow?.total ?? countRow?.['COUNT(*)'] ?? 0;
+
+    const queryParams = [...params, parsedLimit, parsedOffset];
+    const rows = await db.all(
+        `SELECT id, type, title, message, actor_email, actor_name, metadata, created_at
+         FROM dashboard_notifications
+         ${whereClause}
+         ORDER BY created_at DESC
+         LIMIT ? OFFSET ?`,
+        queryParams
+    );
+
+    const notifications = rows.map((r) => {
+        let meta = {};
+        try {
+            meta = JSON.parse(r.metadata || '{}');
+        } catch {
+            meta = {};
+        }
+        return {
+            id: r.id,
+            type: r.type,
+            title: r.title,
+            message: r.message,
+            actor_email: r.actor_email || '',
+            actor_name: r.actor_name || '',
+            metadata: meta,
+            created_at: r.created_at,
+        };
+    });
+
+    return { notifications, total, limit: parsedLimit, offset: parsedOffset };
+}

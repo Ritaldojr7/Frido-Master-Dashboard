@@ -23,6 +23,11 @@ import {
     validateNoticePdfFiles,
 } from '../services/noticeService.js';
 import { readNoticePdfBuffer } from '../services/noticeAttachments.js';
+import {
+    NOTICE_ATTACHMENT_MIME_PDF,
+    NOTICE_MAX_PDF_SIZE_BYTES,
+} from '../constants/noticeAttachments.js';
+import { createNotification } from '../services/notificationService.js';
 
 export { NOTICE_AUDIENCE_RETAIL, NOTICE_AUDIENCE_ISD_NM } from '../constants/notices.js';
 export { normalizedNoticeAudience } from '../constants/notices.js';
@@ -251,6 +256,15 @@ router.post('/admin', requireRole(['admin']), noticePdfUpload.array('pdfs', 5), 
         const attachmentRows =
             (await fetchAttachmentsByNoticeIds([noticeId])).get(noticeId) || [];
         scheduleAudienceNoticeEmails(notice, attachmentRows);
+
+        await createNotification({
+            type: 'upload',
+            title: 'Staff Notice Published',
+            message: `${req.user.email} published notice '${notice.title}'${attachmentRows.length > 0 ? ` with ${attachmentRows.length} attachment(s)` : ''}`,
+            actorEmail: req.user.email,
+            actorName: resolvedSenderName,
+            metadata: { noticeId: notice.id, title: notice.title, attachmentCount: attachmentRows.length },
+        });
 
         res.status(201).json({ notice: serializeNotice(notice, attachmentRows) });
     } catch (err) {
