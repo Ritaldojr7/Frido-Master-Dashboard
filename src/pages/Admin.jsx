@@ -1388,7 +1388,13 @@ export default function Admin() {
                                                 <tr key={n.id}>
                                                     <td>
                                                         <span className={`admin__notif-badge admin__notif-badge--${n.type}`}>
-                                                            {n.type === 'upload' ? '📤 Upload' : n.type === 'access_request' ? '🔑 Access Request' : '👤 User Login'}
+                                                            {n.type === 'upload'
+                                                                ? '📤 Upload'
+                                                                : n.type === 'access_request'
+                                                                  ? '🔑 Access Request'
+                                                                  : n.type === 'user_login'
+                                                                    ? '👤 User Login'
+                                                                    : '🔔 Notification'}
                                                         </span>
                                                     </td>
                                                     <td><strong>{n.title}</strong></td>
