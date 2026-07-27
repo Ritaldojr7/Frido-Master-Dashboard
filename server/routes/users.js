@@ -732,6 +732,11 @@ router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter
             return res.status(400).json({ error: `Request has already been ${request.status}` });
         }
 
+        const reviewerEmail = normalizeEmail(req.user?.email);
+        if (!reviewerEmail) {
+            return res.status(400).json({ error: 'Authenticated admin email is missing or invalid.' });
+        }
+
         const normalizedEmail = normalizeEmail(request.email);
 
         // Run invitation flow
@@ -810,11 +815,10 @@ router.post('/requests/:id/approve', requireRole(['admin']), userMutationLimiter
         });
 
         // Update the access request status to approved
-        const reviewer = req.user?.email || req.user?.name || 'Admin';
         const nowIso = new Date().toISOString();
         await db.run(
             'UPDATE access_requests SET status = ?, reviewed_by = ?, updated_at = ? WHERE id = ?',
-            ['approved', reviewer, nowIso, id]
+            ['approved', reviewerEmail, nowIso, id]
         );
 
         res.json({ message: 'Request approved and invitation sent successfully.', emailWarning });
@@ -838,11 +842,15 @@ router.post('/requests/:id/reject', requireRole(['admin']), userMutationLimiter,
             return res.status(400).json({ error: `Request has already been ${request.status}` });
         }
 
-        const reviewer = req.user?.email || req.user?.name || 'Admin';
+        const reviewerEmail = normalizeEmail(req.user?.email);
+        if (!reviewerEmail) {
+            return res.status(400).json({ error: 'Authenticated admin email is missing or invalid.' });
+        }
+
         const nowIso = new Date().toISOString();
         await db.run(
             'UPDATE access_requests SET status = ?, reviewed_by = ?, updated_at = ? WHERE id = ?',
-            ['rejected', reviewer, nowIso, id]
+            ['rejected', reviewerEmail, nowIso, id]
         );
 
         res.json({ message: 'Request rejected successfully.' });
