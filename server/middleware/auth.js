@@ -123,6 +123,19 @@ export async function verifyToken(req, res, next) {
             const lastLoginMs = userRow.last_login ? new Date(userRow.last_login).getTime() : 0;
             const isNewLoginSession = !lastLoginMs || Number.isNaN(lastLoginMs) || (Date.now() - lastLoginMs > 15 * 60 * 1000);
 
+            // If the user is logging in but their status is still 'invited' or 'import_pending', update it to 'active' now.
+            if (userRow.status === 'invited' || userRow.status === 'import_pending') {
+                await db.run(
+                    `UPDATE users SET status = 'active', name = ?, last_login = ?, updated_at = ? WHERE id = ?`,
+                    [nextName, now(), now(), userId]
+                );
+                userRow.status = 'active';
+            } else if (isNewLoginSession) {
+                // Only update last_login when starting a new session (>15 min gap),
+                // NOT on every API request. This preserves the throttle window.
+                await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
+            }
+
             if (isNewLoginSession) {
                 createNotification({
                     type: 'user_login',
@@ -131,18 +144,6 @@ export async function verifyToken(req, res, next) {
                     actorEmail: userRow.email,
                     actorName: nextName || userRow.name || '',
                 }).catch((err) => console.error('[auth] Failed to record login notification:', err.message));
-            }
-
-            // If the user is logging in but their status is still 'invited' or 'import_pending', update it to 'active' now.
-            if (userRow.status === 'invited' || userRow.status === 'import_pending') {
-                await db.run(
-                    `UPDATE users SET status = 'active', name = ?, last_login = ?, updated_at = ? WHERE id = ?`,
-                    [nextName, now(), now(), userId]
-                );
-                userRow.status = 'active';
-            } else {
-                // User exists and is active, just update last login
-                await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
             }
         }
 
