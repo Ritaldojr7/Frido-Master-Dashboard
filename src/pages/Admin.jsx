@@ -1350,11 +1350,10 @@ export default function Admin() {
                         <div style={{ flex: 1, minWidth: '220px' }}>
                             <input
                                 type="text"
-                                className="admin__search-input"
+                                className="admin__filter-select"
                                 placeholder="Search notifications by title, message, or user email..."
                                 value={notifSearch}
                                 onChange={(e) => setNotifSearch(e.target.value)}
-                                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-surface-2)', color: 'var(--text-primary)' }}
                             />
                         </div>
                     </div>
