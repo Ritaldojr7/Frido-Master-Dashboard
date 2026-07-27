@@ -2,8 +2,15 @@ import crypto from 'crypto';
 
 export const VALID_ROLES = ['admin', 'staff', 'feedback', 'feedback_head', 'executive', 'team_lead', 'data_analyst', 'orm_lead', 'td_head'];
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function normalizeEmail(email) {
     return String(email || '').toLowerCase().trim();
+}
+
+export function isValidEmail(email) {
+    const normalized = normalizeEmail(email);
+    return Boolean(normalized) && EMAIL_REGEX.test(normalized);
 }
 
 /**
