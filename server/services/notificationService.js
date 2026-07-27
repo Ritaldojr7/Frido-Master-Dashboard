@@ -110,3 +110,62 @@ export async function listNotifications({ limit = 50, offset = 0, type = '', sea
 
     return { notifications, total, limit: parsedLimit, offset: parsedOffset };
 }
+
+/**
+ * Remove duplicate login notifications.
+ * Keeps the FIRST notification per user per 15-minute window and deletes the rest.
+ * Returns the count of deleted duplicate rows.
+ */
+export async function deduplicateLoginNotifications() {
+    // Step 1: Fetch all login notifications ordered by actor_email then created_at.
+    const rows = await db.all(
+        `SELECT id, actor_email, created_at FROM dashboard_notifications
+         WHERE type = 'user_login'
+         ORDER BY actor_email, created_at ASC`
+    );
+
+    if (rows.length === 0) return 0;
+
+    const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+    const idsToDelete = [];
+
+    // Group by actor_email
+    const grouped = {};
+    for (const row of rows) {
+        if (!grouped[row.actor_email]) grouped[row.actor_email] = [];
+        grouped[row.actor_email].push(row);
+    }
+
+    // For each user, walk through their login notifications chronologically.
+    // Keep the first one in each 15-min window, mark the rest for deletion.
+    for (const email of Object.keys(grouped)) {
+        const entries = grouped[email];
+        let windowStart = null;
+
+        for (const entry of entries) {
+            const ts = new Date(entry.created_at).getTime();
+            if (windowStart === null || ts - windowStart > WINDOW_MS) {
+                // Start a new window — keep this entry
+                windowStart = ts;
+            } else {
+                // Still within the same 15-min window — mark as duplicate
+                idsToDelete.push(entry.id);
+            }
+        }
+    }
+
+    if (idsToDelete.length === 0) return 0;
+
+    // Delete in batches of 100 to avoid very large SQL queries
+    const batchSize = 100;
+    for (let i = 0; i < idsToDelete.length; i += batchSize) {
+        const batch = idsToDelete.slice(i, i + batchSize);
+        const placeholders = batch.map(() => '?').join(',');
+        await db.run(
+            `DELETE FROM dashboard_notifications WHERE id IN (${placeholders})`,
+            batch
+        );
+    }
+
+    return idsToDelete.length;
+}

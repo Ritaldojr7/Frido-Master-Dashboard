@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.js';
-import { listNotifications } from '../services/notificationService.js';
+import { listNotifications, deduplicateLoginNotifications } from '../services/notificationService.js';
 
 const router = Router();
 
@@ -38,6 +38,21 @@ router.get('/summary', async (_req, res) => {
     } catch (err) {
         console.error('[notifications-route] Error fetching notification summary:', err);
         res.status(500).json({ error: 'Failed to retrieve notification summary.' });
+    }
+});
+
+/**
+ * POST /api/notifications/deduplicate-logins
+ * One-time cleanup: remove duplicate user_login notifications,
+ * keeping only the first per user per 15-minute window.
+ */
+router.post('/deduplicate-logins', async (_req, res) => {
+    try {
+        const deletedCount = await deduplicateLoginNotifications();
+        res.json({ message: `Removed ${deletedCount} duplicate login notification(s).`, deletedCount });
+    } catch (err) {
+        console.error('[notifications-route] Error deduplicating login notifications:', err);
+        res.status(500).json({ error: 'Failed to deduplicate login notifications.' });
     }
 });
 

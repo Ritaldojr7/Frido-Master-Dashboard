@@ -69,6 +69,21 @@ export default function Admin() {
         }
     }, [notifTypeFilter, notifSearch]);
 
+    const [dedupLoading, setDedupLoading] = useState(false);
+    const handleDeduplicateLogins = useCallback(async () => {
+        if (!window.confirm('Remove duplicate login notifications? This keeps only one entry per user per 15-minute session.')) return;
+        setDedupLoading(true);
+        try {
+            const data = await apiFetch('/api/notifications/deduplicate-logins', { method: 'POST' });
+            alert(data.message || 'Done');
+            fetchNotifications();
+        } catch (err) {
+            alert('Failed: ' + (err.message || 'Unknown error'));
+        } finally {
+            setDedupLoading(false);
+        }
+    }, [fetchNotifications]);
+
     useEffect(() => {
         if (activeTab === 'notifications') {
             fetchNotifications();
@@ -1296,17 +1311,28 @@ export default function Admin() {
                             <h2>Admin Activity Notifications</h2>
                             <p>Universal audit log tracking dashboard uploads, user access requests, and logins.</p>
                         </div>
-                        <button
-                            type="button"
-                            className="admin__invite-btn"
-                            onClick={fetchNotifications}
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                                <path d="M23 4v6h-6M1 20v-6h6" />
-                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                            </svg>
-                            Refresh Log
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <button
+                                type="button"
+                                className="admin__invite-btn"
+                                style={{ background: '#fff3cd', color: '#856404', borderColor: '#ffc107' }}
+                                onClick={handleDeduplicateLogins}
+                                disabled={dedupLoading}
+                            >
+                                {dedupLoading ? 'Cleaning…' : '🧹 Clean Up Duplicates'}
+                            </button>
+                            <button
+                                type="button"
+                                className="admin__invite-btn"
+                                onClick={fetchNotifications}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                    <path d="M23 4v6h-6M1 20v-6h6" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
+                                Refresh Log
+                            </button>
+                        </div>
                     </div>
 
                     {/* Filters */}
