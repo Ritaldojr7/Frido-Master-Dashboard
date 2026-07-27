@@ -1033,33 +1033,34 @@
 
 /* ── Admin Notifications Tab ── */
 .admin__notif-pill {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border-primary, rgba(255, 255, 255, 0.1));
-    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
-    color: var(--text-secondary, #94a3b8);
-    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm, 6px);
+    border: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 13.5px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
+    font-family: var(--font-sans);
 }
 
 .admin__notif-pill:hover {
-    background: var(--bg-tertiary, rgba(255, 255, 255, 0.1));
-    color: var(--text-primary, #f8fafc);
+    background: var(--border-primary);
+    color: var(--text-primary);
 }
 
 .admin__notif-pill--active {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.4);
-    color: #3b82f6;
+    background: var(--brand-yellow);
+    border-color: var(--brand-yellow);
+    color: #000000;
     font-weight: 600;
 }
 
 .admin__notif-badge {
     display: inline-flex;
     align-items: center;
-    padding: 3px 8px;
+    padding: 3px 10px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
@@ -1068,17 +1069,20 @@
 
 .admin__notif-badge--upload {
     background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    color: #2563eb;
+    border-color: rgba(37, 99, 235, 0.3);
 }
 
 .admin__notif-badge--access_request {
     background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
+    color: #d97706;
+    border-color: rgba(217, 119, 6, 0.3);
 }
 
 .admin__notif-badge--user_login {
     background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.3);
 }
 
 

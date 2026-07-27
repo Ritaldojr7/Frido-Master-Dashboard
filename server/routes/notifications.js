@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { requireRole } from '../middleware/auth.js';
+import { verifyToken, requireRole } from '../middleware/auth.js';
 import { listNotifications } from '../services/notificationService.js';
 
 const router = Router();
 
-// Protect all notification routes to admin only
+// Protect all notification routes — verify token first, then enforce admin role
+router.use(verifyToken);
 router.use(requireRole(['admin']));
 
 /**
