@@ -138,15 +138,22 @@ export async function verifyToken(req, res, next) {
 
             // Only create a login notification if the user explicitly logged out
             // before this session (logged_out flag was set by POST /api/auth/logout).
+            // Use atomic WHERE logged_out = 1 to prevent race conditions on concurrent requests.
             if (userRow.logged_out) {
-                await db.run('UPDATE users SET logged_out = 0, updated_at = ? WHERE id = ?', [now(), userId]);
-                createNotification({
-                    type: 'user_login',
-                    title: 'User Logged In',
-                    message: `${nextName || userRow.name || userRow.email} logged into the dashboard`,
-                    actorEmail: userRow.email,
-                    actorName: nextName || userRow.name || '',
-                }).catch((err) => console.error('[auth] Failed to record login notification:', err.message));
+                const updateRes = await db.run(
+                    'UPDATE users SET logged_out = 0, updated_at = ? WHERE id = ? AND logged_out = 1',
+                    [now(), userId]
+                );
+                const changes = updateRes?.changes ?? updateRes?.rowCount ?? 0;
+                if (changes > 0) {
+                    createNotification({
+                        type: 'user_login',
+                        title: 'User Logged In',
+                        message: `${nextName || userRow.name || userRow.email} logged into the dashboard`,
+                        actorEmail: userRow.email,
+                        actorName: nextName || userRow.name || '',
+                    }).catch((err) => console.error('[auth] Failed to record login notification:', err.message));
+                }
             }
         }
 
