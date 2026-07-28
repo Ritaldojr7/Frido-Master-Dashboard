@@ -549,6 +549,7 @@ async function ensurePostgresOptionalColumns() {
     await pool.query('ALTER TABLE notices ADD COLUMN IF NOT EXISTS sent_by_name TEXT');
     await pool.query("ALTER TABLE notices ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT 'retail_staff'");
     await pool.query("ALTER TABLE access_requests ADD COLUMN IF NOT EXISTS reviewed_by TEXT DEFAULT ''");
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS logged_out INTEGER NOT NULL DEFAULT 0');
 }
 
 /** Backfill users.roles from legacy users.role — existing users keep the same access. */
@@ -744,6 +745,7 @@ if (isPostgres) {
     await ensureColumn('notices', 'sent_by_name', 'TEXT DEFAULT \'\'');
     await ensureColumn('notices', 'audience', 'TEXT NOT NULL DEFAULT \'retail_staff\'');
     await ensureColumn('access_requests', 'reviewed_by', "TEXT DEFAULT ''");
+    await ensureColumn('users', 'logged_out', 'INTEGER NOT NULL DEFAULT 0');
     migrateSqliteUsersRoleFeedbackCheck();
     migrateSqliteUsersRoleWidenIsdNm();
     migrateSqliteUsersStatusImportPending();

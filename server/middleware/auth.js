@@ -46,7 +46,7 @@ export async function verifyToken(req, res, next) {
         });
         
         const userId = payload.sub;
-        let userRow = await db.get('SELECT id, role, roles, email, name, status FROM users WHERE id = ?', [userId]);
+        let userRow = await db.get('SELECT id, role, roles, email, name, status, logged_out FROM users WHERE id = ?', [userId]);
 
         if (!userRow) {
             // User not yet synced to SQLite under this Clerk ID.
@@ -64,7 +64,7 @@ export async function verifyToken(req, res, next) {
                 }
 
                 const existingByEmail = await db.get(
-                    'SELECT id, role, roles, email, name, status FROM users WHERE email = ?',
+                    'SELECT id, role, roles, email, name, status, logged_out FROM users WHERE email = ?',
                     [email]
                 );
 
@@ -83,7 +83,7 @@ export async function verifyToken(req, res, next) {
                         [userId, nextName, now(), now(), email]
                     );
                     userRow = await db.get(
-                        'SELECT id, role, roles, email, name, status FROM users WHERE id = ?',
+                        'SELECT id, role, roles, email, name, status, logged_out FROM users WHERE id = ?',
                         [userId]
                     );
                 } else {
@@ -136,7 +136,10 @@ export async function verifyToken(req, res, next) {
                 await db.run('UPDATE users SET last_login = ? WHERE id = ?', [now(), userId]);
             }
 
-            if (isNewLoginSession) {
+            // Only create a login notification if the user explicitly logged out
+            // before this session (logged_out flag was set by POST /api/auth/logout).
+            if (userRow.logged_out) {
+                await db.run('UPDATE users SET logged_out = 0, updated_at = ? WHERE id = ?', [now(), userId]);
                 createNotification({
                     type: 'user_login',
                     title: 'User Logged In',

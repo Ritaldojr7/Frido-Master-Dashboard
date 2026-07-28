@@ -84,6 +84,21 @@ export default function Admin() {
         }
     }, [fetchNotifications]);
 
+    const [clearAllLoading, setClearAllLoading] = useState(false);
+    const handleClearAllNotifications = useCallback(async () => {
+        if (!window.confirm('Delete all stored notifications permanently from the database?')) return;
+        setClearAllLoading(true);
+        try {
+            const data = await apiFetch('/api/notifications/clear-all', { method: 'DELETE' });
+            alert(data.message || 'All notifications cleared.');
+            fetchNotifications();
+        } catch (err) {
+            alert('Failed to clear notifications: ' + (err.message || 'Unknown error'));
+        } finally {
+            setClearAllLoading(false);
+        }
+    }, [fetchNotifications]);
+
     useEffect(() => {
         if (activeTab === 'notifications') {
             fetchNotifications();
@@ -1312,6 +1327,15 @@ export default function Admin() {
                             <p>Universal audit log tracking dashboard uploads, user access requests, and logins.</p>
                         </div>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <button
+                                type="button"
+                                className="admin__invite-btn"
+                                style={{ background: '#f8d7da', color: '#842029', borderColor: '#f5c2c7' }}
+                                onClick={handleClearAllNotifications}
+                                disabled={clearAllLoading}
+                            >
+                                {clearAllLoading ? 'Clearing…' : '🗑️ Clear All'}
+                            </button>
                             <button
                                 type="button"
                                 className="admin__invite-btn"

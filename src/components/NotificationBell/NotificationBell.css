@@ -32,10 +32,14 @@
     height: 18px;
 }
 
+/* ── Badge — properly aligned on top-right corner ── */
 .notif-bell__badge {
     position: absolute;
     top: -2px;
     right: -2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     min-width: 18px;
     height: 18px;
     padding: 0 4px;
@@ -44,17 +48,197 @@
     color: #ffffff;
     font-size: 10px;
     font-weight: 700;
-    line-height: 18px;
+    line-height: 1;
     text-align: center;
-    border: 2px solid var(--bg-primary);
+    border: 2px solid var(--bg-card, #ffffff);
     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
     animation: pulse-badge 2s infinite;
+    pointer-events: none;
+    box-sizing: border-box;
+    z-index: 2;
 }
 
 @keyframes pulse-badge {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
+}
+
+/* ── Toast Popup Notifications ── */
+.notif-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 380px;
+    width: calc(100vw - 48px);
+    pointer-events: none;
+}
+
+.notif-toast {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 14px 40px 14px 14px;
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-primary, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.18),
+        0 4px 14px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    pointer-events: auto;
+    overflow: hidden;
+    animation: toast-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform: translateX(0);
+    backdrop-filter: blur(8px);
+}
+
+.notif-toast--exit {
+    animation: toast-slide-out 0.3s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+@keyframes toast-slide-in {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-slide-out {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+.notif-toast__icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--bg-tertiary, #f3f4f6);
+    border: 1px solid var(--border-primary, #e5e7eb);
+    flex-shrink: 0;
+}
+
+.notif-toast__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-toast__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.notif-toast__type {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.notif-toast__type--upload {
+    color: #2563eb;
+    background: rgba(59, 130, 246, 0.12);
+}
+
+.notif-toast__type--access_request {
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.notif-toast__type--user_login {
+    color: #059669;
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.notif-toast__time {
+    font-size: 11px;
+    color: var(--text-tertiary, #9ca3af);
+    white-space: nowrap;
+}
+
+.notif-toast__message {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notif-toast__actor {
+    font-size: 11.5px;
+    color: var(--text-tertiary, #9ca3af);
+    margin-top: 3px;
+}
+
+.notif-toast__close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-tertiary, #9ca3af);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.notif-toast__close:hover {
+    background: var(--bg-tertiary, #f3f4f6);
+    color: var(--text-primary, #111827);
+}
+
+.notif-toast__close svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Progress bar that shrinks over 5 seconds */
+.notif-toast__progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 100%;
+    background: var(--brand-yellow, #f59e0b);
+    border-radius: 0 0 0 12px;
+    animation: toast-progress 5s linear forwards;
+    transform-origin: left;
+}
+
+@keyframes toast-progress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }
 
 /* ── Dropdown Overlay (Theme Adaptive) ── */

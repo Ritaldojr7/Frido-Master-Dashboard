@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import db from '../db.js';
 import { verifyToken, requireRole } from '../middleware/auth.js';
 import { listNotifications, deduplicateLoginNotifications } from '../services/notificationService.js';
 
@@ -53,6 +54,20 @@ router.post('/deduplicate-logins', async (_req, res) => {
     } catch (err) {
         console.error('[notifications-route] Error deduplicating login notifications:', err);
         res.status(500).json({ error: 'Failed to deduplicate login notifications.' });
+    }
+});
+
+/**
+ * DELETE /api/notifications/clear-all
+ * Delete all notifications from the database (admin only).
+ */
+router.delete('/clear-all', async (_req, res) => {
+    try {
+        await db.run('DELETE FROM dashboard_notifications');
+        res.json({ message: 'All notifications cleared successfully.' });
+    } catch (err) {
+        console.error('[notifications-route] Error clearing notifications:', err);
+        res.status(500).json({ error: 'Failed to clear notifications.' });
     }
 });
 
