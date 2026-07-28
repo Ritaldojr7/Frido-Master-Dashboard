@@ -428,10 +428,17 @@ function ClerkAuthProvider({ children }) {
     }, [clerkUser, backendUser]);
 
     /**
-     * Logout — calls Clerk signOut.
+     * Logout — records explicit logout on server, then calls Clerk signOut.
+     * The server sets a `logged_out` flag so the next login creates a notification.
      */
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
         if (DEMO_MODE) return;
+        try {
+            sessionStorage.removeItem('frido_shown_toast_ids');
+            await apiFetch('/api/auth/logout', { method: 'POST' });
+        } catch (err) {
+            console.warn('[logout] Failed to record logout:', err.message);
+        }
         signOut();
     }, [signOut]);
 

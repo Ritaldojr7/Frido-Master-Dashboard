@@ -1,13 +1,31 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../../context/AuthContext';
 import './NotificationBell.css';
 
+/**
+ * Robust date parser handling SQLite timestamps ("YYYY-MM-DD HH:MM:SS"),
+ * ISO strings, and standard Date strings.
+ */
+function parseNotificationDate(dateStr) {
+    if (!dateStr) return new Date();
+    let s = String(dateStr).trim();
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(s)) {
+        s = s.replace(' ', 'T') + 'Z';
+    } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s) && !s.endsWith('Z') && !s.includes('+')) {
+        s += 'Z';
+    }
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? new Date(dateStr) : d;
+}
+
 function formatRelativeTime(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const date = parseNotificationDate(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return 'Just now';
     const diffSec = Math.floor(diffMs / 1000);
     const diffMin = Math.floor(diffSec / 60);
     const diffHour = Math.floor(diffMin / 60);
@@ -54,37 +72,94 @@ function getNotificationIcon(type) {
     }
 }
 
+function getToastTypeLabel(type) {
+    switch (type) {
+        case 'upload': return 'New Upload';
+        case 'access_request': return 'Access Request';
+        case 'user_login': return 'User Login';
+        default: return 'Notification';
+    }
+}
+
 export default function NotificationBell() {
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [toasts, setToasts] = useState([]);
     const dropdownRef = useRef(null);
+    const shownIdsRef = useRef(new Set());
     const navigate = useNavigate();
 
-    const fetchSummary = async () => {
+    const dismissToast = useCallback((toastId) => {
+        setToasts((prev) => prev.map((t) => (t.id === toastId ? { ...t, exiting: true } : t)));
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== toastId));
+        }, 300);
+    }, []);
+
+    const fetchSummary = useCallback(async () => {
         try {
             setLoading(true);
             const data = await apiFetch('/api/notifications/summary');
-            setNotifications(data.recent || []);
+            const recent = data.recent || [];
+            setNotifications(recent);
             setTotal(data.total || 0);
+
             // Calculate unread count (recent within last 24h)
             const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-            const recentCount = (data.recent || []).filter(n => new Date(n.created_at).getTime() > oneDayAgo).length;
+            const recentCount = recent.filter(n => parseNotificationDate(n.created_at).getTime() > oneDayAgo).length;
             setUnreadCount(recentCount);
+
+            // Auto-pop toasts for any notifications created in the last 15 minutes that haven't been popped in this session
+            const fifteenMinutesAgo = Date.now() - 15 * 60 * 1000;
+            const currentShown = shownIdsRef.current;
+            const newNotifsToToast = [];
+
+            for (const n of recent) {
+                const createdAtMs = parseNotificationDate(n.created_at).getTime();
+                if (!currentShown.has(n.id) && createdAtMs > fifteenMinutesAgo) {
+                    currentShown.add(n.id);
+                    newNotifsToToast.push(n);
+                }
+            }
+
+            if (newNotifsToToast.length > 0) {
+                const toastsToAdd = newNotifsToToast.slice(0, 3).map((n) => ({
+                    id: n.id,
+                    type: n.type,
+                    title: n.title,
+                    message: n.message,
+                    actor: n.actor_name || n.actor_email || 'System',
+                    time: formatRelativeTime(n.created_at),
+                    exiting: false,
+                }));
+                setToasts((prev) => [...toastsToAdd, ...prev].slice(0, 5));
+            }
         } catch (err) {
             console.error('[NotificationBell] Fetch error:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    // Auto-dismiss toasts after 5 seconds
+    useEffect(() => {
+        if (toasts.length === 0) return;
+        const timers = toasts
+            .filter((t) => !t.exiting)
+            .map((t) =>
+                setTimeout(() => dismissToast(t.id), 5000)
+            );
+        return () => timers.forEach(clearTimeout);
+    }, [toasts, dismissToast]);
 
     useEffect(() => {
         fetchSummary();
-        const interval = setInterval(fetchSummary, 60000); // Poll every 60s
+        const interval = setInterval(fetchSummary, 4000); // Poll every 4s for fast live updates
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchSummary]);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -121,6 +196,47 @@ export default function NotificationBell() {
                     </span>
                 )}
             </button>
+
+            {/* Toast popup notifications rendered in document.body via Portal */}
+            {toasts.length > 0 && createPortal(
+                <div className="notif-toast-container">
+                    {toasts.map((t) => (
+                        <div
+                            key={t.id}
+                            className={`notif-toast ${t.exiting ? 'notif-toast--exit' : ''}`}
+                            onClick={() => dismissToast(t.id)}
+                            role="alert"
+                        >
+                            <div className="notif-toast__icon-wrapper">
+                                {getNotificationIcon(t.type)}
+                            </div>
+                            <div className="notif-toast__content">
+                                <div className="notif-toast__header">
+                                    <span className={`notif-toast__type notif-toast__type--${t.type}`}>
+                                        {getToastTypeLabel(t.type)}
+                                    </span>
+                                    <span className="notif-toast__time">{t.time}</span>
+                                </div>
+                                <div className="notif-toast__message">{t.message}</div>
+                                <div className="notif-toast__actor">{t.actor}</div>
+                            </div>
+                            <button
+                                type="button"
+                                className="notif-toast__close"
+                                onClick={(e) => { e.stopPropagation(); dismissToast(t.id); }}
+                                aria-label="Dismiss notification"
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                            <div className="notif-toast__progress" />
+                        </div>
+                    ))}
+                </div>,
+                document.body
+            )}
 
             {open && (
                 <div className="notif-dropdown">

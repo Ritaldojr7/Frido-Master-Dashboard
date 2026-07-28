@@ -7,12 +7,13 @@
  */
 import { Router } from 'express';
 import { v4 as uuid } from 'uuid';
-import db from '../db.js';
+import db, { now } from '../db.js';
 import { normalizeEmail, isAllowedCompanyEmail, resolveRoleToValidSlug, VALID_ROLES } from '../utils/security.js';
 import { sendGraphMail } from '../services/graphEmail.js';
 import { clerkClient } from '../services/userInvite.js';
 
 import { createNotification } from '../services/notificationService.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -24,6 +25,24 @@ router.get('/status', (_req, res) => {
         provider: 'clerk',
         message: 'Authentication is managed by Clerk. Use the Clerk UI to sign in.',
     });
+});
+
+/**
+ * POST /api/auth/logout — record that user explicitly signed out.
+ * The `logged_out` flag is checked on next login to decide whether to
+ * create a "User Logged In" notification.
+ */
+router.post('/logout', verifyToken, async (req, res) => {
+    try {
+        await db.run(
+            'UPDATE users SET logged_out = 1, updated_at = ? WHERE id = ?',
+            [now(), req.user.id]
+        );
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('[auth] Failed to record logout:', err.message);
+        res.status(500).json({ error: 'Failed to record logout.' });
+    }
 });
 
 /**

@@ -200,7 +200,7 @@ router.post('/upload', userMutationLimiter, (req, res, next) => {
     await createNotification({
         type: 'upload',
         title: 'Daily Inventory Uploaded',
-        message: `${req.user.email} uploaded inventory snapshot '${req.file.originalname}' (${parsed.records.length} rows)`,
+        message: `${req.user.name || req.user.email} uploaded inventory snapshot '${req.file.originalname}' (${parsed.records.length} rows)`,
         actorEmail: req.user.email,
         actorName: req.user.name || '',
         metadata: { fileName: req.file.originalname, rowCount: parsed.records.length, sheetName: parsed.sheetName },
