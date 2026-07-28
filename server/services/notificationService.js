@@ -37,6 +37,19 @@ export async function createNotification({
     const normalizedActorEmail = normalizeEmail(actorEmail);
     const metadataStr = JSON.stringify(metadata || {});
 
+    // Prevent duplicate user_login notifications for the same user within 60 seconds
+    if (type === NOTIFICATION_TYPES.USER_LOGIN && normalizedActorEmail) {
+        const sixtySecondsAgo = new Date(Date.now() - 60 * 1000).toISOString();
+        const existing = await db.get(
+            `SELECT id FROM dashboard_notifications
+             WHERE type = 'user_login' AND actor_email = ? AND created_at > ?`,
+            [normalizedActorEmail, sixtySecondsAgo]
+        );
+        if (existing) {
+            return null;
+        }
+    }
+
     try {
         await db.run(
             `INSERT INTO dashboard_notifications (id, type, title, message, actor_email, actor_name, metadata, created_at)
