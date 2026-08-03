@@ -643,6 +643,7 @@ Add the repository secret `RENDER_DEPLOY_HOOK_URL` (from Render → Web Service 
 | `/api/*` returns 401 | Invalid or expired Clerk token | Re-sign in; verify `CLERK_SECRET_KEY` on the server |
 | Sheet sync not updating | Service account lacks access | Share the spreadsheet with the service account email as Viewer |
 | Database connection errors in prod | Supabase paused or wrong `DATABASE_URL` | Ping `/api/health/db`; verify connection string in Render |
+| Deploy hook 400 `badrequest: not found: github.com/repositories/...` | Render linked to old/deleted GitHub repository ID | Go to Render → Web Service Settings → Repository, re-connect repository `Ritaldojr7/Frido-Master-Dashboard`, create new Deploy Hook URL, and update `RENDER_DEPLOY_HOOK_URL` in GitHub Actions secrets |
 | Build fails on Render | DevDependencies skipped | Use `npm ci --include=dev` (already in `render.yaml`) |
 | Local API calls fail | Server not running | Run `npm run dev:all` or start both `dev` and `dev:server` |
 

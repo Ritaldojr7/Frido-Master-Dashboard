@@ -49,5 +49,8 @@ jobs:
             echo "A Render deployment is already in progress (HTTP 409 Conflict). Skipping duplicate trigger."
           else
             echo "::error::Render deploy hook failed with HTTP $HTTP_CODE: $BODY"
+            if echo "$BODY" | grep -q "not found: https://api.github.com/repositories"; then
+              echo "::notice::Render repository connection is stale or unlinked. Go to Render Dashboard -> Web Service Settings -> Repository, re-connect repository 'Ritaldojr7/Frido-Master-Dashboard', and update RENDER_DEPLOY_HOOK_URL in GitHub Secrets."
+            fi
             exit 1
           fi
