@@ -364,4 +364,14 @@ describe('defaultHomePath', () => {
     it('routes orm leads to ORM', () => {
         expect(defaultHomePath({ role: 'orm_lead', roles: ['orm_lead'] })).toBe('/orm');
     });
+
+    it('denies sounak.c@myfrido.com access to salary analysis even with admin role, but allows other admin routes', () => {
+        const sounakAdmin = { email: 'sounak.c@myfrido.com', role: 'admin', roles: ['admin'] };
+        expect(hasAccess(sounakAdmin, '/isd/salary-analysis')).toBe(false);
+        expect(hasAccess(sounakAdmin, '/salary-analysis/index.html')).toBe(false);
+        expect(hasAccess(sounakAdmin, '/admin')).toBe(true);
+        expect(hasAccess(sounakAdmin, '/business-analytics')).toBe(true);
+        expect(hasAccess(sounakAdmin, '/isd/executive-performance')).toBe(true);
+        expect(hasAccess(sounakAdmin, '/isd-nm')).toBe(true);
+    });
 });

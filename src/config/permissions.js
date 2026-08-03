@@ -33,6 +33,7 @@ import {
     getHomePathByEmail,
     getIsdDashboardEmails,
     getSalaryAnalysisEmails,
+    getRestrictedSalaryAnalysisEmails,
     getStoreEmailMap,
 } from './organizationConfig.js';
 
@@ -40,6 +41,7 @@ export {
     getStoreEmailMap as STORE_EMAIL_MAP,
     getIsdDashboardEmails as ISD_DASHBOARD_EMAILS,
     getSalaryAnalysisEmails as SALARY_ANALYSIS_EMAILS,
+    getRestrictedSalaryAnalysisEmails as RESTRICTED_SALARY_ANALYSIS_EMAILS,
 };
 
 export const ALL_ROLES = [
@@ -213,6 +215,16 @@ export function hasAccess(userOrRole, path) {
     
     // Normalize path: strip query/hash and trailing slashes
     const cleanPath = String(path).trim().split(/[?#]/)[0].replace(/\/+$/, '');
+
+    // ── Salary Analysis: explicit restriction for specific emails (e.g. sounak.c@myfrido.com) ──
+    const isSalaryPath = cleanPath === '/isd/salary-analysis' || cleanPath.startsWith('/salary-analysis');
+    if (isSalaryPath) {
+        if (userOrRole && typeof userOrRole === 'object') {
+            const email = String(userOrRole.email || '').trim().toLowerCase();
+            const restrictedEmails = getRestrictedSalaryAnalysisEmails();
+            if (restrictedEmails.includes(email)) return false;
+        }
+    }
 
     // ── ORM: role check OR email allowlist ──
     const isOrmPath = cleanPath === '/orm' || cleanPath.startsWith('https://cx.locobuzz.com');
