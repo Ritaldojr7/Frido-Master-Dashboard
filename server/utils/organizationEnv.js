@@ -64,6 +64,12 @@ export function getSalaryAnalysisEmailsServer(env = process.env) {
     return serverCsvList(env, 'SALARY_ANALYSIS_EMAILS', 'VITE_SALARY_ANALYSIS_EMAILS');
 }
 
+/** Emails restricted from opening the Salary Analysis static dashboard even if admin. */
+export function getRestrictedSalaryAnalysisEmailsServer(env = process.env) {
+    const list = serverCsvList(env, 'RESTRICTED_SALARY_ANALYSIS_EMAILS', 'VITE_RESTRICTED_SALARY_ANALYSIS_EMAILS');
+    return list.length > 0 ? list : ['sounak.c@myfrido.com'];
+}
+
 /** Emails permitted to open the ISD executive static dashboards. Empty list ⇒ role check. */
 export function getIsdDashboardEmailsServer(env = process.env) {
     return serverCsvList(env, 'ISD_DASHBOARD_EMAILS', 'VITE_ISD_DASHBOARD_EMAILS');

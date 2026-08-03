@@ -13,7 +13,7 @@
  */
 import { resolveUserFromRequest } from './resolveUser.js';
 import { isAllowedCompanyEmail } from '../utils/security.js';
-import { getStoreEmailMapServer } from '../utils/organizationEnv.js';
+import { getStoreEmailMapServer, getRestrictedSalaryAnalysisEmailsServer } from '../utils/organizationEnv.js';
 
 export const PROTECTED_STATIC_PREFIXES = [
     '/exec-dashboard',
@@ -96,6 +96,11 @@ export function isAuthorizedForPrefix(prefix, user) {
 
     const roles = Array.isArray(user?.roles) ? user.roles : [];
     const email = String(user?.email ?? '').trim().toLowerCase();
+
+    if (prefix === '/salary-analysis') {
+        const restricted = getRestrictedSalaryAnalysisEmailsServer();
+        if (restricted.includes(email)) return false;
+    }
 
     if (matchesRoles(roles, policy.allowRoles)) return true;
 

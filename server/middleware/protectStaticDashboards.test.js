@@ -105,9 +105,12 @@ describe('isAuthorizedForPrefix', () => {
         }
     });
 
-    it('salary: admin allowed, all others denied', () => {
+    it('salary: admin allowed, sounak.c@myfrido.com restricted, all non-admins denied', () => {
         const admin = { email: 'admin@myfrido.com', roles: ['admin'] };
         expect(isAuthorizedForPrefix('/salary-analysis', admin)).toBe(true);
+
+        const sounakAdmin = { email: 'sounak.c@myfrido.com', roles: ['admin'] };
+        expect(isAuthorizedForPrefix('/salary-analysis', sounakAdmin)).toBe(false);
 
         const staff = { email: 'staff@myfrido.com', roles: ['staff'] };
         expect(isAuthorizedForPrefix('/salary-analysis', staff)).toBe(false);

@@ -35,6 +35,7 @@ import {
     PROFILE_ROLES,
     ISD_DASHBOARD_EMAILS,
     SALARY_ANALYSIS_EMAILS,
+    RESTRICTED_SALARY_ANALYSIS_EMAILS,
     MANPOWER_ROLES,
     DAILY_INVENTORY_ROLES,
     defaultHomePath,
@@ -53,6 +54,7 @@ function HomeRedirect() {
 function App() {
     const isdDashboardEmails = ISD_DASHBOARD_EMAILS();
     const salaryAnalysisEmails = SALARY_ANALYSIS_EMAILS();
+    const restrictedSalaryAnalysisEmails = RESTRICTED_SALARY_ANALYSIS_EMAILS();
 
     return (
         <ThemeProvider>
@@ -145,7 +147,7 @@ function App() {
                                     <Route
                                         path="/isd/salary-analysis"
                                         element={
-                                            <RoleGuard roles={ADMIN_ONLY} allowedEmails={salaryAnalysisEmails}>
+                                            <RoleGuard roles={ADMIN_ONLY} allowedEmails={salaryAnalysisEmails} deniedEmails={restrictedSalaryAnalysisEmails}>
                                                 <SalaryAnalysisDashboard />
                                             </RoleGuard>
                                         }

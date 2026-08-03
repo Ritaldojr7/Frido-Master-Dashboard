@@ -72,6 +72,9 @@ export const DEFAULT_RETAIL_STRUCTURE_CONTACTS = [
 const buildTimeConfig = {
     isdDashboardEmails: parseCsvList(readEnv('VITE_ISD_DASHBOARD_EMAILS')),
     salaryAnalysisEmails: parseCsvList(readEnv('VITE_SALARY_ANALYSIS_EMAILS')),
+    restrictedSalaryAnalysisEmails: parseCsvList(
+        readEnv('VITE_RESTRICTED_SALARY_ANALYSIS_EMAILS') ?? 'sounak.c@myfrido.com'
+    ),
     storeEmailMap: normalizeEmailRecord(parseJsonRecord(readEnv('VITE_STORE_EMAIL_MAP'), {})),
     homePathByEmail: normalizeHomePaths(parseJsonRecord(readEnv('VITE_HOME_PATH_BY_EMAIL'), {})),
     supportContactEmail:
@@ -103,6 +106,10 @@ export function getIsdDashboardEmails() {
 
 export function getSalaryAnalysisEmails() {
     return pick('salaryAnalysisEmails');
+}
+
+export function getRestrictedSalaryAnalysisEmails() {
+    return pick('restrictedSalaryAnalysisEmails');
 }
 
 export function getStoreEmailMap() {
@@ -137,6 +144,7 @@ export function getRetailStructureContacts() {
 export const ISD_DASHBOARD_EMAILS = buildTimeConfig.isdDashboardEmails;
 /** @deprecated Use getSalaryAnalysisEmails() */
 export const SALARY_ANALYSIS_EMAILS = buildTimeConfig.salaryAnalysisEmails;
+export const RESTRICTED_SALARY_ANALYSIS_EMAILS = buildTimeConfig.restrictedSalaryAnalysisEmails;
 /** @deprecated Use getStoreEmailMap() */
 export const STORE_EMAIL_MAP = buildTimeConfig.storeEmailMap;
 /** @deprecated Use getHomePathByEmail() */

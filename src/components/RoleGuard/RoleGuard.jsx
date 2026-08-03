@@ -5,7 +5,7 @@
 import { useAuth } from '../../context/AuthContext';
 import { hasAnyRole } from '../../config/permissions';
 
-export default function RoleGuard({ roles, allowedEmails, children }) {
+export default function RoleGuard({ roles, allowedEmails, deniedEmails, children }) {
     const { user } = useAuth();
 
     if (!user) return null;
@@ -14,8 +14,13 @@ export default function RoleGuard({ roles, allowedEmails, children }) {
     if (roles) {
         hasPermission = hasAnyRole(user, roles);
     }
+    const email = String(user.email || '').trim().toLowerCase();
+    if (Array.isArray(deniedEmails) && deniedEmails.length > 0) {
+        if (deniedEmails.map((e) => e.toLowerCase()).includes(email)) {
+            hasPermission = false;
+        }
+    }
     if (Array.isArray(allowedEmails) && allowedEmails.length > 0 && hasPermission) {
-        const email = String(user.email || '').trim().toLowerCase();
         hasPermission = allowedEmails.map((e) => e.toLowerCase()).includes(email);
     }
 
