@@ -552,7 +552,7 @@ export const isdNmData = {
                 },
                 {
                     title: 'Dispute Resolution Submissions',
-                    url: 'https://docs.google.com/spreadsheets/d/1Kxplj7kSBzXah8CtwSUCJWuiXj_WhycfjXehcDV8eR8/edit?usp=sharing',
+                    url: 'https://docs.google.com/spreadsheets/d/1nxEvf7dl47paIL4fTr8yp4xA2YzCf6k29ydKouP1BA4/edit?pli=1&gid=1650118479#gid=1650118479',
                     variant: 'dark',
                     icon: 'clipboard',
                     isdAccess: 'team_lead',
